@@ -23,6 +23,8 @@ class Camera
         void getContourPolygonsFromImage(ofxCvGrayscaleImage image, vector<ofPolyline>* output);
 
         void saveDebugImage(ofxCvGrayscaleImage img, string name, string step);
+        void recordTestingFrames(ofxCvGrayscaleImage frame);
+        uint64 recordTestingFramesCounter = 0;
         void saveMeshFrame();
 
         //ofPixels processFrame(shared_ptr<ob::Frame> frame);
@@ -71,6 +73,8 @@ class Camera
         int IMG_HEIGHT;
         int IMG_WIDTH_2;
         int IMG_HEIGHT_2;
+        int IMG_WIDTH_4;
+        int IMG_HEIGHT_4;
         int IMG_WIDTH2;
         int IMG_HEIGHT2;
 
@@ -78,8 +82,7 @@ class Camera
 
         void saveBackgroundReference(ofxCvGrayscaleImage image);
         bool restoreBackgroundReference(ofxCvGrayscaleImage & outputImage);
-
-
+        
         const int BG_SAMPLE_FRAMES = 2; 
         const string BG_REFERENCE_FILENAME = "BACKGROUND_REFERENCE.png";
 

@@ -14,7 +14,9 @@ void Camera::setup() {
     IMG_WIDTH2  = IMG_WIDTH * 2;
     IMG_HEIGHT2 = IMG_HEIGHT * 2;
     IMG_WIDTH_2  = IMG_WIDTH / 2;
-    IMG_HEIGHT_2 = IMG_HEIGHT /2;
+    IMG_HEIGHT_2 = IMG_HEIGHT / 2;
+    IMG_HEIGHT_4 = IMG_HEIGHT / 4;
+    IMG_WIDTH_4 = IMG_WIDTH / 4;
 
     ofSetLogLevel(OF_LOG_NOTICE);
     auto deviceInfo = ofxOrbbecCamera::getDeviceList();
@@ -101,6 +103,11 @@ void Camera::draw() {
         ofDrawBitmapStringHighlight("registering background reference: -" + ofToString(backgroundReferenceLeftFrames), 10, IMG_HEIGHT_2 * 1.5, ofColor(230, 30,40), ofColor(250,250,250));
         return;
     }
+    if (parameters->recordTestingVideo) {
+        ofDrawBitmapStringHighlight("recording testing video " + ofToString(recordTestingFramesCounter), 30, IMG_HEIGHT_2/2, ofColor(230, 30, 40), ofColor(250, 250, 250));
+        return;
+    }
+
 
     // draw the processed image
     segment.draw(1, IMG_HEIGHT+2, IMG_WIDTH_2-1, IMG_HEIGHT_2-1);
@@ -168,6 +175,10 @@ void Camera::processCameraFrame(ofxCvGrayscaleImage frame, ofxCvGrayscaleImage b
     processedImage = frame;
     backgroundNewFrame = backgroundReference;
     saveDebugImage(processedImage, "cameraFrame", "initial");
+    if (parameters->recordTestingVideo) {
+        recordTestingFrames(processedImage);
+        return;
+    }
 
     // 1. Depth threshold 
     // ---------
@@ -175,7 +186,7 @@ void Camera::processCameraFrame(ofxCvGrayscaleImage frame, ofxCvGrayscaleImage b
     if (parameters->enableClipping) {
         // clipping the camera
         cvThreshold(processedImage.getCvImage(), processedImage.getCvImage(), parameters->clipFar, 0, CV_THRESH_TOZERO_INV);
-        saveDebugImage(processedImage, "processedImage", "low threshold");
+        //saveDebugImage(processedImage, "processedImage", "low threshold");
         // to-do: near clipping is not needed
         //        near detection is needed to stop all the processing/visualization
         cvThreshold(processedImage.getCvImage(), processedImage.getCvImage(), parameters->clipNear, 0, CV_THRESH_TOZERO);
@@ -426,6 +437,12 @@ void Camera::saveDebugImage(ofxCvGrayscaleImage img, string name, string step) {
         ofSaveImage(img.getPixels(), filename);
     }
 #endif
+}
+
+void Camera::recordTestingFrames(ofxCvGrayscaleImage img) {
+    recordTestingFramesCounter++;
+    const string& filename = "raw_recording\\" + ofToString(recordTestingFramesCounter) + ".png";
+    ofSaveImage(img.getPixels(), filename);
 }
 
 

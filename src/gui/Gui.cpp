@@ -46,6 +46,9 @@ void Gui::setup()
 #ifdef DEBUG_IMAGES
     camera.add(cameraParameters.saveDebugImages.set("save debug images", false));
 #endif
+#ifdef RECORD_TESTING_VIDEO
+    camera.add(cameraParameters.recordTestingVideo.set("record testing video", false));
+#endif
 
 
     parameters.setName("  d( -_-)  s( ~_~) ");

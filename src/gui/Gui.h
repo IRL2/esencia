@@ -3,7 +3,8 @@
 #include "ofMain.h"
 #include "ofxGui.h"
 
-#define DEBUG_IMAGES true
+//#define DEBUG_IMAGES true
+#define RECORD_TESTING_VIDEO true
 
 class Gui
 {
@@ -66,6 +67,7 @@ public:
         ofParameter<bool> startBackgroundReference;
         //ofParameter<int> backgroundSamples;
         ofParameter<bool> saveDebugImages = false;
+        ofParameter<bool> recordTestingVideo = false;
         ofParameter<bool> useMask = false;
     };
     CameraParameters cameraParameters;
