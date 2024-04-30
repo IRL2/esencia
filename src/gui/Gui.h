@@ -4,7 +4,7 @@
 #include "ofxGui.h"
 
 //#define DEBUG_IMAGES true
-#define RECORD_TESTING_VIDEO true
+//#define RECORD_TESTING_VIDEO true
 
 class Gui
 {

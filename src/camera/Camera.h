@@ -27,8 +27,6 @@ class Camera
         uint64 recordTestingFramesCounter = 0;
         void saveMeshFrame();
 
-        //ofPixels processFrame(shared_ptr<ob::Frame> frame);
-
         // parameters points to the mainApp's GUI. linked in main.cpp
 
         Gui globalParameters;

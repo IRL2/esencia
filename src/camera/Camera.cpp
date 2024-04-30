@@ -3,7 +3,7 @@
 
 void Camera::setup() {
 
-    //For Femto: 512 is WFOV binned, 640 is NFOV, 320 is NFOV binned
+    //For Femto: [2]512x512 is WFOV binned, [0] 640x576 is NFOV, [1] 320x288 is NFOV binned
     cameraResolutions[0] = ofPoint(640, 576);
     cameraResolutions[1] = ofPoint(320, 288);
     cameraResolutions[2] = ofPoint(512, 512);
@@ -186,9 +186,8 @@ void Camera::processCameraFrame(ofxCvGrayscaleImage frame, ofxCvGrayscaleImage b
     if (parameters->enableClipping) {
         // clipping the camera
         cvThreshold(processedImage.getCvImage(), processedImage.getCvImage(), parameters->clipFar, 0, CV_THRESH_TOZERO_INV);
-        //saveDebugImage(processedImage, "processedImage", "low threshold");
-        // to-do: near clipping is not needed
-        //        near detection is needed to stop all the processing/visualization
+        saveDebugImage(processedImage, "processedImage", "low threshold");
+        // to-do: near detection is needed to stop all the processing/visualization (near clipping is not needed)
         cvThreshold(processedImage.getCvImage(), processedImage.getCvImage(), parameters->clipNear, 0, CV_THRESH_TOZERO);
         saveDebugImage(processedImage, "processedImage", "high threshold");
     }
@@ -317,7 +316,7 @@ void Camera::addSampleToBackgroundReference(ofxCvGrayscaleImage newFrame, ofxCvG
 
     output = cameraImage; // good enough for 1 frame!!
 
-    // ---- other failed strategies!
+    // ---- failed strategies:
 
     //output *= newFrame ; // dark image, the more samples the more  it goes
 
@@ -407,6 +406,7 @@ bool Camera::restoreBackgroundReference(ofxCvGrayscaleImage & outputImage) {
     ofPixels pixels;
     bool loaded = ofLoadImage(pixels, BG_REFERENCE_FILENAME);
     if (loaded) {
+        // to-do: validate bg ref and frame have the same size resolution
         outputImage.allocate(pixels.getWidth(), pixels.getHeight());
         outputImage.setFromPixels(pixels);
         backgroundReferenceTaken = true;
