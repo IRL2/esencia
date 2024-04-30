@@ -10,9 +10,9 @@ https://www.theguardian.com/science/small-world/2013/oct/25/danceroom-spectrosco
 
 ## Goals
 
-- A reinterpretation / rewrite
-- To be able to exhibit it again
-- To opensource it for renewals
+- Create a reinterpretation / rewrite
+- Be able to exhibit it again
+- Make it opensource for remixing
 
 ## Setup
 
@@ -29,17 +29,29 @@ Currently working on the [Orbbec Femto Bolt](https://www.orbbec.com/products/tof
 3. Pull [ofxOrbbec addon](https://github.com/IRL2/ofxOrbbec/) on addons folder `{openframeworks_folder}/addons/`
 	- ([official design-io addon](https://github.com/design-io/ofxOrbbec/))
 
+(deprecated, binary files are already included in the repo for convenience)
 4. Manually copy the compiled shared camera libraries into the project
 	- From `{openframeworks_folder}/addons/ofxOrbbec/libs/orbbec/lib/{your operating system}`
-	- Into `{openframeworks_folder}/apps/myApps/esencia/bin/libs/`
+	- Into `{openframeworks_folder}/apps/myApps/esencia/bin/`
 
-### Running
 
-Open the project
+### Flags
+- DEBUG_IMAGES shows a button to allow save each step of the video frame processing
+- RECORD_TESTING_VIDEO shows a button to save frames directly form the camera, allowing to create test videos
+
+## Usage
+
+1. Connect the camera
+
+2. Run the project:
+
 - For Windows Visual Studio 2019 open the solution `esencia.sln`
 - For Linux Visual Studio Code (min 1.80) open `esencia.code-workspace`
-- For MacOS XCode () open ``
+- For MacOS XCode () open `esencia.xcode-project` *current osx project fails to link the shared libraries
 
+3. Press "sample background reference" and wait a second
 
+4. Adjust the thresholds to clip background objects
 
+5. Play whith the rest of the parameters. [See the wiki](https://github.com/IRL2/esencia/wiki)
 
