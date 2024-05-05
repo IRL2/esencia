@@ -33,7 +33,6 @@ class Camera
         Gui::CameraParameters* parameters;
 
         ofMesh mPointCloudMesh;
-        ofPixels mDepthPixels;
 
         ofxOrbbecCamera orbbecCam;
         ofxOrbbec::Settings settings;
@@ -49,6 +48,7 @@ class Camera
         void onGUIStartBackgroundReference(bool& value);
 
     private:
+        ofxCvColorImage colorFrame; // to store>transform from video file or webcam
         ofxCvGrayscaleImage cameraImage; // camera frame
         ofxCvGrayscaleImage backgroundReference;  // background reference frame
 
@@ -84,5 +84,14 @@ class Camera
         const int BG_SAMPLE_FRAMES = 2; 
         const string BG_REFERENCE_FILENAME = "BACKGROUND_REFERENCE.png";
 
+        void loadVideoFile();
+        ofVideoPlayer prerecordedVideo;
+
+        enum VideoSources {
+            VIDEOSOURCE_ORBBEC, 
+            VIDEOSOURCE_VIDEOFILE,
+            VIDEOSOURCE_WEBCAM
+        };
+        VideoSources currentVideosource;
 };
 

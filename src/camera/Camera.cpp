@@ -3,6 +3,7 @@
 
 void Camera::setup() {
 
+    // to-do: resolutions should came from getDeviceList!
     //For Femto: [2]512x512 is WFOV binned, [0] 640x576 is NFOV, [1] 320x288 is NFOV binned
     cameraResolutions[0] = ofPoint(640, 576);
     cameraResolutions[1] = ofPoint(320, 288);
@@ -21,18 +22,26 @@ void Camera::setup() {
     ofSetLogLevel(OF_LOG_NOTICE);
     auto deviceInfo = ofxOrbbecCamera::getDeviceList();
 
+    ofLog(OF_LOG_NOTICE) << "Camera::setup::deviceInfo.size: " << deviceInfo.size();
+    for each (auto device in deviceInfo)
+    {
+        ofLog(OF_LOG_NOTICE) << device.get();
+    }
+
     settings.bColor = false;
     settings.bDepth = true;
     settings.bPointCloud = false;
     settings.bPointCloudRGB = false;
     settings.depthFrameSize.requestWidth = cameraResolutions[_selectedResolution].x;
-    //settings.depthFrameSize.format = OB_FORMAT_Y16;
-    //settings.colorFrameSize.format = OB_FORMAT_MJPG;
-    //settings.colorFrameSize.requestWidth = 1280;
-    //settings.bPointCloudRGB = true; 
-    //settings.ip = "192.168.50.70";
 
-    orbbecCam.open(settings);
+    if (deviceInfo.size() == 0) {
+        // to-do: add source selection workflow that can be triggered from the gui
+        // to-do: add webcam support
+        loadVideoFile();
+    }
+    else {
+        orbbecCam.open(settings);
+    }
 
     cameraImage.allocate(IMG_WIDTH, IMG_HEIGHT);
     processedImage.allocate(IMG_WIDTH, IMG_HEIGHT);
@@ -41,7 +50,8 @@ void Camera::setup() {
     maskImage.allocate(IMG_WIDTH, IMG_HEIGHT);
     segment.allocate(IMG_WIDTH, IMG_HEIGHT);
     fillMaskforHoles.allocate(IMG_WIDTH+2, IMG_HEIGHT+2);
-    
+    colorFrame.allocate(IMG_WIDTH, IMG_HEIGHT);
+
     restoreBackgroundReference(backgroundReference);
 }
 
@@ -62,6 +72,14 @@ void Camera::onGUIStartBackgroundReference(bool &value) {
     }
 }
 
+void Camera::loadVideoFile() {
+    prerecordedVideo.load("video_mocks/movement_nfov_h264.mp4");
+    //prerecordedVideo.load("video_mocks/fingers.mp4");
+    prerecordedVideo.setLoopState(OF_LOOP_NORMAL);
+    prerecordedVideo.play();
+    currentVideosource = VIDEOSOURCE_VIDEOFILE;
+}
+
 
 //--------------------------------------------------------------
 void Camera::exit() {
@@ -72,32 +90,15 @@ void Camera::exit() {
 void Camera::draw() {
     ofBackground(60, 60, 60);
 
-
-    int verts   = mPointCloudMesh.getNumTexCoords();
-    int indices = mPointCloudMesh.getNumIndices();
-    int polys   = polygons.size();
-    int polyLines = _polyLineCount;
-
-    std::stringstream meshInfo;
-    meshInfo << "Verts:   " << verts << "\nIndices: " << indices << "\nPolygons: " << polys << "\nLines: " << _polyLineCount;
-
-    //ofSetColor(255);
-    //ofEnableDepthTest();
-    //mCam.begin();
-    //ofPushMatrix();
-    //ofTranslate(0, -300, 1000);
-    //mPointCloudMesh.draw();
-    //ofPopMatrix();
-    //mCam.end();
-    //ofDisableDepthTest();
-
     ofSetHexColor(0xffffff);
-
+    
+    //prerecordedVideo.draw(1, 1);
     cameraImage.draw(1, 1, IMG_WIDTH_2-1, IMG_HEIGHT_2-1);
     ofDrawBitmapStringHighlight("Raw camera", 11, 20, ofColor(30,30,30), ofColor(104,140,247));
 
     backgroundNewFrame.draw(1, IMG_HEIGHT_2+1, IMG_WIDTH_2-1, IMG_HEIGHT_2-1);
     ofDrawBitmapStringHighlight("Background reference", 11, IMG_HEIGHT_2+20, ofColor(30,30,30), ofColor(104,140,247));
+
 
     if (isTakingBackgroundReference) {
         ofDrawBitmapStringHighlight("registering background reference: -" + ofToString(backgroundReferenceLeftFrames), 10, IMG_HEIGHT_2 * 1.5, ofColor(230, 30,40), ofColor(250,250,250));
@@ -136,22 +137,31 @@ void Camera::draw() {
 //--------------------------------------------------------------
 void Camera::update() {
 
-    orbbecCam.update();
+    // aquire frame
+    if (currentVideosource == VIDEOSOURCE_VIDEOFILE) {
+        prerecordedVideo.update();
 
-    if (orbbecCam.isFrameNewDepth()) {
-        mDepthPixels = orbbecCam.getDepthPixels();
-        cameraImage.setFromPixels(mDepthPixels);
-        //outputTexDepth.loadData(mDepthPixels);
-        //mPointCloudMesh = orbbecCam.getPointCloudMesh();
-
-        // to-do: make backgroundref an object with state?
-        if (isTakingBackgroundReference) {
-            addSampleToBackgroundReference(cameraImage, backgroundReference, BG_SAMPLE_FRAMES);
-            return;
+        if (prerecordedVideo.isFrameNew()) {
+            colorFrame.setFromPixels(prerecordedVideo.getPixels());
+            cameraImage = colorFrame;
         }
-
-        processCameraFrame(cameraImage, backgroundReference);
     }
+
+    if (currentVideosource == VIDEOSOURCE_ORBBEC) {
+        orbbecCam.update();
+
+        if (orbbecCam.isFrameNewDepth()) {
+            cameraImage.setFromPixels(orbbecCam.getDepthPixels());
+        }
+    }
+
+    // to-do: make backgroundref an object with state?
+    if (isTakingBackgroundReference) {
+        addSampleToBackgroundReference(cameraImage, backgroundReference, BG_SAMPLE_FRAMES);
+        return;
+    }
+
+    processCameraFrame(cameraImage, backgroundReference);
 }
 
 
