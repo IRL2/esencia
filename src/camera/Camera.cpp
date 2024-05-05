@@ -77,7 +77,7 @@ void Camera::loadVideoFile() {
     //prerecordedVideo.load("video_mocks/fingers.mp4");
     prerecordedVideo.setLoopState(OF_LOOP_NORMAL);
     prerecordedVideo.play();
-    currentVideosource = VIDEOSOURCE_VIDEOFILE;
+    currentVideosource = VideoSources::VIDEOSOURCE_VIDEOFILE;
 }
 
 
@@ -138,7 +138,7 @@ void Camera::draw() {
 void Camera::update() {
 
     // aquire frame
-    if (currentVideosource == VIDEOSOURCE_VIDEOFILE) {
+    if (currentVideosource == VideoSources::VIDEOSOURCE_VIDEOFILE) {
         prerecordedVideo.update();
 
         if (prerecordedVideo.isFrameNew()) {
@@ -147,7 +147,7 @@ void Camera::update() {
         }
     }
 
-    if (currentVideosource == VIDEOSOURCE_ORBBEC) {
+    if (currentVideosource == VideoSources::VIDEOSOURCE_ORBBEC) {
         orbbecCam.update();
 
         if (orbbecCam.isFrameNewDepth()) {

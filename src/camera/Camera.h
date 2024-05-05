@@ -87,7 +87,7 @@ class Camera
         void loadVideoFile();
         ofVideoPlayer prerecordedVideo;
 
-        enum VideoSources {
+        enum class VideoSources : int {
             VIDEOSOURCE_ORBBEC, 
             VIDEOSOURCE_VIDEOFILE,
             VIDEOSOURCE_WEBCAM
