@@ -40,7 +40,12 @@ void Gui::setup()
     camera.add(ofParameter<string>().set("FINISHING"));
     camera.add(cameraParameters.floodfillHoles.set("floodfill holes", false));
     camera.add(cameraParameters.useMask.set("mask extraction", false));
-    camera.add(cameraParameters.gaussianBlur.set("final gaussian blur", 41, 0, 100));
+    camera.add(cameraParameters.gaussianBlur.set("final gaussian blur", 0, 0, 100));
+
+    camera.add(ofParameter<string>().set("SOURCES (be gentile)"));
+    camera.add(cameraParameters._sourceOrbbec.set("orbbec camera", false));
+    //camera.add(cameraParameters._sourceWebcam.set("webcam", false));
+    camera.add(cameraParameters._sourceVideofile.set("video file", false));
 
     camera.add(ofParameter<string>().set("DEBUG"));
 #ifdef DEBUG_IMAGES

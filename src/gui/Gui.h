@@ -69,6 +69,10 @@ public:
         ofParameter<bool> saveDebugImages = false;
         ofParameter<bool> recordTestingVideo = false;
         ofParameter<bool> useMask = false;
+
+        ofParameter<bool> _sourceOrbbec = false;
+        ofParameter<bool> _sourceVideofile = false;
+        ofParameter<bool> _sourceWebcam = false;
     };
     CameraParameters cameraParameters;
 
