@@ -8,11 +8,20 @@
 
 class Camera
 {
+    enum class VideoSources : int {
+        VIDEOSOURCE_ORBBEC,
+        VIDEOSOURCE_VIDEOFILE,
+        VIDEOSOURCE_WEBCAM,
+        VIDEOSOURCE_NONE
+    };
+
     public:
-        void setup();
+        void setup(Gui::CameraParameters* params);
         void update();
         void draw();
         void exit();
+
+        void stopCurrentSource();
 
         void processCameraFrame(ofxCvGrayscaleImage cameraFrame, ofxCvGrayscaleImage backgroundReference);
         void addSampleToBackgroundReference(ofxCvGrayscaleImage newFrame, ofxCvGrayscaleImage& output, int samples);
@@ -33,10 +42,9 @@ class Camera
         Gui::CameraParameters* parameters;
 
         ofMesh mPointCloudMesh;
-        ofPixels mDepthPixels;
 
         ofxOrbbecCamera orbbecCam;
-        ofxOrbbec::Settings settings;
+        ofxOrbbec::Settings orbbecSettings;
 
         ofTexture outputTex;
         ofTexture outputTexDepth;
@@ -45,10 +53,13 @@ class Camera
         ofxCvGrayscaleImage segment;  // final segmented image
 
         //void linkGui();
-        void linkGuiParams(Gui::CameraParameters* params);
+        //void linkGuiParams(Gui::CameraParameters* params);
         void onGUIStartBackgroundReference(bool& value);
+        void onGUIChangeSource(bool& _);
+        void changeSource(VideoSources newSource);
 
     private:
+        ofxCvColorImage colorFrame; // to store>transform from video file or webcam
         ofxCvGrayscaleImage cameraImage; // camera frame
         ofxCvGrayscaleImage backgroundReference;  // background reference frame
 
@@ -76,7 +87,14 @@ class Camera
         int IMG_WIDTH2;
         int IMG_HEIGHT2;
 
-        ofPoint cameraResolutions[3];
+        // to-do: resolutions should came from getDeviceList, but it doesnt in the current ofxaddon
+        // For Femto: [2]512x512 is WFOV binned, [0] 640x576 is NFOV, [1] 320x288 is NFOV binned
+        const ofPoint cameraResolutions[3] = {
+            ofPoint(640, 576),
+            ofPoint(320, 288),
+            ofPoint(512, 512)
+        };
+        int selectedOrbbecResolution = 0;
 
         void saveBackgroundReference(ofxCvGrayscaleImage image);
         bool restoreBackgroundReference(ofxCvGrayscaleImage & outputImage);
@@ -84,5 +102,13 @@ class Camera
         const int BG_SAMPLE_FRAMES = 2; 
         const string BG_REFERENCE_FILENAME = "BACKGROUND_REFERENCE.png";
 
+        void setupOrbbecCamera();
+        void setupWebcam();
+        void loadVideoFile();
+        ofVideoPlayer prerecordedVideo;
+
+        void setFrameSize(int width, int height);
+
+        VideoSources currentVideosource;
 };
 

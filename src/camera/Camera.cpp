@@ -1,38 +1,118 @@
 ﻿#include "Camera.h"
 #include "../ofApp.h"
 
-void Camera::setup() {
+/// <summary>
+/// assign params pointer and listeners to value changes
+/// </summary>
+/// <param name="params">pointer from the gui structure</param>
+void Camera::setup(Gui::CameraParameters* params) {
 
-    //For Femto: [2]512x512 is WFOV binned, [0] 640x576 is NFOV, [1] 320x288 is NFOV binned
-    cameraResolutions[0] = ofPoint(640, 576);
-    cameraResolutions[1] = ofPoint(320, 288);
-    cameraResolutions[2] = ofPoint(512, 512);
-    int _selectedResolution = 0;
+    // link parameters and listeners
+    parameters = params;
 
-    IMG_WIDTH  = cameraResolutions[_selectedResolution].x;
-    IMG_HEIGHT = cameraResolutions[_selectedResolution].y;
-    IMG_WIDTH2  = IMG_WIDTH * 2;
+    // for when the 'bg reference' button is pressed
+    parameters->startBackgroundReference.addListener(this, &Camera::onGUIStartBackgroundReference);
+
+    // for changes in the video source
+    parameters->_sourceOrbbec.addListener(this, &Camera::onGUIChangeSource);
+    parameters->_sourceVideofile.addListener(this, &Camera::onGUIChangeSource);
+    parameters->_sourceWebcam.addListener(this, &Camera::onGUIChangeSource);
+
+    // to-do: extract the available resolutions
+    auto deviceInfo = ofxOrbbecCamera::getDeviceList();
+    ofLogNotice("Camera::setup()") << "Found " << deviceInfo.size() << " Orbbec devices";
+    for each (auto device in deviceInfo)
+    {
+        ofLogNotice("Camera::setup()") << "Device: " << device.get()->name();
+    }
+
+    // Try to initialize the orbbec camera as first option, else use a video file
+    if (deviceInfo.size() != 0) {
+        changeSource(VideoSources::VIDEOSOURCE_ORBBEC);
+    }
+    else {
+        changeSource(VideoSources::VIDEOSOURCE_VIDEOFILE);
+    }
+
+    restoreBackgroundReference(backgroundReference);
+}
+
+/// <summary>
+/// Listener for the GUI buttons to change the source
+/// </summary>
+/// <param name="_"></param>
+void Camera::onGUIChangeSource(bool& _) {
+    ofLogWarning("Camera::onGUIChangeSource()") << "GUI triggered a source change w/" << _;
+
+    if (parameters->_sourceOrbbec) {
+        changeSource(VideoSources::VIDEOSOURCE_ORBBEC);
+    }
+    else if (parameters->_sourceVideofile) {
+        changeSource(VideoSources::VIDEOSOURCE_VIDEOFILE);
+    }
+    else if (parameters->_sourceWebcam) {
+        changeSource(VideoSources::VIDEOSOURCE_WEBCAM);
+    } else {
+        stopCurrentSource();
+    }
+}
+
+
+/// <summary>
+/// Use this to change the current video source
+/// It handles everything: stops previous source and reset frames sizes
+/// </summary>
+/// <param name="newSource">From the list of VideoSources</param>
+void Camera::changeSource(VideoSources newSource) {
+    stopCurrentSource();
+
+    currentVideosource = VideoSources::VIDEOSOURCE_NONE; // in the new setup fail, stay at None
+
+    if (newSource == VideoSources::VIDEOSOURCE_ORBBEC) {
+        setupOrbbecCamera();
+    }
+    else if (newSource == VideoSources::VIDEOSOURCE_VIDEOFILE) {
+        loadVideoFile();
+    }
+    else if (newSource == VideoSources::VIDEOSOURCE_WEBCAM) {
+        setupWebcam();
+    }
+
+    // to-do: need to call setFrameSize with the updated frame size from the new source
+    setFrameSize(cameraResolutions[selectedOrbbecResolution].x, cameraResolutions[selectedOrbbecResolution].y);
+
+    // Now handling the GUI button state
+    // to-do: this belongs to the gui class, move it!
+    // the .disable/enableEvents are here to avoid triggering the listener and enter into an (semi)infinite loop
+    parameters->_sourceOrbbec.disableEvents();
+    parameters->_sourceVideofile.disableEvents();
+    parameters->_sourceWebcam.disableEvents();
+
+    parameters->_sourceOrbbec = (currentVideosource == VideoSources::VIDEOSOURCE_ORBBEC);
+    parameters->_sourceVideofile = (currentVideosource == VideoSources::VIDEOSOURCE_VIDEOFILE);
+    parameters->_sourceWebcam = (currentVideosource == VideoSources::VIDEOSOURCE_WEBCAM);
+
+    parameters->_sourceOrbbec.enableEvents();
+    parameters->_sourceVideofile.enableEvents();
+    parameters->_sourceWebcam.enableEvents();
+}
+
+/// <summary>
+/// Allocates the opencv internal images for the processing according to the source resolution
+/// And sets IMG_X shortuts (mostly for calcs and positioning)
+/// </summary>
+/// <param name="width"></param>
+/// <param name="height"></param>
+void Camera::setFrameSize(int width, int height) {
+    IMG_WIDTH = width;
+    IMG_HEIGHT = height;
+
+    IMG_WIDTH2 = IMG_WIDTH * 2;
     IMG_HEIGHT2 = IMG_HEIGHT * 2;
-    IMG_WIDTH_2  = IMG_WIDTH / 2;
+    IMG_WIDTH_2 = IMG_WIDTH / 2;
     IMG_HEIGHT_2 = IMG_HEIGHT / 2;
     IMG_HEIGHT_4 = IMG_HEIGHT / 4;
     IMG_WIDTH_4 = IMG_WIDTH / 4;
-
-    ofSetLogLevel(OF_LOG_NOTICE);
-    auto deviceInfo = ofxOrbbecCamera::getDeviceList();
-
-    settings.bColor = false;
-    settings.bDepth = true;
-    settings.bPointCloud = false;
-    settings.bPointCloudRGB = false;
-    settings.depthFrameSize.requestWidth = cameraResolutions[_selectedResolution].x;
-    //settings.depthFrameSize.format = OB_FORMAT_Y16;
-    //settings.colorFrameSize.format = OB_FORMAT_MJPG;
-    //settings.colorFrameSize.requestWidth = 1280;
-    //settings.bPointCloudRGB = true; 
-    //settings.ip = "192.168.50.70";
-
-    orbbecCam.open(settings);
 
     cameraImage.allocate(IMG_WIDTH, IMG_HEIGHT);
     processedImage.allocate(IMG_WIDTH, IMG_HEIGHT);
@@ -41,63 +121,109 @@ void Camera::setup() {
     maskImage.allocate(IMG_WIDTH, IMG_HEIGHT);
     segment.allocate(IMG_WIDTH, IMG_HEIGHT);
     fillMaskforHoles.allocate(IMG_WIDTH+2, IMG_HEIGHT+2);
-    
-    restoreBackgroundReference(backgroundReference);
+    colorFrame.allocate(IMG_WIDTH, IMG_HEIGHT);
+
+    // to-do: if the prev/current background reference image has different resolution from the new video source: kaput.
 }
+
 
 /// <summary>
-/// assign params pointer and listeners to value changes
+/// Initialize the acquisition of frames for the background reference
 /// </summary>
-/// <param name="params">pointer from the gui structure</param>
-void Camera::linkGuiParams(Gui::CameraParameters *params) {
-    parameters = params;
-    parameters->startBackgroundReference.addListener(this, &Camera::onGUIStartBackgroundReference);
-}
-
+/// <param name="value"></param>
 void Camera::onGUIStartBackgroundReference(bool &value) {
     if (value == true) {
         // to-do: add a callback for when the process ends, so i can restart the button state
-        startBackgroundReferenceSampling(BG_SAMPLE_FRAMES);
         //parameters->startBackgroundReference = false;
+        startBackgroundReferenceSampling(BG_SAMPLE_FRAMES);
     }
 }
 
+/// <summary>
+/// Loads a video file to use it as the video source
+/// </summary>
+void Camera::loadVideoFile() {
+    ofLogNotice("Camera::loadVideoFile()") << "Switching source to video file";
 
-//--------------------------------------------------------------
+    // to-do: let the user select the file (ofFileDialogResult from ofSystemLoadDialog)
+    ofLogNotice("Camera::loadVideoFile()") << "Attempting to load a video file";
+    prerecordedVideo.load("video_mocks/movement_nfov_h264.mp4");
+    // to-do: throw error when file does not exist, or cant be loaded
+
+    prerecordedVideo.setLoopState(OF_LOOP_NORMAL);
+    prerecordedVideo.play();
+
+    currentVideosource = VideoSources::VIDEOSOURCE_VIDEOFILE;
+    ofLogNotice("Camera::loadVideoFile()") << "Camera::loadVideoFile Video file loaded";
+}
+
+/// <summary>
+/// Initializes the orbbec camera as the video source
+/// </summary>
+void Camera::setupOrbbecCamera() {
+    ofLogNotice("Camera::setupOrbbecCamera()") << "Switching source to Orbbec camera";
+    
+    if (ofxOrbbecCamera::getDeviceList().size() == 0) {
+        ofLogNotice("Camera::setupOrbbecCamera()") << "No Orbbec camera detected";
+        return;
+    }
+
+    int orbbecRequestedWidth = cameraResolutions[selectedOrbbecResolution].x;
+
+    orbbecSettings.bColor = false;
+    orbbecSettings.bDepth = true;
+    orbbecSettings.bPointCloud = false;
+    orbbecSettings.bPointCloudRGB = false;
+    orbbecSettings.depthFrameSize.requestWidth = orbbecRequestedWidth;
+
+    orbbecCam.open(orbbecSettings);
+    currentVideosource = VideoSources::VIDEOSOURCE_ORBBEC;
+}
+
+/// <summary>
+/// Initializes the webcam as the video source (not yet implemented)
+/// </summary>
+void Camera::setupWebcam() {
+    ofLogNotice("Camera::setupWebcam()") << "Switching source to webcam";
+    currentVideosource = VideoSources::VIDEOSOURCE_WEBCAM;
+}
+
+/// <summary>
+/// Class exit.
+/// Calls a funtion to stop the current video source
+/// </summary>
 void Camera::exit() {
-    orbbecCam.close();
+    stopCurrentSource();
+}
+
+/// <summary>
+/// Calls the corresponding stop methods according to the current video soure
+/// </summary>
+void Camera::stopCurrentSource() {
+    if (currentVideosource == VideoSources::VIDEOSOURCE_ORBBEC) {
+        ofLogNotice("Camera::stopCurrentSource()") << "Closing the orbbec camera";
+        orbbecCam.close();
+    }
+    else if (currentVideosource == VideoSources::VIDEOSOURCE_VIDEOFILE) {
+        ofLogNotice("Camera::stopCurrentSource()") << "Stopping the video file playback";
+        prerecordedVideo.stop();
+    }
+    // webcam.stop
 }
 
 //--------------------------------------------------------------
 void Camera::draw() {
     ofBackground(60, 60, 60);
 
-
-    int verts   = mPointCloudMesh.getNumTexCoords();
-    int indices = mPointCloudMesh.getNumIndices();
-    int polys   = polygons.size();
-    int polyLines = _polyLineCount;
-
-    std::stringstream meshInfo;
-    meshInfo << "Verts:   " << verts << "\nIndices: " << indices << "\nPolygons: " << polys << "\nLines: " << _polyLineCount;
-
-    //ofSetColor(255);
-    //ofEnableDepthTest();
-    //mCam.begin();
-    //ofPushMatrix();
-    //ofTranslate(0, -300, 1000);
-    //mPointCloudMesh.draw();
-    //ofPopMatrix();
-    //mCam.end();
-    //ofDisableDepthTest();
-
     ofSetHexColor(0xffffff);
-
+    
+    //prerecordedVideo.draw(1, 1);
     cameraImage.draw(1, 1, IMG_WIDTH_2-1, IMG_HEIGHT_2-1);
     ofDrawBitmapStringHighlight("Raw camera", 11, 20, ofColor(30,30,30), ofColor(104,140,247));
 
     backgroundNewFrame.draw(1, IMG_HEIGHT_2+1, IMG_WIDTH_2-1, IMG_HEIGHT_2-1);
     ofDrawBitmapStringHighlight("Background reference", 11, IMG_HEIGHT_2+20, ofColor(30,30,30), ofColor(104,140,247));
+
 
     if (isTakingBackgroundReference) {
         ofDrawBitmapStringHighlight("registering background reference: -" + ofToString(backgroundReferenceLeftFrames), 10, IMG_HEIGHT_2 * 1.5, ofColor(230, 30,40), ofColor(250,250,250));
@@ -136,22 +262,31 @@ void Camera::draw() {
 //--------------------------------------------------------------
 void Camera::update() {
 
-    orbbecCam.update();
+    // acquire frame
+    if (currentVideosource == VideoSources::VIDEOSOURCE_VIDEOFILE) {
+        prerecordedVideo.update();
 
-    if (orbbecCam.isFrameNewDepth()) {
-        mDepthPixels = orbbecCam.getDepthPixels();
-        cameraImage.setFromPixels(mDepthPixels);
-        //outputTexDepth.loadData(mDepthPixels);
-        //mPointCloudMesh = orbbecCam.getPointCloudMesh();
-
-        // to-do: make backgroundref an object with state?
-        if (isTakingBackgroundReference) {
-            addSampleToBackgroundReference(cameraImage, backgroundReference, BG_SAMPLE_FRAMES);
-            return;
+        if (prerecordedVideo.isFrameNew()) {
+            colorFrame.setFromPixels(prerecordedVideo.getPixels());
+            cameraImage = colorFrame;
         }
-
-        processCameraFrame(cameraImage, backgroundReference);
     }
+
+    if (currentVideosource == VideoSources::VIDEOSOURCE_ORBBEC) {
+        orbbecCam.update();
+
+        if (orbbecCam.isFrameNewDepth()) {
+            cameraImage.setFromPixels(orbbecCam.getDepthPixels());
+        }
+    }
+
+    // to-do: make backgroundref an object with state?
+    if (isTakingBackgroundReference) {
+        addSampleToBackgroundReference(cameraImage, backgroundReference, BG_SAMPLE_FRAMES);
+        return;
+    }
+
+    processCameraFrame(cameraImage, backgroundReference);
 }
 
 
@@ -254,7 +389,7 @@ void Camera::processCameraFrame(ofxCvGrayscaleImage frame, ofxCvGrayscaleImage b
 
     // remove noise from the extracted image
     // to-do: check if a single erode pass is usually enough to remove the noise
-    //processedImage.erode();
+    processedImage.erode();
     //processedImage.erode();
     //saveDebugImage(processedImage, "processedImage", "eroded");
 
@@ -348,7 +483,7 @@ void Camera::addSampleToBackgroundReference(ofxCvGrayscaleImage newFrame, ofxCvG
 
     if (backgroundReferenceLeftFrames == 0) {
         backgroundReference = output;
-        ofLog() << "Camera::addSampleToBackgroundReference: finishing adquiring background references";
+        ofLogNotice("Camera::addSampleToBackgroundReference()") << "Finishing adquiring background references";
         saveDebugImage(backgroundReference, "backgroundNewFrame", "initial");
         saveBackgroundReference(backgroundReference);
 
@@ -369,7 +504,7 @@ void Camera::startBackgroundReferenceSampling() {
 }
 
 void Camera::startBackgroundReferenceSampling(int samples) {
-    ofLog() << "Camera::startBackgroundReferenceSampling: starting background";
+    ofLogNotice("Camera::startBackgroundReferenceSampling()") << "Starting background";
     isTakingBackgroundReference = true;
     backgroundReferenceTaken = false;
     clearBackgroundReference();
@@ -378,7 +513,7 @@ void Camera::startBackgroundReferenceSampling(int samples) {
 }
 
 void Camera::clearBackgroundReference() {
-    ofLog() << "Camera::clearBackgroundReference: clearing background";
+    ofLogNotice("Camera::clearBackgroundReference()") << "Clearing background";
     backgroundReference.set(0);
 }
 
@@ -388,9 +523,9 @@ void Camera::clearBackgroundReference() {
 /// </summary>
 /// <param name="image">the current background grayscale image</param>
 void Camera::saveBackgroundReference(ofxCvGrayscaleImage image) {
-    ofLog() << "Camera::saveBackgroundReference >> Saving background reference on data/" + BG_REFERENCE_FILENAME;
+    ofLogNotice("Camera::saveBackgroundReference()") << "Saving background reference on data/" + BG_REFERENCE_FILENAME;
     if (ofFile::doesFileExist(BG_REFERENCE_FILENAME)) {
-        ofLog() << "Camera::saveBackgroundReference >> File already exist, will be overwriten";
+        ofLogNotice("Camera::saveBackgroundReference()") << "File already exist, will be overwriten";
     }
     ofSaveImage(image.getPixels(), BG_REFERENCE_FILENAME);
 }
@@ -402,7 +537,7 @@ void Camera::saveBackgroundReference(ofxCvGrayscaleImage image) {
 /// <param name="imageObject"></param>
 /// <returns>True if loads the reference successfully</returns>
 bool Camera::restoreBackgroundReference(ofxCvGrayscaleImage & outputImage) {
-    ofLog() << "Camera::restoreBackgroundReference >> Attempting to load a background reference at data/" + BG_REFERENCE_FILENAME;
+    ofLogNotice("Camera::restoreBackgroundReference") << "Attempting to load a background reference at data/" + BG_REFERENCE_FILENAME;
     ofPixels pixels;
     bool loaded = ofLoadImage(pixels, BG_REFERENCE_FILENAME);
     if (loaded) {
@@ -410,11 +545,11 @@ bool Camera::restoreBackgroundReference(ofxCvGrayscaleImage & outputImage) {
         outputImage.allocate(pixels.getWidth(), pixels.getHeight());
         outputImage.setFromPixels(pixels);
         backgroundReferenceTaken = true;
-        ofLog() << "Camera::restoreBackgroundReference >> Load successfull";
+        ofLogNotice("Camera::restoreBackgroundReference") << "Load successfull";
     }
     else {
         backgroundReferenceTaken = false;
-        ofLog() << "Camera::restoreBackgroundReference >> Could not load the background reference image";
+        ofLogNotice("Camera::restoreBackgroundReference") << "Could not load the background reference image";
     }
     return loaded;
 }
@@ -462,7 +597,7 @@ void Camera::saveMeshFrame() {
     ofFile file(filename, ofFile::WriteOnly);
 
     if (!file.exists()) {
-        ofLogError("saveMeshToFile") << "Unable to open file for writing: " << filename;
+        ofLogError("Camera::saveMeshFrame()") << "Unable to open file for writing: " << filename;
         return;
     }
 
@@ -497,7 +632,7 @@ void Camera::saveMeshFrame() {
         file << endl;
     }
 
-    ofLogNotice("saveMeshToFile") << "Mesh saved to " << filename;
+    ofLogNotice("Camera::saveMeshFrame()") << "Mesh saved to " << filename;
 }
 
 

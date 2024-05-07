@@ -13,8 +13,7 @@ void ofApp::setup(){
     ofBackground(0);
 
     // to-do: pass camera parameters though setup
-    camera.setup();
-    camera.linkGuiParams(&gui.cameraParameters);
+    camera.setup(&gui.cameraParameters);
 
     simulator.setup(&gui.simulationParameters);
 }
