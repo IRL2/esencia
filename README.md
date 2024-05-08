@@ -47,7 +47,15 @@ Currently working on the [Orbbec Femto Bolt](https://www.orbbec.com/products/tof
 
 - For Windows Visual Studio 2019 open the solution `esencia.sln`
 - For Linux Visual Studio Code (min 1.80) open `esencia.code-workspace`
-- For MacOS XCode () open `esencia.xcode-project` *current osx project fails to link the shared libraries
+- For MacOS XCode () open `esencia.xcode-project`:
+	- go to project file (the first one in the file hierarchy on left panel)
+	- select *Build Phases*
+	- open *Copy Files* toggle
+	- select existing files and remove them by clicking `-`
+	- add new files by clicking `+` and `Add Other...`
+	- choose all files in `{openframeworks_folder}/apps/myApps/esencia/bin/libs`
+
+
 
 3. Press "sample background reference" and wait a second
 
