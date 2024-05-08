@@ -1,4 +1,4 @@
-#include "Camera.h"
+﻿#include "Camera.h"
 #include "../ofApp.h"
 
 /// <summary>
@@ -21,7 +21,7 @@ void Camera::setup(Gui::CameraParameters* params) {
     // to-do: extract the available resolutions
     auto deviceInfo = ofxOrbbecCamera::getDeviceList();
     ofLogNotice("Camera::setup()") << "Found " << deviceInfo.size() << " Orbbec devices";
-    for (auto& device : deviceInfo)
+    for each (auto device in deviceInfo)
     {
         ofLogNotice("Camera::setup()") << "Device: " << device.get()->name();
     }
