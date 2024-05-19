@@ -42,9 +42,10 @@ void RenderApp::draw()
 
     ofSetColor(parameters->color);
 
-    for (int i = 0; i < particles->size(); i++) {
-        ofDrawCircle(particles->at(i).x, particles->at(i).y, parameters->size);
-    }
+    for (const auto &particle : *particles) {
+           // particle
+           ofDrawCircle(particle.position, particle.radius);
+       }
     fbo.end();
 
 

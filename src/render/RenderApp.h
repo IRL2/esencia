@@ -25,7 +25,7 @@ class RenderApp : public ofBaseApp
         Gui* globalParameters;
         
         // This points directly to the simulator particles (through mainapp->simulator.particles in main.cpp)
-        vector<glm::vec4> * particles;
+        vector<Particle> * particles;
 
     private:
         ofColor particleColor;
