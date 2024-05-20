@@ -10,6 +10,8 @@ void RenderApp::setup()
 
     ofBackground(0, 0, 0, 120);
 
+    windowResized(ofGetWidth(), ofGetHeight()); 
+
     ofDisableArbTex();
 
     fbo.allocate(ofGetWidth(), ofGetHeight()); // particles
@@ -102,7 +104,18 @@ void RenderApp::mouseMoved(int x, int y ){
 
 }
 
-//--------------------------------------------------------------
-void RenderApp::gotMessage(ofMessage msg){
+/// <summary>
+/// on window resized event
+/// rise an event (should be recieved by the main window to update the simulation world size)
+/// </summary>
+/// <param name="_width"></param>
+/// <param name="_height"></param>
+void RenderApp::windowResized(int _width, int _height) {
+    ofLogNotice("RenderApp::windowResized()") << "window resized to: " << _width << "," << _height;
 
+    fbo.allocate(_width, _height);
+    fboS.allocate(_width, _height);
+
+    glm::vec2 newSize = glm::vec2(_width, _height);
+    ofNotifyEvent(viewportResizeEvent, newSize, this);
 }

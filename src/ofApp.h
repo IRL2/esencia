@@ -12,6 +12,8 @@ public:
     void update();
     void draw();
 
+    void onViewportResizeEvent(glm::vec2& newSize);
+
     void exit() override;
 
     void keyReleased(int key);

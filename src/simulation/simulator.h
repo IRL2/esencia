@@ -14,6 +14,7 @@ public:
 
 	// listeners
 	void updateWorldSize(int _width, int _height);
+	void onRenderwindowResize(glm::vec2& worldSize);
 	void onGUIChangeAmmount(int& value);
 
 	void recieveFrame(ofxCvGrayscaleImage frame);

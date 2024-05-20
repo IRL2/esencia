@@ -35,6 +35,7 @@ public:
         ofParameter<int> ammount;
         ofParameter<float> momentum = 4.0f;
         ofParameter<int> radius;
+        ofParameter<glm::vec2> worldSize; // right now its equals to the render window size
     };
     SimulationParameters simulationParameters;
 
