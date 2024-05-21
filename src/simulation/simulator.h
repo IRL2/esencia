@@ -7,7 +7,7 @@
 struct Particle {
     glm::vec2 position;
     glm::vec2 velocity;
-    float mass;
+    float mass = 5.0;
     float kineticEnergy;
     float radius;
     std::vector<float> minimumDistance;
@@ -30,6 +30,7 @@ public:
     void onApplyThermostatChanged(bool& value);
     void onTemperatureChanged(float& value);
     void onCouplingChanged(float& value);
+    void applyBerendsenThermostat();
 
 	void recieveFrame(ofxCvGrayscaleImage frame);
 

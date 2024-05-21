@@ -27,9 +27,9 @@ void Simulator::update() {
     
 //            initializeParticles(parameters->ammount);
 
-//        if(applyThermostat) {
-//            applyBerendsenThermostat();
-//        }
+        if(applyThermostat) {
+            applyBerendsenThermostat();
+        }
         for (auto &particle : particles) {
             checkWallCollisions(particle);
         }
@@ -71,14 +71,16 @@ glm::vec2 Simulator::computeForce(Particle &particle) {
         Particle &other = particles[j];
         glm::vec2 rVec = particle.position - other.position;
         float r = glm::length(rVec);
-
+        if (r < epsilon) {
+            r = epsilon; // Prevent division by zero by adding epsilon
+        }
         if (i < particle.minimumDistance.size() && j < particle.minimumDistance.size()) {
             float cutoffDistance = particle.minimumDistance[j];
             if (r * r < cutoffDistance && r > 0) {
                 float LJgradientTermA = particle.LJgradientTermA[j];
                 float LJgradientTermB = particle.LJgradientTermB[j];
 
-                r = sqrt(r * r); // Adjust separation distance
+//                r = sqrt(r * r); // Adjust separation distance
 
                 float forceX = (other.position.x - particle.position.x) *
                                (LJgradientTermA / pow(r, 13.0f) + LJgradientTermB / pow(r, 7.0f)) / r;
@@ -106,6 +108,29 @@ void Simulator::updateParticle(Particle &particle, float deltaTime) {
 
     particle.velocity = newVelocity;
     particle.position = newPosition;
+}
+
+void Simulator::applyBerendsenThermostat() {
+    float targetTemp = targetTemperature; // m_EquilibriumTemperature
+    float tau = coupling; // m_BerendsenThermostatCoupling
+    float kB = 8.314; // Boltzmann constant
+
+    // temp calculation
+    float currentTemperature = 0.0;
+    float kineticEnergy = 0.0;
+    for (const auto& particle : particles) {
+        kineticEnergy += 0.5f * particle.mass * glm::length2(particle.velocity);
+    }
+    currentTemperature = kineticEnergy / (3.0 * kB);
+    
+
+    float scaleFactor = sqrt(targetTemp / (tau * currentTemperature));
+
+    scaleFactor = ofClamp(scaleFactor, 0.95, 1.05);
+    for (auto& particle : particles) {
+        particle.velocity *= scaleFactor;
+        std::printf("%f\n",glm::length2(particle.velocity));
+    }
 }
 
 void Simulator::checkWallCollisions(Particle &particle) {
@@ -174,11 +199,11 @@ void Simulator::onApplyThermostatChanged(bool &value) {
 
 void Simulator::onTemperatureChanged(float &value) {
     targetTemperature = value;
-    std::printf("%f\n",targetTemperature);
+//    std::printf("%f\n",targetTemperature);
 }
 
 void Simulator::onCouplingChanged(float &value) {
     coupling = value;
-    std::printf("%f\n", coupling);
+//    std::printf("%f\n", coupling);
 }
 #pragma endregion
