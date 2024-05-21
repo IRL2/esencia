@@ -9,7 +9,7 @@ class Simulator
 {
 public:
 	// lifecycle
-	void setup(Gui::SimulationParameters* params);
+	void setup(Gui::SimulationParameters* params, Gui* globalParams);
 	void update();
 
 	// listeners
@@ -23,8 +23,8 @@ public:
 	vector<glm::vec4> particles;
 
 	// environment
-	int width;
-	int height;
+	int width = 700;
+	int height = 600;
 
 	// parameters
 	Gui::SimulationParameters* parameters;

@@ -10,12 +10,9 @@ void RenderApp::setup()
 
     ofBackground(0, 0, 0, 120);
 
-    windowResized(ofGetWidth(), ofGetHeight()); 
-
     ofDisableArbTex();
 
-    fbo.allocate(ofGetWidth(), ofGetHeight()); // particles
-    fboS.allocate(ofGetWidth(), ofGetHeight()); // shader A
+    windowResized(ofGetWidth(), ofGetHeight()); 
 
     shader.load("shaderBlur");
     //shaderBloom.load("", "bloom.frag");
@@ -91,8 +88,6 @@ void RenderApp::keyReleased(int key)
         case 'f':
         {
             ofToggleFullscreen();
-            fbo.allocate(ofGetWidth(), ofGetHeight());
-            fboS.allocate(ofGetWidth(), ofGetHeight());
             break;
         }
         default: break;
@@ -106,7 +101,7 @@ void RenderApp::mouseMoved(int x, int y ){
 
 /// <summary>
 /// on window resized event
-/// rise an event (should be recieved by the main window to update the simulation world size)
+/// updates the window size render parameter (simulator is listening to this from her side)
 /// </summary>
 /// <param name="_width"></param>
 /// <param name="_height"></param>
@@ -117,5 +112,7 @@ void RenderApp::windowResized(int _width, int _height) {
     fboS.allocate(_width, _height);
 
     glm::vec2 newSize = glm::vec2(_width, _height);
-    ofNotifyEvent(viewportResizeEvent, newSize, this);
+    parameters->windowSize.set(glm::vec2(_width, _height));
+
+    //ofNotifyEvent(viewportResizeEvent, newSize, this); // not used now
 }

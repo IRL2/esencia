@@ -45,6 +45,7 @@ public:
         ofParameter<ofColor> color;
         ofParameter<bool> useShaders;
         ofParameter<bool> useFaketrails;
+        ofParameter<glm::vec2> windowSize; // right now its equals to the render window size
     };
     RenderParameters renderParameters;
 

@@ -5,16 +5,13 @@
 /// </summary>
 /// <param name="params">pointer from the gui structure</param>
 
-void Simulator::setup(Gui::SimulationParameters* params) {
+void Simulator::setup(Gui::SimulationParameters* params, Gui* globalParams) {
     parameters = params;
+    globalParameters = globalParams;
+
     parameters->ammount.addListener(this, &Simulator::onGUIChangeAmmount);
 
-    // to-do: fix bug. its taking window dimentions from the simulator parent app (mainApp)
-    //        needs to get them from RenderApp... so maybe a listener? or move everything to a single window app and decouple GUI by using imgui 
-    //updateWorldSize(ofGetWidth(), ofGetHeight());
-    //updateWorldSize(&parameters->worldSize);
-
-    parameters->worldSize.addListener(this, &Simulator::onRenderwindowResize);
+    globalParameters->renderParameters.windowSize.addListener(this, &Simulator::onRenderwindowResize);
 
     generateParticles(parameters->ammount);
 }
@@ -64,8 +61,11 @@ void Simulator::onRenderwindowResize(glm::vec2& worldSize) {
 }
 
 void Simulator::updateWorldSize(int _width, int _height) {
+    ofLogNotice("Simulator::updateWorldSize()") << "wew size: " << _width << "," << _height;
+
     width = _width;
     height = _height;
+    parameters->worldSize.set(glm::vec2(_width, _height)); // we may also use the parameters->worlSize.x directly
 }
 
 void Simulator::recieveFrame(ofxCvGrayscaleImage frame) {
