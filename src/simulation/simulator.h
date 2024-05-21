@@ -27,6 +27,9 @@ public:
 	// listeners
 	void updateWorldSize(int _width, int _height);
 	void onGUIChangeAmmount(int& value);
+    void onApplyThermostatChanged(bool& value);
+    void onTemperatureChanged(float& value);
+    void onCouplingChanged(float& value);
 
 	void recieveFrame(ofxCvGrayscaleImage frame);
 
@@ -39,7 +42,8 @@ public:
     void calculateTotalKineticEnergy(Particle &particle);
     void updateParticle(Particle &particle, float deltaTime);
     void checkWallCollisions(Particle &particle);
-    void applyBerendsenThermostat();
+    
+
 //    void initializeParticles(int ammount);
 	// environment
 	int width;
@@ -48,9 +52,13 @@ public:
 	// parameters
 	Gui::SimulationParameters* parameters;
 	Gui* globalParameters;
+    bool applyThermostat = true;
+    float targetTemperature = 25000.0;
+    float coupling = 0.5;
 
 private:
 	void initializeParticles(int ammount);
+    
 
 };
 

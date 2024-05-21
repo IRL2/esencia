@@ -8,6 +8,9 @@
 void Simulator::setup(Gui::SimulationParameters* params) {
     parameters = params;
     parameters->ammount.addListener(this, &Simulator::onGUIChangeAmmount);
+    parameters->applyThermostat.addListener(this, &Simulator::onApplyThermostatChanged);
+    parameters->targetTemperature.addListener(this, &Simulator::onTemperatureChanged);
+    parameters->coupling.addListener(this, &Simulator::onCouplingChanged);
 
     // to-do: fix bug. its taking window dimentions from the simulator parent app (mainApp)
     //        needs to get them from RenderApp... so maybe a listener? or move everything to a single window app and decouple GUI by using imgui 
@@ -160,4 +163,22 @@ void Simulator::recieveFrame(ofxCvGrayscaleImage frame) {
     return;
 }
 
+void Simulator::onApplyThermostatChanged(bool &value) {
+    applyThermostat = value;
+    if (applyThermostat) {
+        std::printf("Thermostat enabled\n");
+    } else {
+        std::printf("Thermostat disabled\n");
+    }
+}
+
+void Simulator::onTemperatureChanged(float &value) {
+    targetTemperature = value;
+    std::printf("%f\n",targetTemperature);
+}
+
+void Simulator::onCouplingChanged(float &value) {
+    coupling = value;
+    std::printf("%f\n", coupling);
+}
 #pragma endregion

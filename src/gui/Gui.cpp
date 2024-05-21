@@ -6,13 +6,15 @@ void Gui::setup()
 
     simulation.setName("SIMULATION");
     simulation.add(simulationParameters.ammount.set("ammount of particles", 50, 1, 100));
-    simulation.add(simulationParameters.momentum.set("initial force factor", 4, 1, 10));
     simulation.add(simulationParameters.radius.set("particle radius", 10, 1, 50));
+    simulation.add(simulationParameters.targetTemperature.set("equilibrium temperature", 25000.0, 1000.0, 1000000.0));
+    simulation.add(simulationParameters.coupling.set("coupling", 0.5, 0.1, 1.0));
+    simulation.add(simulationParameters.applyThermostat.set("apply thermostat", true));
 
     render.setName("RENDER");
     render.add(renderParameters.size.set("particle size", 5, 1, 50));
     render.add(renderParameters.color.set("particle color", ofColor(77, 130, 200)));
-    render.add(renderParameters.useShaders.set("use shaders", true));
+    render.add(renderParameters.useShaders.set("use shaders", false));
     render.add(renderParameters.useFaketrails.set("use fake trails", false));
 
     

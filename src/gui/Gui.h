@@ -33,8 +33,10 @@ public:
     struct SimulationParameters
     {
         ofParameter<int> ammount;
-        ofParameter<float> momentum = 4.0f;
         ofParameter<int> radius;
+        ofParameter<float> targetTemperature;
+        ofParameter<float> coupling;
+        ofParameter<bool> applyThermostat;
     };
     SimulationParameters simulationParameters;
 
