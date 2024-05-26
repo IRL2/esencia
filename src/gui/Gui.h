@@ -1,7 +1,8 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxGui.h"
+//#include "ofxGui.h"
+#include "ofxGuiExtended.h"
 
 //#define DEBUG_IMAGES true
 //#define RECORD_TESTING_VIDEO true
@@ -13,10 +14,11 @@ public:
     void update();
     void draw();
 
-    ofxPanel guiPanel;
-
-    // ofxPanel simulationPanel;
-    // ofxPanel renderPanel;
+    ofxGui gui;
+    
+    ofxGuiPanel* simulationPanel;
+    ofxGuiPanel* renderPanel;
+    ofxGuiPanel* cameraPanel;
 
     ofParameterGroup parameters;
 
@@ -32,39 +34,39 @@ public:
 
     struct SimulationParameters
     {
-        ofParameter<int> ammount;
+        ofParameter<int> ammount = 10;
         ofParameter<float> momentum = 4.0f;
-        ofParameter<int> radius;
+        ofParameter<int> radius = 1;
     };
     SimulationParameters simulationParameters;
 
     struct RenderParameters
     {
-        ofParameter<int> size;
+        ofParameter<int> size = 3;
         ofParameter<ofColor> color;
-        ofParameter<bool> useShaders;
-        ofParameter<bool> useFaketrails;
+        ofParameter<bool> useShaders = false;
+        ofParameter<bool> useFaketrails = false;
     };
     RenderParameters renderParameters;
 
 
     struct CameraParameters
     {
-        ofParameter<bool> enableClipping;
-        ofParameter<int> clipFar; // threshold low
-        ofParameter<int> clipNear; // threshold hi
+        ofParameter<bool> enableClipping = true;
+        ofParameter<int> clipFar = 170; // threshold low
+        ofParameter<int> clipNear = 20; // threshold hi
 
-        ofParameter<float> blobMinArea;
-        ofParameter<float> blobMaxArea;
-        ofParameter<int> gaussianBlur;
-        ofParameter<int> nConsidered;
-        ofParameter<bool> fillHolesOnPolygons;
-        ofParameter<bool> floodfillHoles;
+        ofParameter<float> blobMinArea = 0.05f;
+        ofParameter<float> blobMaxArea = 0.8f;
+        ofParameter<int> gaussianBlur = 0;
+        ofParameter<int> nConsidered = 0;
+        ofParameter<bool> fillHolesOnPolygons = false;
+        ofParameter<bool> floodfillHoles = true;
 
         ofParameter<float> polygonTolerance = 2.0f;
-        ofParameter<bool> showPolygons;
+        ofParameter<bool> showPolygons = false;
 
-        ofParameter<bool> startBackgroundReference;
+        ofParameter<bool> startBackgroundReference = true;
         //ofParameter<int> backgroundSamples;
         ofParameter<bool> saveDebugImages = false;
         ofParameter<bool> recordTestingVideo = false;

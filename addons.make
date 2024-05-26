@@ -1,8 +1,3 @@
-ofxGui
-ofxGui
-ofxImGui
-ofxImGui
+ofxGuiExtended
 ofxOpenCv
-ofxOpenCv
-ofxOrbbec
 ofxOrbbec

@@ -34,7 +34,7 @@ void Simulator::update() {
 
 
 void Simulator::generateParticles(int ammount) {
-    ofLog() << "Simulator::generateParticles generating particles";
+    ofLog() << "Simulator::generateParticles generating " << ammount << " particles";
     particles.resize(ammount);
     for (int i = 0; i < ammount; i++) {
         if (particles[i].x == NULL) {

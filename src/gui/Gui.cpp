@@ -2,20 +2,21 @@
 
 void Gui::setup()
 {
-    // todo: switch to ofxImGui for logarithmic slider support, and to use the graph widgets for cpu, fft, ...
-
     simulation.setName("SIMULATION");
+    
     simulation.add(simulationParameters.ammount.set("ammount of particles", 50, 1, 100));
     simulation.add(simulationParameters.momentum.set("initial force factor", 4, 1, 10));
     simulation.add(simulationParameters.radius.set("particle radius", 10, 1, 50));
+    
 
     render.setName("RENDER");
+    
     render.add(renderParameters.size.set("particle size", 5, 1, 50));
     render.add(renderParameters.color.set("particle color", ofColor(77, 130, 200)));
     render.add(renderParameters.useShaders.set("use shaders", true));
     render.add(renderParameters.useFaketrails.set("use fake trails", false));
 
-    
+
     camera.setName("CAMERA");
     
     camera.add(ofParameter<string>().set("BLOBS"));
@@ -55,44 +56,30 @@ void Gui::setup()
     camera.add(cameraParameters.recordTestingVideo.set("record testing video", false));
 #endif
 
+    // Adding components to gui panels
+    simulationPanel = gui.addPanel("simulation");
+    renderPanel = gui.addPanel("render");
+    cameraPanel = gui.addPanel("camera");
 
-    parameters.setName("  d( -_-)  s( ~_~) ");
-    parameters.add(guiSeparator);
-    parameters.add(simulation);
-    parameters.add(guiSeparator);
-    parameters.add(render);
-    parameters.add(guiSeparator);
-    parameters.add(camera);
+    simulationPanel->add(simulation);
+    renderPanel->add(render);
+    cameraPanel->add(camera);
 
-    guiPanel.setup(parameters);
-    guiPanel.setSize(ofGetWidth()-340, guiPanel.getHeight());
-    guiPanel.setBackgroundColor(ofColor(100,100,100));
-    guiPanel.setDefaultBackgroundColor(ofColor(100, 100, 100));
-    guiPanel.setFillColor(ofColor(ofColor(100, 0, 0)));
-
-    guiPanel.setPosition(330.0f, 40.0f);
-
-
-    // each panel can be their own floating widget if
-    // simulationPanel.setup(simulation);
-    // renderPanel.setup(render);
 
     // GUI THEMING
+    simulationPanel->setPosition(330.0f, 20.0f);
+    simulationPanel->setWidth(255.0f);
+    simulationPanel->setBackgroundColor(ofColor(200, 20, 20, 100));
+    simulationPanel->setBorderColor(ofColor::red);
 
-    ofxGuiGroup* _simulgroup = &guiPanel.getGroup("SIMULATION");
-    _simulgroup->setHeaderBackgroundColor(ofColor(200, 20, 20));
-    _simulgroup->setBackgroundColor(ofColor(200, 20, 20));
-    _simulgroup->setBorderColor(ofColor::red);
+    renderPanel->setPosition(380.0f, 160.0f);
+    renderPanel->setWidth(255.0f);
+    renderPanel->setBackgroundColor(ofColor(100, 20, 100, 100));
+    renderPanel->setBorderColor(ofColor::purple);
 
-    ofxGuiGroup* _rendergroup = &guiPanel.getGroup("RENDER");
-    _rendergroup->setHeaderBackgroundColor(ofColor(100, 20, 100));
-    _rendergroup->setBackgroundColor(ofColor(100, 20, 100));
-    _rendergroup->setBorderColor(ofColor::purple);
-
-    ofxGuiGroup* _cameragroup = &guiPanel.getGroup("CAMERA");
-    _cameragroup->setHeaderBackgroundColor(ofColor(30, 30, 200));
-    _cameragroup->setBackgroundColor(ofColor(30, 30, 200));
-    _cameragroup->setBorderColor(ofColor::blue);
+    cameraPanel->setPosition(60.0f, 160.0f);
+    cameraPanel->setBackgroundColor(ofColor(30, 30, 200, 100));
+    cameraPanel->setBorderColor(ofColor::blue);
 
     ofBackground(10);
 }
@@ -105,5 +92,5 @@ void Gui::update()
 
 void Gui::draw()
 {
-    guiPanel.draw();
+
 }
