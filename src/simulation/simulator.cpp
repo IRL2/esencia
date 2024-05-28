@@ -5,16 +5,15 @@
 // </summary>
 // <param name="params">pointer from the gui structure</param>
 
-void Simulator::setup(Gui::SimulationParameters* params) {
+void Simulator::setup(Gui::SimulationParameters* params, Gui* globalParams) {
     parameters = params;
+    globalParameters = globalParams;
     parameters->ammount.addListener(this, &Simulator::onGUIChangeAmmount);
     parameters->applyThermostat.addListener(this, &Simulator::onApplyThermostatChanged);
     parameters->targetTemperature.addListener(this, &Simulator::onTemperatureChanged);
     parameters->coupling.addListener(this, &Simulator::onCouplingChanged);
 
-    // to-do: fix bug. its taking window dimentions from the simulator parent app (mainApp)
-    //        needs to get them from RenderApp... so maybe a listener? or move everything to a single window app and decouple GUI by using imgui 
-    updateWorldSize(ofGetWidth(), ofGetHeight());
+    globalParameters->renderParameters.windowSize.addListener(this, &Simulator::onRenderwindowResize);
     initializeParticles(parameters->ammount);
 }
 
@@ -129,18 +128,17 @@ void Simulator::applyBerendsenThermostat() {
     scaleFactor = ofClamp(scaleFactor, 0.95, 1.05);
     for (auto& particle : particles) {
         particle.velocity *= scaleFactor;
-        std::printf("%f\n",glm::length2(particle.velocity));
     }
 }
 
 void Simulator::checkWallCollisions(Particle &particle) {
-    if (particle.position.x < 0 || particle.position.x > ofGetWidth()) {
+    if (particle.position.x < 0 || particle.position.x > width) {
         particle.velocity.x *= -1.0f;
-        particle.position.x = ofClamp(particle.position.x, 0, ofGetWidth());
+        particle.position.x = ofClamp(particle.position.x, 0, width);
     }
-    if (particle.position.y < 0 || particle.position.y > ofGetHeight()) {
+    if (particle.position.y < 0 || particle.position.y > height) {
         particle.velocity.y *= -1.0f;
-        particle.position.y = ofClamp(particle.position.y, 0, ofGetHeight());
+        particle.position.y = ofClamp(particle.position.y, 0, height);
     }
 }
 
@@ -153,7 +151,7 @@ void Simulator::initializeParticles(int ammount) {
         bool isOverlapping;
         do {
             isOverlapping = false;
-            p.position = glm::vec2(ofRandomWidth(), ofRandomHeight());
+            p.position = glm::vec2(ofRandom(0, width), ofRandom(0, height));
             p.velocity = glm::vec2(ofRandom(-100.0f, 200.0f), ofRandom(-100.0f, 200.0f));
             p.radius = 5.0f;
             p.mass = 5.0f; // Adjust as necessary
@@ -179,9 +177,16 @@ void Simulator::onGUIChangeAmmount(int& value) {
     initializeParticles(value);
 }
 
+void Simulator::onRenderwindowResize(glm::vec2& worldSize) {
+    updateWorldSize(worldSize.x, worldSize.y);
+}
+
 void Simulator::updateWorldSize(int _width, int _height) {
+    ofLogNotice("Simulator::updateWorldSize()") << "wew size: " << _width << "," << _height;
+
     width = _width;
     height = _height;
+    parameters->worldSize.set(glm::vec2(_width, _height)); // we may also use the parameters->worlSize.x directly
 }
 
 void Simulator::recieveFrame(ofxCvGrayscaleImage frame) {

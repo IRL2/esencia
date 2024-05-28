@@ -21,11 +21,12 @@ class Simulator
 {
 public:
 	// lifecycle
-	void setup(Gui::SimulationParameters* params);
+	void setup(Gui::SimulationParameters* params, Gui* globalParams);
 	void update();
 
 	// listeners
 	void updateWorldSize(int _width, int _height);
+    void onRenderwindowResize(glm::vec2& worldSize);
 	void onGUIChangeAmmount(int& value);
     void onApplyThermostatChanged(bool& value);
     void onTemperatureChanged(float& value);
@@ -36,7 +37,7 @@ public:
 
 	// properties
 	vector<Particle> particles;
-    float epsilon = 10.0f;
+    float epsilon = 5.0f;
     float timeStep = 0.01;
     void calculateEnergyTerms();
     glm::vec2 computeForce(Particle &particle);
@@ -47,8 +48,8 @@ public:
 
 //    void initializeParticles(int ammount);
 	// environment
-	int width;
-	int height;
+    int width = 700;
+    int height = 600;
 
 	// parameters
 	Gui::SimulationParameters* parameters;
