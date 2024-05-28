@@ -75,6 +75,8 @@ void ofApp::keyReleased(int key)
 
 }
 
+
+
 /// <summary>
 /// NOT USED RIGHT NOW
 /// Called on the render window resize event
@@ -85,4 +87,3 @@ void ofApp::onViewportResizeEvent(glm::vec2& newSize) {
     ofLogNotice("ofApp::onViewportResizeEvent()") << "Recieving window resize message: " << newSize;
     simulator.updateWorldSize(newSize.x, newSize.y);
 }
-

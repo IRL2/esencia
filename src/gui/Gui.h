@@ -33,9 +33,11 @@ public:
     struct SimulationParameters
     {
         ofParameter<int> ammount;
-        ofParameter<float> momentum = 4.0f;
         ofParameter<int> radius;
-        ofParameter<glm::vec2> worldSize; // right now its equals to the render window size
+        ofParameter<float> targetTemperature;
+        ofParameter<float> coupling;
+        ofParameter<bool> applyThermostat;
+        ofParameter<glm::vec2> worldSize;
     };
     SimulationParameters simulationParameters;
 

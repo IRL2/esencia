@@ -26,7 +26,9 @@ class RenderApp : public ofBaseApp
         Gui* globalParameters;
         
         // This points directly to the simulator particles (through mainapp->simulator.particles in main.cpp)
-        vector<glm::vec4> * particles;
+        vector<Particle> * particles;
+    
+    ofEvent<glm::vec2> viewportResizeEvent; // an event to send window size updates to the simulation
 
         ofEvent<glm::vec2> viewportResizeEvent; // an event to send window size updates to the simulation
 

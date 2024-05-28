@@ -12,7 +12,7 @@ void RenderApp::setup()
 
     ofDisableArbTex();
 
-    windowResized(ofGetWidth(), ofGetHeight()); 
+    windowResized(ofGetWidth(), ofGetHeight());
 
     shader.load("shaderBlur");
     //shaderBloom.load("", "bloom.frag");
@@ -41,9 +41,10 @@ void RenderApp::draw()
 
     ofSetColor(parameters->color);
 
-    for (int i = 0; i < particles->size(); i++) {
-        ofDrawCircle(particles->at(i).x, particles->at(i).y, parameters->size);
-    }
+    for (const auto &particle : *particles) {
+           // particle
+           ofDrawCircle(particle.position, particle.radius);
+       }
     fbo.end();
 
 
@@ -88,6 +89,8 @@ void RenderApp::keyReleased(int key)
         case 'f':
         {
             ofToggleFullscreen();
+            fbo.allocate(ofGetWidth(), ofGetHeight());
+            fboS.allocate(ofGetWidth(), ofGetHeight());
             break;
         }
         default: break;
