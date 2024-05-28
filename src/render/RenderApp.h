@@ -30,8 +30,6 @@ class RenderApp : public ofBaseApp
     
     ofEvent<glm::vec2> viewportResizeEvent; // an event to send window size updates to the simulation
 
-        ofEvent<glm::vec2> viewportResizeEvent; // an event to send window size updates to the simulation
-
     private:
         ofColor particleColor;
         int particleSize;
