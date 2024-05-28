@@ -36,6 +36,9 @@ int main()
     renderApp->globalParameters = &(mainApp->gui);
     renderApp->parameters = &(mainApp->gui.renderParameters);
 
+    // listener to recieve window resizes from the render window (not used now)
+    // ofAddListener(renderApp->viewportResizeEvent, mainApp.get(), &ofApp::onViewportResizeEvent);
+
     // this is the connection between the simulator and the render
     renderApp->particles = &(mainApp->simulator.particles);
     // to-do: link camera to render for shader purposes
