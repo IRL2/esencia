@@ -12,8 +12,7 @@ void RenderApp::setup()
 
     ofDisableArbTex();
 
-    fbo.allocate(ofGetWidth(), ofGetHeight()); // particles
-    fboS.allocate(ofGetWidth(), ofGetHeight()); // shader A
+    windowResized(ofGetWidth(), ofGetHeight());
 
     shader.load("shaderBlur");
     //shaderBloom.load("", "bloom.frag");
@@ -42,9 +41,10 @@ void RenderApp::draw()
 
     ofSetColor(parameters->color);
 
-    for (int i = 0; i < particles->size(); i++) {
-        ofDrawCircle(particles->at(i).x, particles->at(i).y, parameters->size);
-    }
+    for (const auto &particle : *particles) {
+           // particle
+           ofDrawCircle(particle.position, particle.radius);
+       }
     fbo.end();
 
 
@@ -102,7 +102,20 @@ void RenderApp::mouseMoved(int x, int y ){
 
 }
 
-//--------------------------------------------------------------
-void RenderApp::gotMessage(ofMessage msg){
+/// <summary>
+/// on window resized event
+/// updates the window size render parameter (simulator is listening to this from her side)
+/// </summary>
+/// <param name="_width"></param>
+/// <param name="_height"></param>
+void RenderApp::windowResized(int _width, int _height) {
+    ofLogNotice("RenderApp::windowResized()") << "window resized to: " << _width << "," << _height;
 
+    fbo.allocate(_width, _height);
+    fboS.allocate(_width, _height);
+
+    glm::vec2 newSize = glm::vec2(_width, _height);
+    parameters->windowSize.set(glm::vec2(_width, _height));
+
+    //ofNotifyEvent(viewportResizeEvent, newSize, this); // not used now
 }

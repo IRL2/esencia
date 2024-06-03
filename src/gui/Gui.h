@@ -33,8 +33,11 @@ public:
     struct SimulationParameters
     {
         ofParameter<int> ammount;
-        ofParameter<float> momentum = 4.0f;
         ofParameter<int> radius;
+        ofParameter<float> targetTemperature;
+        ofParameter<float> coupling;
+        ofParameter<bool> applyThermostat;
+        ofParameter<glm::vec2> worldSize;
     };
     SimulationParameters simulationParameters;
 
@@ -44,6 +47,7 @@ public:
         ofParameter<ofColor> color;
         ofParameter<bool> useShaders;
         ofParameter<bool> useFaketrails;
+        ofParameter<glm::vec2> windowSize; // right now its equals to the render window size
     };
     RenderParameters renderParameters;
 
