@@ -15,7 +15,7 @@ void ofApp::setup(){
     // to-do: pass camera parameters though setup
     camera.setup(&gui.cameraParameters);
 
-    simulator.setup(&gui.simulationParameters);
+    simulator.setup(&gui.simulationParameters, &gui);
 }
 //--------------------------------------------------------------
 void ofApp::update(){
@@ -73,4 +73,17 @@ void ofApp::keyReleased(int key)
 
 
 
+}
+
+
+
+/// <summary>
+/// NOT USED RIGHT NOW
+/// Called on the render window resize event
+/// This will pass the new size to the simulator parameters (and the simulator has a listener on the parameters update)
+/// </summary>
+/// <param name="newSize"></param>
+void ofApp::onViewportResizeEvent(glm::vec2& newSize) {
+    ofLogNotice("ofApp::onViewportResizeEvent()") << "Recieving window resize message: " << newSize;
+    simulator.updateWorldSize(newSize.x, newSize.y);
 }

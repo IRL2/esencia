@@ -10,11 +10,5 @@
 			"path": "${workspaceRoot}/../../../../addons"
 		}
 	],
-	"settings": {
-		"files.associations": {
-			"chrono": "cpp",
-			"filesystem": "cpp",
-			"fstream": "cpp"
-		}
-	}
+	"settings": {}
 }

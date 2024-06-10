@@ -16,8 +16,6 @@ Project{
             'src/camera/Camera.h',
             'src/gui/Gui.cpp',
             'src/gui/Gui.h',
-            'src/gui/GuiApp.cpp',
-            'src/gui/GuiApp.h',
             'src/main.cpp',
             'src/ofApp.cpp',
             'src/ofApp.h',
@@ -28,10 +26,8 @@ Project{
         ]
 
         of.addons: [
-            'ofxGui',
-            'ofxGui',
-            'ofxImGui',
-            'ofxImGui',
+            'ofxGuiExtended',
+            'ofxGuiExtended',
             'ofxOpenCv',
             'ofxOpenCv',
             'ofxOrbbec',

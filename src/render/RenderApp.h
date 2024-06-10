@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "../ofApp.h"
 #include "../gui/Gui.h"
+#include "ofEvents.h"
 // #include <glm>
 
 class RenderApp : public ofBaseApp
@@ -16,7 +17,7 @@ class RenderApp : public ofBaseApp
         void keyPressed(int key);
         void keyReleased(int key);
         void mouseMoved(int x, int y );
-        void gotMessage(ofMessage msg);
+        void windowResized(int w, int h);
 
 
         // PARAMETERS
@@ -25,7 +26,9 @@ class RenderApp : public ofBaseApp
         Gui* globalParameters;
         
         // This points directly to the simulator particles (through mainapp->simulator.particles in main.cpp)
-        vector<glm::vec4> * particles;
+        vector<Particle> * particles;
+    
+    ofEvent<glm::vec2> viewportResizeEvent; // an event to send window size updates to the simulation
 
     private:
         ofColor particleColor;
