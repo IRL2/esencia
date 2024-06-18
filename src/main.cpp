@@ -10,8 +10,8 @@ int main()
     ofGLFWWindowSettings settings;
 
     // render window
-    settings.setSize(700, 600);
-    settings.setPosition(glm::vec2(700,50));
+    settings.setSize(27*30, 27*30);
+    settings.setPosition(glm::vec2(36*30,50));
     settings.resizable = true;
     settings.setGLVersion(3, 2);
     auto renderWindow = ofCreateWindow(settings);
@@ -20,7 +20,7 @@ int main()
 
 
     // gui window
-    settings.setSize(700, 600 * 2);
+    settings.setSize(35*30, 27*30);
     settings.setPosition(glm::vec2(0,50));
     settings.resizable = true;
     auto mainWindow = ofCreateWindow(settings);

@@ -16,19 +16,6 @@ public:
 
     ofxGui gui;
     
-    ofxGuiPanel* simulationPanel;
-    ofxGuiPanel* renderPanel;
-    ofxGuiPanel* cameraPanel;
-
-    ofParameterGroup parameters;
-
-    // (sub)groups for each system
-    ofParameterGroup simulation;
-    ofParameterGroup render;
-    ofParameterGroup camera;
-
-    ofParameter<string> guiSeparator;
-
     // structs to separate different engine values (and allow name duplication without extra verbosity) 
     // so each groups/struct can be assigned to its specific system
 
@@ -82,5 +69,44 @@ public:
     };
     CameraParameters cameraParameters;
 
+    private:
+        ofParameterGroup *cameraDebug, *cameraClipping, *cameraBackground, *cameraSources, *cameraPostprocess, *cameraFills;
+        ofParameterGroup *simulationConfig;
 
+        ofxGuiPanel* particlesPanel;
+        ofxGuiPanel* simulationPanel;
+        ofxGuiPanel* cameraSourcePanel;
+        ofxGuiPanel* cameraClippingPanel;
+        ofxGuiPanel* cameraProcessingPanel;
+        ofxGuiPanel* cameraPolygonsPanel;
+        ofxGuiPanel* cameraBackgroundPanel;
+        ofxGuiPanel* renderPanel;
+
+        ofxGuiPanel* videoPanel;
+
+        ofxGuiGroup* systemstatsGroup;
+
+
+        // (sub)groups for each system
+        ofParameterGroup simulationGroup;
+        ofParameterGroup renderGroup;
+        ofParameterGroup cameraGroup;
+
+
+        void inflateParticles();
+        void inflateSimulation();
+
+        void inflateVideo();
+        
+        void inflateVideoSources();
+        void inflateVideoClipping();
+        void inflateVideoProcessing();
+        void inflateVideoBackground();
+        void inflateVideoPolygons();
+
+        void inflateRender();
+        void inflateSystemStats();
+        void inflatePresets();
+        
+        void drawLineBetween(ofxGuiPanel &a, ofxGuiPanel &b);
 };
