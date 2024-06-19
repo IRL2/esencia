@@ -1,6 +1,7 @@
 #include "Gui.h"
 
 void Gui::setup()
+// void Gui::setup(Camera *cam)
 {
     inflateParticles();
     inflateSimulation();
@@ -15,7 +16,6 @@ void Gui::setup()
 
     inflateSystemStats();
 
-
 //     cameraGroup.add(ofParameter<string>().set("DEBUG"));
 // #ifdef DEBUG_IMAGES
 //     camera.add(cameraParameters.saveDebugImages.set("save debug images", false));
@@ -24,7 +24,9 @@ void Gui::setup()
 //     camera.add(cameraParameters.recordTestingVideo.set("record testing video", false));
 // #endif
 
-    ofBackground(10);
+    ofBackground(0);
+    fbo.allocate(ofGetWindowWidth(), ofGetWindowHeight());
+    ofEnableSmoothing();
 }
 
 void Gui::update() 
@@ -35,10 +37,13 @@ void Gui::update()
 
 void Gui::draw()
 {
-    drawLineBetween(*videoPanel, *simulationPanel);
-    drawLineBetween(*particlesPanel, *simulationPanel);
-    drawLineBetween(*simulationPanel, *renderPanel);
-
+    fbo.begin();
+        ofBackgroundGradient(ofColor::darkSlateGray, ofColor::lightGoldenRodYellow, OF_GRADIENT_LINEAR);
+        drawLineBetween(*videoPanel, *simulationPanel);
+        drawLineBetween(*particlesPanel, *simulationPanel);
+        drawLineBetween(*simulationPanel, *renderPanel);
+    fbo.end();
+    fbo.draw(0,0);
 }
 
 
@@ -62,7 +67,7 @@ void Gui::inflateSimulation()
     simulationPanel->add(simulationParameters.targetTemperature.set("equilibrium temperature", 25000.0, 1000.0, 1000000.0));
     simulationPanel->add(simulationParameters.coupling.set("coupling", 0.5, 0.1, 1.0));
 
-    simulationPanel->setPosition(12*30, 11*30);
+    simulationPanel->setPosition(12*30, 7*30);
     simulationPanel->setWidth(11*30);
 }
 
@@ -86,6 +91,7 @@ void Gui::inflateVideo()
     videoPanel = gui.addPanel("video");
     videoPanel->maximize();
     videoPanel->setPosition(30, 8*30);
+    videoPanel->setWidth(8*30);
     videoPanel->setBackgroundColor(ofColor(30, 30, 200, 100));
     videoPanel->setBorderColor(ofColor::blue);
     videoPanel->setAttribute("border-radius", 10);
@@ -93,17 +99,13 @@ void Gui::inflateVideo()
 
 void Gui::inflateVideoSources()
 {
-    // VIDEO SOURCE
     ofxGuiGroup *p = videoPanel->addGroup("sources");
     p->add(cameraParameters._sourceOrbbec.set("orbbec camera", false));
     p->add(cameraParameters._sourceVideofile.set("video file", false));
-    // p->setPosition(30,30);
     p->setWidth(8*30);
     p->minimize();
 
     // TODO: display collapsed image from the source
-
-    // cameraSourcePanel = p;
 }
 
 void Gui::inflateVideoClipping()
@@ -112,28 +114,20 @@ void Gui::inflateVideoClipping()
     ofxGuiGroup *p = videoPanel->addGroup("depth clipping");
     p->add(cameraParameters.clipFar.set("far clipping", 172, 0, 255));
     p->add(cameraParameters.clipNear.set("near clipping", 20, 0, 255));
-    // p->setPosition(30, 5*30);
     p->setWidth(8*30);
     p->minimize();
 
     // TODO: use a single range slider
-
-    // cameraClippingPanel = p;
-
 }
 
 void Gui::inflateVideoProcessing(){
     ofxGuiGroup *p = videoPanel->addGroup("processing");
+    p->setWidth(8*30);
     
-    // PROCESSING
     // cameraProcessingPanel = gui.addPanel("video processing");
     p->add(cameraParameters.gaussianBlur.set("final gaussian blur", 0, 0, 100));
     p->add(cameraParameters.floodfillHoles.set("floodfill holes", false));
     // p->minimize();
-
-    // p->setPosition(60.0f, 160.0f);
-    // p->setBackgroundColor(ofColor(30, 30, 200, 100));
-    // p->setBorderColor(ofColor::blue);
 }
 
 void Gui::inflateVideoBackground()
@@ -143,25 +137,21 @@ void Gui::inflateVideoBackground()
     // p = gui.addPanel("background");
     p->add(cameraParameters.startBackgroundReference.set("take background reference", false));
     p->add(cameraParameters.useMask.set("mask extraction", false));
+    p->setWidth(8*30);
     p->minimize();
-    // cameraBackgroundPanel->add(cameraParameters.useMask.set("mask extraction", false));
-    // cameraBackgroundPanel = p;
 }
 
 void Gui::inflateVideoPolygons(){
     ofxGuiGroup *p = videoPanel->addGroup("polygons");
 
-    // cameraPolygonsPanel = gui.addPanel("polygons");
     p->add(cameraParameters.blobMinArea.set("minArea Blobs", 0.05f, 0.0f, 0.3f));
     p->add(cameraParameters.blobMaxArea.set("maxArea Blobs", 0.8f, 0.5f, 1.0f));
     p->add(cameraParameters.nConsidered.set("maximum blobs number consider", 8, 0, 64));
     p->add(cameraParameters.showPolygons.set("show polygons", false));
     p->add(cameraParameters.fillHolesOnPolygons.set("find holes on polygon", true));
     p->add(cameraParameters.polygonTolerance.set("polygonApproximation", 1, 0, 5));
+    p->setWidth(8*30);
     p->minimize();
-
-    // videoPanel->add(p);
-    // cameraPolygonsPanel->minimize();
 }
 
 
@@ -170,12 +160,13 @@ void Gui::inflateSystemStats()
     ofxGuiGroup *p = gui.addGroup("performance");
     p->addFpsPlotter();
 
-    p->setWidth(9*30);
-    p->setPosition(ofGetWindowSize().x - (30*9), ofGetWindowSize().y - (30*3));
-    // p->setPosition(ofGetWindowWidth()- (30*10), ofGetWindowHeight()- (30*2));
+    p->setWidth(8*30);
+    p->setPosition(ofGetWindowSize().x - (9*30), (1*30));
+    p->setDraggable(true);
 
     systemstatsGroup = p;
 }
+
 
 void Gui::inflatePresets(){
 
@@ -183,17 +174,29 @@ void Gui::inflatePresets(){
 
 
 
+
 void Gui::drawLineBetween(ofxGuiPanel &a, ofxGuiPanel &b)
 {
+    const int BEZIER_DISTANCE_X = 30;
+    const int BEZIER_RESOLUTION = 10;
+    const int CIRCLE_RADIUS = 4;
+    const int CIRCLE_RADIUS_2 = CIRCLE_RADIUS/2;
+
+    ofSetLineWidth(10); // actually not working, not supported by opengl 3.2+
+    ofSetColor(ofColor::paleGoldenRod);
+
+    int ox = a.getPosition().x + a.getWidth();
+    int oy = a.getPosition().y + a.getHeight();
+    int dx = b.getPosition().x;
+    int dy = b.getPosition().y;
+
+    ofCircle(ox - CIRCLE_RADIUS_2, oy - 2, CIRCLE_RADIUS);
+    ofCircle(dx + CIRCLE_RADIUS_2, dy + 2, CIRCLE_RADIUS);
+
     ofPolyline l;
-    l.addVertex(a.getPosition().x + a.getWidth(), a.getPosition().y + a.getHeight());
-    // l.addVertex(b.getPosition().x, b.getPosition().y);
-    l.bezierTo( a.getPosition().x+ a.getWidth() +100, a.getPosition().y + a.getHeight(),
-        b.getPosition().x-100, b.getPosition().y,
-        b.getPosition().x, b.getPosition().y, 20);
-    // l.curveTo(b.getPosition().x, b.getPosition().y, 0.0f);
-    ofSetColor(ofColor::white);
+    l.addVertex(ox, oy);
+    l.bezierTo( ox + BEZIER_DISTANCE_X, oy,
+        dx - BEZIER_DISTANCE_X, dy,
+        dx, dy, BEZIER_RESOLUTION);
     l.draw();
-    // ofPath p;
-    // p.setfil
 }

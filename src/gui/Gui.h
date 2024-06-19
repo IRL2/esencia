@@ -3,6 +3,8 @@
 #include "ofMain.h"
 //#include "ofxGui.h"
 #include "ofxGuiExtended.h"
+// #include "camera/Camera.h"
+
 
 //#define DEBUG_IMAGES true
 //#define RECORD_TESTING_VIDEO true
@@ -97,7 +99,7 @@ public:
         void inflateSimulation();
 
         void inflateVideo();
-        
+
         void inflateVideoSources();
         void inflateVideoClipping();
         void inflateVideoProcessing();
@@ -109,4 +111,6 @@ public:
         void inflatePresets();
         
         void drawLineBetween(ofxGuiPanel &a, ofxGuiPanel &b);
+
+        ofFbo fbo;
 };

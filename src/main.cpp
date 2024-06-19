@@ -20,7 +20,7 @@ int main()
 
 
     // gui window
-    settings.setSize(35*30, 27*30);
+    settings.setSize(34*30, 25*30);
     settings.setPosition(glm::vec2(0,50));
     settings.resizable = true;
     auto mainWindow = ofCreateWindow(settings);

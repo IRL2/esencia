@@ -3,7 +3,7 @@
 //--------------------------------------------------------------
 void RenderApp::setup()
 {
-    ofSetWindowTitle("Render");
+    ofSetWindowTitle("esencia screen");
 
     ofSetVerticalSync(true);
     ofSetFrameRate(60);

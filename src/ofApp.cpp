@@ -3,14 +3,13 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 
-    ofSetWindowTitle("GUI");
+    ofSetWindowTitle("esencia");
 
     ofSetVerticalSync(false);
-    ofSetFrameRate(60);
+    ofSetFrameRate(30);
 
     gui.setup();
     
-    ofBackground(0);
 
     // to-do: pass camera parameters though setup
     camera.setup(&gui.cameraParameters);
