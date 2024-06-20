@@ -29,7 +29,7 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    camera.draw();
+    // camera.draw();
     gui.draw();
 }
 
@@ -69,11 +69,13 @@ void ofApp::keyReleased(int key)
         break;
 
     }
-
-
-
 }
 
+
+void ofApp::windowResized(int w, int h)
+{
+    gui.windowResized(w, h);
+}
 
 
 /// <summary>

@@ -114,7 +114,7 @@ void Camera::setFrameSize(int width, int height) {
     IMG_HEIGHT_4 = IMG_HEIGHT / 4;
     IMG_WIDTH_4 = IMG_WIDTH / 4;
 
-    cameraImage.allocate(IMG_WIDTH, IMG_HEIGHT);
+    source.allocate(IMG_WIDTH, IMG_HEIGHT);
     processedImage.allocate(IMG_WIDTH, IMG_HEIGHT);
     backgroundNewFrame.allocate(IMG_WIDTH, IMG_HEIGHT);
     backgroundReference.allocate(IMG_WIDTH, IMG_HEIGHT);
@@ -122,8 +122,12 @@ void Camera::setFrameSize(int width, int height) {
     segment.allocate(IMG_WIDTH, IMG_HEIGHT);
     fillMaskforHoles.allocate(IMG_WIDTH+2, IMG_HEIGHT+2);
     colorFrame.allocate(IMG_WIDTH, IMG_HEIGHT);
+    
+    parameters->previewSource.allocate(IMG_WIDTH, IMG_HEIGHT, OF_IMAGE_GRAYSCALE);
+    parameters->previewSegment.allocate(IMG_WIDTH, IMG_HEIGHT, OF_IMAGE_GRAYSCALE);
+    parameters->previewBackground.allocate(IMG_WIDTH, IMG_HEIGHT, OF_IMAGE_GRAYSCALE);
 
-    // to-do: if the prev/current background reference image has different resolution from the new video source: kaput.
+    // TO-DO: if the prev/current background reference image has different resolution from the new video source: kaput.
 }
 
 
@@ -218,7 +222,7 @@ void Camera::draw() {
     ofSetHexColor(0xffffff);
     
     //prerecordedVideo.draw(1, 1);
-    cameraImage.draw(1, 1, IMG_WIDTH_2-1, IMG_HEIGHT_2-1);
+    source.draw(1, 1, IMG_WIDTH_2-1, IMG_HEIGHT_2-1);
     ofDrawBitmapStringHighlight("Raw camera", 11, 20, ofColor(30,30,30), ofColor(104,140,247));
 
     backgroundNewFrame.draw(1, IMG_HEIGHT_2+1, IMG_WIDTH_2-1, IMG_HEIGHT_2-1);
@@ -268,7 +272,7 @@ void Camera::update() {
 
         if (prerecordedVideo.isFrameNew()) {
             colorFrame.setFromPixels(prerecordedVideo.getPixels());
-            cameraImage = colorFrame;
+            source = colorFrame;
         }
     }
 
@@ -276,17 +280,24 @@ void Camera::update() {
         orbbecCam.update();
 
         if (orbbecCam.isFrameNewDepth()) {
-            cameraImage.setFromPixels(orbbecCam.getDepthPixels());
+            source.setFromPixels(orbbecCam.getDepthPixels());
         }
     }
 
     // to-do: make backgroundref an object with state?
     if (isTakingBackgroundReference) {
-        addSampleToBackgroundReference(cameraImage, backgroundReference, BG_SAMPLE_FRAMES);
+        addSampleToBackgroundReference(source, backgroundReference, BG_SAMPLE_FRAMES);
         return;
     }
 
-    processCameraFrame(cameraImage, backgroundReference);
+    // all the processing from source to extract the final segment
+    processCameraFrame(source, backgroundReference);
+
+
+    // update the preview images on the shared parameters data structure for the GUI
+    parameters->previewSource.setFromPixels(source.getPixels());
+    parameters->previewSegment.setFromPixels(segment.getPixels());
+    parameters->previewBackground.setFromPixels(backgroundReference.getPixels()); // TO-DO: move where bgref is assigned, so is running only when need it
 }
 
 
@@ -449,7 +460,7 @@ void Camera::addSampleToBackgroundReference(ofxCvGrayscaleImage newFrame, ofxCvG
 
     // original artwork strategy: sampleFrame = (sampleFrame + newFrame) * currentsamplef * (1 / (currentsamplef + 1)) //wtf?
 
-    output = cameraImage; // good enough for 1 frame!!
+    output = source; // good enough for 1 frame!!
 
     // ---- failed strategies:
 
@@ -508,7 +519,7 @@ void Camera::startBackgroundReferenceSampling(int samples) {
     isTakingBackgroundReference = true;
     backgroundReferenceTaken = false;
     clearBackgroundReference();
-    backgroundReference = cameraImage; // Important step to take an initial sample, so any strategy of adding/weighting/... dont start from a black image
+    backgroundReference = source; // Important step to take an initial sample, so any strategy of adding/weighting/... dont start from a black image
     backgroundReferenceLeftFrames = samples;
 }
 

@@ -60,6 +60,7 @@ class Camera
 
     private:
         ofxCvColorImage colorFrame; // to store>transform from video file or webcam
+        ofxCvGrayscaleImage source; // camera frame
         ofxCvGrayscaleImage cameraImage; // camera frame
         ofxCvGrayscaleImage backgroundReference;  // background reference frame
 

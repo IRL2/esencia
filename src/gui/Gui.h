@@ -1,9 +1,8 @@
 #pragma once
 
 #include "ofMain.h"
-//#include "ofxGui.h"
 #include "ofxGuiExtended.h"
-// #include "camera/Camera.h"
+#include "ofxOpenCv.h"
 
 
 //#define DEBUG_IMAGES true
@@ -15,6 +14,9 @@ public:
     void setup();
     void update();
     void draw();
+
+    void keyReleased(int key);
+    void windowResized(int w, int h);
 
     ofxGui gui;
     
@@ -68,49 +70,43 @@ public:
         ofParameter<bool> _sourceOrbbec = false;
         ofParameter<bool> _sourceVideofile = false;
         ofParameter<bool> _sourceWebcam = false;
+
+        ofImage previewSegment;
+        ofImage previewSource;
+        ofImage previewBackground;
+        // ofParameter<ofxGuiGraphics> background;
     };
     CameraParameters cameraParameters;
 
     private:
-        ofParameterGroup *cameraDebug, *cameraClipping, *cameraBackground, *cameraSources, *cameraPostprocess, *cameraFills;
-        ofParameterGroup *simulationConfig;
+        // ofParameterGroup *simulationConfig;
 
         ofxGuiPanel* particlesPanel;
         ofxGuiPanel* simulationPanel;
+        ofxGuiPanel* renderPanel;
+        ofxGuiPanel* statsPanel;
+        ofxGuiPanel* videoPanel;
         ofxGuiPanel* cameraSourcePanel;
         ofxGuiPanel* cameraClippingPanel;
         ofxGuiPanel* cameraProcessingPanel;
         ofxGuiPanel* cameraPolygonsPanel;
         ofxGuiPanel* cameraBackgroundPanel;
-        ofxGuiPanel* renderPanel;
 
-        ofxGuiPanel* videoPanel;
+        ofxGuiPanel cameraGroup;
 
-        ofxGuiGroup* systemstatsGroup;
-
-
-        // (sub)groups for each system
-        ofParameterGroup simulationGroup;
-        ofParameterGroup renderGroup;
-        ofParameterGroup cameraGroup;
-
-
-        void inflateParticles();
-        void inflateSimulation();
-
-        void inflateVideo();
-
-        void inflateVideoSources();
-        void inflateVideoClipping();
-        void inflateVideoProcessing();
-        void inflateVideoBackground();
-        void inflateVideoPolygons();
-
-        void inflateRender();
-        void inflateSystemStats();
-        void inflatePresets();
+        void configureParticlesPanel();
+        void configureSimulationPanel();
+        void configureVideoPanel();
+        void configureRenderPanel();
+        void configureSystemstatsPanel();
+        void configurePresetsPanel();
         
         void drawLineBetween(ofxGuiPanel &a, ofxGuiPanel &b);
 
+        // for the extra layers behind the GUI (lines, background, etc)
         ofFbo fbo;
+
+        // to store the preview videos from the camera, they will be displayed inside gui controls
+        ofImage cameraSource, cameraSegment, cameraBackground;
+
 };

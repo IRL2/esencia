@@ -17,6 +17,8 @@ public:
     void exit() override;
 
     void keyReleased(int key);
+    void windowResized(int w, int h);
+
 
     Gui gui;
     Camera camera;
