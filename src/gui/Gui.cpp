@@ -15,7 +15,8 @@ void Gui::setup()
     configureParticlesPanel();
     configureSimulationPanel();
     configureRenderPanel();
-    configureVideoPanel();
+    configureVideoinitialPanel();
+    configureVideoprocessingPanel();
     configureSystemstatsPanel();
 
 //     cameraGroup.add(ofParameter<string>().set("DEBUG"));
@@ -35,12 +36,14 @@ void Gui::update()
     // cameraSource = cameraParameters.source;
 }
 
+
 void Gui::draw()
 {
     fbo.begin();
         ofBackgroundGradient(ofColor::darkSlateGray, ofColor::lightGoldenRodYellow, OF_GRADIENT_LINEAR);
 
-        drawLineBetween(*videoPanel, *simulationPanel);
+        drawLineBetween(*videoOriginPanel, *videoProcessPanel);
+        drawLineBetween(*videoProcessPanel, *simulationPanel);
         drawLineBetween(*particlesPanel, *simulationPanel);
         drawLineBetween(*simulationPanel, *renderPanel);
     fbo.end();
@@ -54,11 +57,13 @@ void Gui::configureParticlesPanel()
     particlesPanel->add(simulationParameters.ammount.set("ammount of particles", 50, 1, 100));
     particlesPanel->add(simulationParameters.radius.set("particle radius", 10, 1, 50));
 
-    particlesPanel->setPosition(30, 30);
-    particlesPanel->setWidth(8*30);
     particlesPanel->setBackgroundColor(ofColor(200, 20, 20, 100));
-    particlesPanel->setBorderColor(ofColor::red);
+    particlesPanel->loadTheme("support/gui-styles.json", true);
+
+    particlesPanel->setWidth(11*30);
+    particlesPanel->setPosition(30, 30);
 }
+
 
 void Gui::configureSimulationPanel()
 {
@@ -68,9 +73,13 @@ void Gui::configureSimulationPanel()
     simulationPanel->add(simulationParameters.targetTemperature.set("equilibrium temperature", 25000.0, 1000.0, 1000000.0));
     simulationPanel->add(simulationParameters.coupling.set("coupling", 0.5, 0.1, 1.0));
 
-    simulationPanel->setPosition(12*30, 7*30);
+    // simulationPanel->setBackgroundColor(ofColor(200, 200, 200, 100));
+    simulationPanel->loadTheme("support/gui-styles.json", true);
+
+    simulationPanel->setPosition(22*30, 5*30);
     simulationPanel->setWidth(11*30);
 }
+
 
 void Gui::configureRenderPanel()
 {
@@ -80,27 +89,24 @@ void Gui::configureRenderPanel()
     renderPanel->add(renderParameters.useFaketrails.set("use fake trails", false));
     // TODO: add particle size factor
 
-    renderPanel->setPosition(25*30, 8*30);
-    renderPanel->setWidth(8*30);
     renderPanel->setBackgroundColor(ofColor(100, 20, 100, 100));
-    renderPanel->setBorderColor(ofColor::purple);
+    renderPanel->loadTheme("support/gui-styles.json", true);
+
+    renderPanel->setPosition(25*30, 12*30);
+    renderPanel->setWidth(8*30);
 }
 
 
-void Gui::configureVideoPanel()
+void Gui::configureVideoinitialPanel()
 {
-    videoPanel = gui.addPanel("video");
-    videoPanel->maximize();
-    videoPanel->setPosition(30, 8*30);
-    videoPanel->setWidth(8*30);
-    videoPanel->setBackgroundColor(ofColor(30, 30, 200, 100));
-    videoPanel->setBorderColor(ofColor::blue);
-    videoPanel->setAttribute("border-radius", 10);
-
-    videoPanel->add<ofxGuiGraphics>("segment", &cameraParameters.previewSegment.getTexture() , ofJson({{"height", 200}}));
+    videoOriginPanel = gui.addPanel("video origin");
+    videoOriginPanel->setPosition(30, 5*30);
+    videoOriginPanel->setWidth(8*30);
+    videoOriginPanel->loadTheme("support/gui-styles.json", true);
+    videoOriginPanel->setBackgroundColor(ofColor(30, 30, 200, 100));
 
     // SOURCES
-    ofxGuiGroup *cameraSourcePanel = videoPanel->addGroup("sources");
+    ofxGuiGroup *cameraSourcePanel = videoOriginPanel->addGroup("sources");
     cameraSourcePanel->add<ofxGuiGraphics>("source", &cameraParameters.previewSource.getTexture() , ofJson({{"height", 200}}));
     cameraSourcePanel->add(cameraParameters._sourceOrbbec.set("orbbec camera", false));
     cameraSourcePanel->add(cameraParameters._sourceVideofile.set("video file", false));
@@ -108,29 +114,44 @@ void Gui::configureVideoPanel()
     cameraSourcePanel->minimize();
     
     // DEPTH CLIPPING
-    ofxGuiGroup *cameraClippingPanel = videoPanel->addGroup("depth clipping");
+    ofxGuiGroup *cameraClippingPanel = videoOriginPanel->addGroup("depth clipping");
     cameraClippingPanel->add(cameraParameters.clipFar.set("far clipping", 172, 0, 255));
     cameraClippingPanel->add(cameraParameters.clipNear.set("near clipping", 20, 0, 255));
     cameraClippingPanel->setWidth(8*30);
     cameraClippingPanel->minimize();
     // TODO: use a single range slider
 
-    // PROCESSING
-    ofxGuiGroup *cameraProcessingPanel = videoPanel->addGroup("processing");
-    cameraProcessingPanel->add(cameraParameters.gaussianBlur.set("final gaussian blur", 0, 0, 100));
-    cameraProcessingPanel->add(cameraParameters.floodfillHoles.set("floodfill holes", false));
-    cameraBackgroundPanel->add(cameraParameters.useMask.set("preserve depth", false));
-    cameraProcessingPanel->setWidth(8*30);
-
     // BACKGROUND
-    ofxGuiGroup *cameraBackgroundPanel = videoPanel->addGroup("background");
+    ofxGuiGroup *cameraBackgroundPanel = videoOriginPanel->addGroup("background");
     cameraBackgroundPanel->add<ofxGuiGraphics>("reference", &cameraParameters.previewBackground.getTexture() , ofJson({{"height", 200}}));
     cameraBackgroundPanel->add(cameraParameters.startBackgroundReference.set("take background reference", false));
     cameraBackgroundPanel->setWidth(8*30);
     cameraBackgroundPanel->minimize();
+}
+
+
+void Gui::configureVideoprocessingPanel()
+{
+    videoProcessPanel = gui.addPanel("video processing");
+    videoProcessPanel->setPosition(11*30, 7*30);
+    videoProcessPanel->loadTheme("support/gui-styles.json", true);
+    videoProcessPanel->setBackgroundColor(ofColor(30, 30, 200, 100));
+    videoProcessPanel->setAttribute("border-width", 10);
+
+
+    ofxGuiGroup *cameraSourcePreview = videoProcessPanel->addGroup("preview");
+    cameraSourcePreview->setWidth(8*30);
+    cameraSourcePreview->add<ofxGuiGraphics>("segment", &cameraParameters.previewSegment.getTexture() , ofJson({{"height", 200}}));
+
+    // PROCESSING
+    ofxGuiGroup *cameraProcessingPanel = videoProcessPanel->addGroup("processing");
+    cameraProcessingPanel->add(cameraParameters.gaussianBlur.set("final gaussian blur", 0, 0, 100));
+    cameraProcessingPanel->add(cameraParameters.floodfillHoles.set("floodfill holes", false));
+    cameraProcessingPanel->add(cameraParameters.useMask.set("preserve depth", false));
+    cameraProcessingPanel->setWidth(8*30);
 
     // POLYGONS
-    ofxGuiGroup *cameraPolygonsPanel = videoPanel->addGroup("polygons");
+    ofxGuiGroup *cameraPolygonsPanel = videoProcessPanel->addGroup("polygons");
     cameraPolygonsPanel->add(cameraParameters.blobMinArea.set("minArea Blobs", 0.05f, 0.0f, 0.3f));
     cameraPolygonsPanel->add(cameraParameters.blobMaxArea.set("maxArea Blobs", 0.8f, 0.5f, 1.0f));
     cameraPolygonsPanel->add(cameraParameters.nConsidered.set("maximum blobs number consider", 8, 0, 64));
@@ -146,6 +167,8 @@ void Gui::configureSystemstatsPanel()
 {
     ofxGuiPanel *statsPanel = gui.addPanel("performance");
     statsPanel->addFpsPlotter();
+
+    statsPanel->loadTheme("support/gui-styles.json", true);
 
     statsPanel->setWidth(8*30);
     statsPanel->setPosition(ofGetWindowSize().x - (9*30), (1*30));
@@ -169,12 +192,14 @@ void Gui::drawLineBetween(ofxGuiPanel &a, ofxGuiPanel &b)
 
     ofSetLineWidth(10); // actually not working, not supported by opengl 3.2+
     ofSetColor(ofColor::paleGoldenRod);
+    ofSetColor(ofColor::antiqueWhite);
 
     int ox = a.getPosition().x + a.getWidth();
     int oy = a.getPosition().y + a.getHeight();
     int dx = b.getPosition().x;
     int dy = b.getPosition().y;
 
+    ofNoFill();
     ofCircle(ox - CIRCLE_RADIUS_2, oy - 2, CIRCLE_RADIUS);
     ofCircle(dx + CIRCLE_RADIUS_2, dy + 2, CIRCLE_RADIUS);
 

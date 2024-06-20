@@ -1,0 +1,17 @@
+{
+    "video": {
+        "base": {
+            "border-radius": 5,
+            "text-color": "#ffffefaa"
+        },
+
+        "slider": {
+          "precision": 1
+        },
+
+        "toggle": {
+          "type": "radio"
+        }
+
+    }
+}

@@ -85,7 +85,11 @@ public:
         ofxGuiPanel* simulationPanel;
         ofxGuiPanel* renderPanel;
         ofxGuiPanel* statsPanel;
-        ofxGuiPanel* videoPanel;
+        ofxGuiPanel* videoOriginPanel;
+        ofxGuiPanel* videoProcessPanel;
+
+        // actually sub groups
+        ofxGuiPanel* cameraSourcePreview;
         ofxGuiPanel* cameraSourcePanel;
         ofxGuiPanel* cameraClippingPanel;
         ofxGuiPanel* cameraProcessingPanel;
@@ -96,7 +100,8 @@ public:
 
         void configureParticlesPanel();
         void configureSimulationPanel();
-        void configureVideoPanel();
+        void configureVideoinitialPanel();
+        void configureVideoprocessingPanel();
         void configureRenderPanel();
         void configureSystemstatsPanel();
         void configurePresetsPanel();
