@@ -386,15 +386,17 @@ void Camera::processCameraFrame(ofxCvGrayscaleImage frame, ofxCvGrayscaleImage b
     processedImage.erode();
 
 
-    // 5. Mask image
+    // 5. Mask image = preserve depth
     // ---------
     //// use the mask against the original frame, to get the original depth values from the roi
     ////maskImage = segment; // or use a previous state of segment before holes were filled
     //maskImage = segment;
     if (parameters->useMask) {
         maskImage = processedImage;
-        segment *= maskImage; // this is for masking the original frame against the masked!
-        processedImage = segment;
+        processedImage = source;
+        processedImage *= maskImage;
+        // source *= maskImage;  // this is for masking the original frame against the masked!
+        // processedImage = source;
         saveDebugImage(processedImage, "processedImage", "masked");
     }
 

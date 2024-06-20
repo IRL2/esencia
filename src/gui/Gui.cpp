@@ -119,13 +119,13 @@ void Gui::configureVideoPanel()
     ofxGuiGroup *cameraProcessingPanel = videoPanel->addGroup("processing");
     cameraProcessingPanel->add(cameraParameters.gaussianBlur.set("final gaussian blur", 0, 0, 100));
     cameraProcessingPanel->add(cameraParameters.floodfillHoles.set("floodfill holes", false));
+    cameraBackgroundPanel->add(cameraParameters.useMask.set("preserve depth", false));
     cameraProcessingPanel->setWidth(8*30);
 
     // BACKGROUND
     ofxGuiGroup *cameraBackgroundPanel = videoPanel->addGroup("background");
     cameraBackgroundPanel->add<ofxGuiGraphics>("reference", &cameraParameters.previewBackground.getTexture() , ofJson({{"height", 200}}));
     cameraBackgroundPanel->add(cameraParameters.startBackgroundReference.set("take background reference", false));
-    cameraBackgroundPanel->add(cameraParameters.useMask.set("mask extraction", false));
     cameraBackgroundPanel->setWidth(8*30);
     cameraBackgroundPanel->minimize();
 
