@@ -2,16 +2,6 @@
 
 
 
-int exponentialFunction(int x) {
-	return pow(10, x);
-}
-
-int reversedExponentialFunction(int y) {
-	return log10(y);
-}
-
-
-
 void Gui::setup()
 {
     ofBackground(0);
@@ -24,7 +14,7 @@ void Gui::setup()
     cameraParameters.previewBackground.allocate(1, 1, OF_IMAGE_GRAYSCALE);
 
     configureParticlesPanel(1, 1, 8, 0);
-    configureVideoinitialPanel(1, 8, 8, 0);
+    configureVideoinitialPanel(1, 9, 8, 0);
     configureVideoprocessingPanel(11, 8, 8, 0);
     configureSimulationPanel(22, 5, 10, 0);
     configureRenderPanel(25, 12, 8, 0);
@@ -60,16 +50,44 @@ void Gui::draw()
 }
 
 
+// functions for the functionSlider (aka inverse expo slider)
+float linear(float x) {
+	return x*10;
+}
+
+float reverseLinear(float y) {
+	return y/10;
+}
+
+float exponentialFunction(float x) {
+	return pow(10, x);
+}
+
+float reversedExponentialFunction(float y) {
+	return log10(y);
+}
+
+float inverseExponentialFunction(float x) {
+    return ( (PARTICLES_MAX / (log(exp(1) +1) ) ) * (log( (exp(1)*x) + 1) ));
+}
+
+float reversedInverseExponentialFunction(float y) {
+    return exp( ( ( (y / PARTICLES_MAX) * log(exp(1)+1))) - 1 ) - (1/exp(1) );
+}
+
+
+
 void Gui::configureParticlesPanel(int x, int y, int w, int h)
 {
     particlesPanel = gui.addPanel("particles");
 	
     // exponential slider
-    // ofxGuiIntFunctionSlider* functionSlider = particlesPanel->add<ofxGuiIntFunctionSlider>(simulationParameters.ammount.set("ammount", 50, 1, 100));
-	// functionSlider->setFunctions(exponentialFunction, reversedExponentialFunction);
+    ofxGuiFloatFunctionSlider* functionSlider = particlesPanel->add<ofxGuiFloatFunctionSlider>(simulationParameters.ammount.set("ammount", PARTICLES_MAX/10, PARTICLES_MIN, PARTICLES_MAX) , ofJson({{"type", "circular"}, {"width", 180}, {"height", 130}, {"precision", 0}}) );
+    functionSlider->setFunctions(inverseExponentialFunction, reversedInverseExponentialFunction);
 
+    // to plotter for the ammount parameter, for debugging the inv expo function
+    // particlesPanel->add<ofxGuiValuePlotter>(simulationParameters.ammount, ofJson({{"height", 100}}));
 
-    particlesPanel->add(simulationParameters.ammount.set("ammount", 50, 1, 100), ofJson({{"type", "circular"}, {"width", 180}, {"height", 130}}) );
     particlesPanel->add(simulationParameters.radius.set("radius", 10, 1, 50));
 
     particlesPanel->setBackgroundColor(ofColor(200, 20, 20, 100));

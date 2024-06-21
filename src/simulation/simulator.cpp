@@ -142,6 +142,10 @@ void Simulator::checkWallCollisions(Particle &particle) {
     }
 }
 
+void Simulator::initializeParticles(float ammount) {
+    initializeParticles((int)ammount);
+}
+
 void Simulator::initializeParticles(int ammount) {
     particles.clear(); // Clear existing particles
     particles.resize(ammount); // Resize to hold the new particles
@@ -173,7 +177,7 @@ void Simulator::initializeParticles(int ammount) {
 
 #pragma region Listeners
 
-void Simulator::onGUIChangeAmmount(int& value) {
+void Simulator::onGUIChangeAmmount(float& value) {
     initializeParticles(value);
 }
 

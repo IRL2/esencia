@@ -8,6 +8,11 @@
 //#define DEBUG_IMAGES true
 //#define RECORD_TESTING_VIDEO true
 
+
+const float PARTICLES_MIN = 1.0;
+const float PARTICLES_MAX = 200.0;
+
+
 class Gui
 {
 public:
@@ -25,7 +30,7 @@ public:
 
     struct SimulationParameters
     {
-        ofParameter<int> ammount = 10;
+        ofParameter<float> ammount = 10;
         ofParameter<int> radius = 1;
         ofParameter<float> targetTemperature;
         ofParameter<float> coupling;
