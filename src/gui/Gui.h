@@ -98,13 +98,13 @@ public:
 
         ofxGuiPanel cameraGroup;
 
-        void configureParticlesPanel();
-        void configureSimulationPanel();
-        void configureVideoinitialPanel();
-        void configureVideoprocessingPanel();
-        void configureRenderPanel();
-        void configureSystemstatsPanel();
-        void configurePresetsPanel();
+        void configureParticlesPanel(int x, int y, int w, int h);
+        void configureSimulationPanel(int x, int y, int w, int h);
+        void configureVideoinitialPanel(int x, int y, int w, int h);
+        void configureVideoprocessingPanel(int x, int y, int w, int h);
+        void configureRenderPanel(int x, int y, int w, int h);
+        void configureSystemstatsPanel(int x, int y, int w, int h);
+        void configurePresetsPanel(int x, int y, int w, int h);
         
         void drawLineBetween(ofxGuiPanel &a, ofxGuiPanel &b);
 
@@ -113,5 +113,4 @@ public:
 
         // to store the preview videos from the camera, they will be displayed inside gui controls
         ofImage cameraSource, cameraSegment, cameraBackground;
-
 };

@@ -1,12 +1,11 @@
 {
     "video": {
         "base": {
-            "border-radius": 5,
+            "border-radius": 4,
             "text-color": "#ffffefaa"
         },
 
         "slider": {
-          "precision": 1
         },
 
         "toggle": {
