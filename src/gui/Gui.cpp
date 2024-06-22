@@ -38,6 +38,9 @@ void Gui::update()
 
 void Gui::draw()
 {
+    // cameraParameters.previewSource.draw(0,0, ofGetWidth(), ofGetHeight());
+    // return; 
+
     fbo.begin();
         ofBackgroundGradient(ofColor::darkSlateGray, ofColor::lightGoldenRodYellow, OF_GRADIENT_LINEAR);
 
@@ -67,12 +70,25 @@ float reversedExponentialFunction(float y) {
 	return log10(y);
 }
 
+const int R = 100;
+const float E = exp(1);
 float inverseExponentialFunction(float x) {
-    return ( (PARTICLES_MAX / (log(exp(1) +1) ) ) * (log( (exp(1)*x) + 1) ));
+    float a = log( (R*E) +1);
+    float b = PARTICLES_MAX / a;
+    float c = log((E*x*R) +1);
+    float d = b * c;
+    return d;
+    // return ( (PARTICLES_MAX / (log((exp(1) *R) +1) ) ) * (log( (exp(1)*x*R) + 1) ));
 }
 
 float reversedInverseExponentialFunction(float y) {
-    return exp( ( ( (y / PARTICLES_MAX) * log(exp(1)+1))) - 1 ) - (1/exp(1) );
+    float a = y / PARTICLES_MAX;
+    float b = log((R*E) +1);
+    float c = 1 / E;
+    float d = a * b;
+    float e = exp(d-1) - c;
+    return e / R;
+    // return exp( ( ( (y / PARTICLES_MAX) * log( (exp(1)*R)+1) )) - 1 ) - (1/(exp(1)) ) / R;
 }
 
 
