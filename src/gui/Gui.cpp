@@ -16,8 +16,8 @@ void Gui::setup()
     configureParticlesPanel(1, 1, 8, 0);
     configureVideoinitialPanel(1, 9, 8, 0);
     configureVideoprocessingPanel(11, 8, 8, 0);
-    configureSimulationPanel(22, 5, 10, 0);
-    configureRenderPanel(25, 12, 8, 0);
+    configureSimulationPanel(22, 4, 10, 0);
+    configureRenderPanel(25, 11, 8, 0);
     configureSystemstatsPanel((ofGetWindowSize().x - (9*30))/30, 1, 8, 0);
 
 //     cameraGroup.add(ofParameter<string>().set("DEBUG"));
@@ -125,7 +125,7 @@ void Gui::configureSimulationPanel(int x, int y, int w, int h)
     p->add(simulationParameters.targetTemperature.set("eq temp", 25000.0, 1000.0, 1000000.0) , ofJson({{"type", "circular"}, {"width", 150}, {"height", 100}, {"precision", 0}}));
     p->add(simulationParameters.coupling.set("coupling", 0.5, 0.1, 1.0), ofJson({{"type", "circular"}, {"width", 150}, {"height", 100}, {"precision", 3}}));
 
-    // simulationPanel->setBackgroundColor(ofColor(200, 200, 200, 100));
+    simulationPanel->setBackgroundColor(ofColor(100, 100, 100, 100));
     simulationPanel->loadTheme("support/gui-styles.json", true);
 
     simulationPanel->setPosition(x*30, y*30);
@@ -138,7 +138,13 @@ void Gui::configureRenderPanel(int x, int y, int w, int h)
     renderPanel = gui.addPanel("render");
     renderPanel->add(renderParameters.color.set("particle color", ofColor(77, 130, 200)));
     renderPanel->add(renderParameters.useShaders.set("use shaders", false));
-    renderPanel->add(renderParameters.useFaketrails.set("use fake trails", false));
+    renderPanel->add(renderParameters.showVideoPreview.set("show video input", false));
+
+    ofxGuiGroup *ofTrialsPanel = renderPanel->addGroup("trials");
+    ofTrialsPanel->add(renderParameters.useFaketrails.set("use fake trails", false));
+    ofTrialsPanel->add(renderParameters.fakeTrialsVisibility.set("trials visibility", 0.05, 0.0, 0.3));
+    ofTrialsPanel->add(renderParameters.videopreviewVisibility.set("video visibility", 0.3, 0.0, 1.0));
+
     // TODO: add particle size factor
 
     renderPanel->setBackgroundColor(ofColor(100, 20, 100, 100));

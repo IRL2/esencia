@@ -1,53 +1,66 @@
 #include "RenderApp.h"
 
+
+ofImage video;
+ofColor BACKGROUND_COLOR = ofColor::black;
+
 //--------------------------------------------------------------
 void RenderApp::setup()
 {
     ofSetWindowTitle("esencia screen");
 
-    ofSetVerticalSync(true);
-    ofSetFrameRate(60);
-
-    ofBackground(0, 0, 0, 120);
-
     ofDisableArbTex();
+    ofEnableAlphaBlending();
 
     windowResized(ofGetWidth(), ofGetHeight());
 
     shader.load("shaderBlur");
-    //shaderBloom.load("", "bloom.frag");
 }
- 
+
 //--------------------------------------------------------------
-void RenderApp::update(){
-}   
+void RenderApp::update()
+{
+    if (parameters->showVideoPreview) {
+    // update the segment image from the camera
+        video.setFromPixels(globalParameters->cameraParameters.previewSegment.getPixels());
+    }
+}
 
 //--------------------------------------------------------------
 void RenderApp::draw()
 {
     ofBackground(0);
-    //ofClear(0);
 
-
+    // draw elements
     fbo.begin();
+        // solid background or trail
+        if (parameters->useFaketrails) {
+            ofSetColor(0, 0, 0, (int)(parameters->fakeTrialsVisibility * 255));
+            ofDrawRectangle(0,0,ofGetWidth(), ofGetHeight());
+        }
+        else {
+            ofBackground(0);
+        }
 
-    if (parameters->useFaketrails) {
-        ofSetColor(0, 0, 0, 5);
-        ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
-    }
-    else {
-        ofBackground(0);
-    }
+        // video
+        if (parameters->showVideoPreview) {
+            ofSetColor(255, 255, 255, (int)(parameters->videopreviewVisibility * 255));
+            video.draw( ((ofGetHeight()*video.getWidth()/video.getHeight()) - ofGetWidth()) / -2 ,
+                        0, 
+                        ofGetHeight()*video.getWidth()/video.getHeight(),
+                        ofGetHeight() );
+        }
 
-    ofSetColor(parameters->color);
+        // particles
+        ofSetColor(parameters->color);
+        for (const auto &particle : *particles) {
+            ofDrawCircle(particle.position, particle.radius);
+        }
 
-    for (const auto &particle : *particles) {
-           // particle
-           ofDrawCircle(particle.position, particle.radius);
-       }
     fbo.end();
 
-
+    // shader effects
+    ofSetColor(255);
     if (parameters->useShaders) {
         fboS.begin();
         shader.begin();
@@ -71,9 +84,6 @@ void RenderApp::draw()
         fbo.draw(0, 0);
     }
 
-
-    ofSetColor(255);
-    ofDrawBitmapString((int) ofGetFrameRate(),20,20);
 }
 
 //--------------------------------------------------------------

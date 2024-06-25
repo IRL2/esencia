@@ -113,3 +113,4 @@ class Camera
         VideoSources currentVideosource;
 };
 
+void convertToTransparent(ofxCvGrayscaleImage &grayImage, ofImage &rgbaImage);

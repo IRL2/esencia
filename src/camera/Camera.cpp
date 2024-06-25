@@ -296,10 +296,9 @@ void Camera::update() {
 
     // update the preview images on the shared parameters data structure for the GUI
     parameters->previewSource.setFromPixels(source.getPixels());
-    parameters->previewSegment.setFromPixels(segment.getPixels());
-    parameters->previewBackground.setFromPixels(backgroundReference.getPixels()); // TO-DO: move where bgref is assigned, so is running only when need it
+    convertToTransparent(segment, parameters->previewSegment); // to-do: should be called only when accessed 
+    // parameters->previewBackground.setFromPixels(backgroundReference.getPixels()); // this does not need to run every update, so its placed when updating backgroundReference data
 }
-
 
 #pragma region Frame processing
 
@@ -528,6 +527,7 @@ void Camera::startBackgroundReferenceSampling(int samples) {
 void Camera::clearBackgroundReference() {
     ofLogNotice("Camera::clearBackgroundReference()") << "Clearing background";
     backgroundReference.set(0);
+    parameters->previewBackground.clear();
 }
 
 
@@ -541,6 +541,7 @@ void Camera::saveBackgroundReference(ofxCvGrayscaleImage image) {
         ofLogNotice("Camera::saveBackgroundReference()") << "File already exist, will be overwriten";
     }
     ofSaveImage(image.getPixels(), BG_REFERENCE_FILENAME);
+    parameters->previewBackground.setFromPixels(backgroundReference.getPixels()); // updates the gui preview
 }
 
 
@@ -558,6 +559,7 @@ bool Camera::restoreBackgroundReference(ofxCvGrayscaleImage & outputImage) {
         outputImage.allocate(pixels.getWidth(), pixels.getHeight());
         outputImage.setFromPixels(pixels);
         backgroundReferenceTaken = true;
+        parameters->previewBackground.setFromPixels(backgroundReference.getPixels()); // updates the gui preview // not perfect code, since this function should be agnostic and saving value to a pointer, but this param access is used directly
         ofLogNotice("Camera::restoreBackgroundReference") << "Load successfull";
     }
     else {
@@ -571,6 +573,28 @@ bool Camera::restoreBackgroundReference(ofxCvGrayscaleImage & outputImage) {
 
 
 #pragma region utils
+
+/// <summary>
+/// convert a grayscale image to a ofimage where black is full transparency, and shades of gray are white color but shades of transparency
+/// </summary>
+void convertToTransparent(ofxCvGrayscaleImage &grayImage, ofImage &rgbaImage) {
+    // use a mat(erial) for performance
+    cv::Mat cvGrayImage = cv::cvarrToMat(grayImage.getCvImage());
+    cv::Mat cvRgbaImage(cvGrayImage.rows, cvGrayImage.cols, CV_8UC4);
+
+    // grays to trnsparents
+    for (int y = 0; y < cvGrayImage.rows; ++y) {
+        for (int x = 0; x < cvGrayImage.cols; ++x) {
+            uchar grayValue = cvGrayImage.at<uchar>(y, x);
+            cvRgbaImage.at<cv::Vec4b>(y, x) = cv::Vec4b(255, 255, 255, grayValue);
+        }
+    }
+
+    // regenerate the modified data to an image
+    rgbaImage.allocate(cvRgbaImage.cols, cvRgbaImage.rows, OF_IMAGE_COLOR_ALPHA);
+    rgbaImage.setFromPixels(cvRgbaImage.data, cvRgbaImage.cols, cvRgbaImage.rows, OF_IMAGE_COLOR_ALPHA);
+}
+
 
 /// <summary>
 /// save an image, used for debugging and documentation

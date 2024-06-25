@@ -46,6 +46,9 @@ public:
         ofParameter<glm::vec2> windowSize; // right now its equals to the render window size
         ofParameter<bool> useShaders = false;
         ofParameter<bool> useFaketrails = false;
+        ofParameter<bool> showVideoPreview = false;
+        ofParameter<float> fakeTrialsVisibility = 0.0; // layer alpha value that produces particle trails
+        ofParameter<float> videopreviewVisibility = 0.0; // layer alpha value
     };
     RenderParameters renderParameters;
 
@@ -67,7 +70,6 @@ public:
         ofParameter<bool> showPolygons = false;
 
         ofParameter<bool> startBackgroundReference = true;
-        //ofParameter<int> backgroundSamples;
         ofParameter<bool> saveDebugImages = false;
         ofParameter<bool> recordTestingVideo = false;
         ofParameter<bool> useMask = false;
