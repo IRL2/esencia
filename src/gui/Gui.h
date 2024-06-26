@@ -36,6 +36,8 @@ public:
         ofParameter<float> coupling;
         ofParameter<bool> applyThermostat;
         ofParameter<glm::vec2> worldSize;
+        ofParameter<bool> limitedFps = true;
+        // ofParameter<int> fps = 30;
     };
     SimulationParameters simulationParameters;
 
@@ -120,6 +122,9 @@ public:
 
         // to store the preview videos from the camera, they will be displayed inside gui controls
         ofImage cameraSource, cameraSegment, cameraBackground;
+
+        // listener
+        void limiteFps(bool &v);
 };
 
 

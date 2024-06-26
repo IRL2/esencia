@@ -15,10 +15,10 @@ void Gui::setup()
 
     configureParticlesPanel(1, 1, 8, 0);
     configureVideoinitialPanel(1, 9, 8, 0);
-    configureVideoprocessingPanel(11, 8, 8, 0);
-    configureSimulationPanel(22, 4, 10, 0);
-    configureRenderPanel(25, 11, 8, 0);
-    configureSystemstatsPanel((ofGetWindowSize().x - (9*30))/30, 1, 8, 0);
+    configureVideoprocessingPanel(13, 8, 8, 0);
+    configureSimulationPanel(25, 3, 7, 0);
+    configureRenderPanel(25, 12, 8, 0);
+    configureSystemstatsPanel(12, 1, 8, 0);
 
 //     cameraGroup.add(ofParameter<string>().set("DEBUG"));
 // #ifdef DEBUG_IMAGES
@@ -75,7 +75,6 @@ float inverseExponentialFunction(float x) {
     float c = log((E*x*R) +1);
     float d = b * c;
     return d;
-    // return ( (PARTICLES_MAX / (log((exp(1) *R) +1) ) ) * (log( (exp(1)*x*R) + 1) ));
 }
 
 float reversedInverseExponentialFunction(float y) {
@@ -85,7 +84,6 @@ float reversedInverseExponentialFunction(float y) {
     float d = a * b;
     float e = exp(d-1) - c;
     return e / R;
-    // return exp( ( ( (y / PARTICLES_MAX) * log( (exp(1)*R)+1) )) - 1 ) - (1/(exp(1)) ) / R;
 }
 
 
@@ -95,10 +93,10 @@ void Gui::configureParticlesPanel(int x, int y, int w, int h)
     particlesPanel = gui.addPanel("particles");
 	
     // this one uses exponential sliders
-    ofxGuiFloatFunctionSlider* functionSlider = particlesPanel->add<ofxGuiFloatFunctionSlider>(simulationParameters.ammount.set("ammount", PARTICLES_MAX/3, PARTICLES_MIN, PARTICLES_MAX) , ofJson({{"type", "circular"}, {"width", 180}, {"height", 130}, {"precision", 0}}) );
-    functionSlider->setFunctions(inverseExponentialFunction, reversedInverseExponentialFunction);
+    ofxGuiFloatFunctionSlider* functionAmmount = particlesPanel->add<ofxGuiFloatFunctionSlider>(simulationParameters.ammount.set("ammount", PARTICLES_MAX/3, PARTICLES_MIN, PARTICLES_MAX) , ofJson({{"type", "circular"}, {"width", 180}, {"height", 130}, {"precision", 0}}) );
+    functionAmmount->setFunctions(inverseExponentialFunction, reversedInverseExponentialFunction);
 
-    particlesPanel->add(simulationParameters.radius.set("radius", 10, 1, 50));
+    particlesPanel->add(simulationParameters.radius.set("scale", 10, 1, 30), ofJson({{"height", 50}, {"precision", 0}}));
 
     particlesPanel->setBackgroundColor(ofColor(200, 20, 20, 100));
     particlesPanel->loadTheme("support/gui-styles.json", true);
@@ -116,8 +114,8 @@ void Gui::configureSimulationPanel(int x, int y, int w, int h)
     simulationPanel->add(simulationParameters.applyThermostat.set("apply thermostat", true));
 
     ofxGuiContainer *p = simulationPanel->addContainer("" , ofJson({{"direction", "horizontal"}}) );
-    p->add(simulationParameters.targetTemperature.set("eq temp", 25000.0, 1000.0, 1000000.0) , ofJson({{"type", "circular"}, {"width", 150}, {"height", 100}, {"precision", 0}}));
-    p->add(simulationParameters.coupling.set("coupling", 0.5, 0.1, 1.0), ofJson({{"type", "circular"}, {"width", 150}, {"height", 100}, {"precision", 3}}));
+    p->add(simulationParameters.targetTemperature.set("\nequilibrium\ntemperature", 25000.0, 1000.0, 1000000.0) , ofJson({{"width", 100}, {"height", 150}, {"precision", 0}}));
+    p->add(simulationParameters.coupling.set("Berendsen\nthermostat\ncoupling", 0.5, 0.1, 1.0), ofJson({{"width", 100}, {"height", 150}, {"precision", 3}}));
 
     simulationPanel->setBackgroundColor(ofColor(180, 180, 180, 100));
     simulationPanel->loadTheme("support/gui-styles.json", true);
@@ -130,17 +128,20 @@ void Gui::configureSimulationPanel(int x, int y, int w, int h)
 void Gui::configureRenderPanel(int x, int y, int w, int h)
 {
     renderPanel = gui.addPanel("render");
-    renderPanel->add(renderParameters.color.set("particle color", ofColor(77, 130, 200)));
+    renderPanel->add(renderParameters.color.set("particle color", ofColor(77, 130, 200)))->minimize();
     renderPanel->add(renderParameters.useShaders.set("use shaders", false));
-    renderPanel->add(renderParameters.showVideoPreview.set("show video input", false));
 
-    ofxGuiGroup *ofTrialsPanel = renderPanel->addGroup("trials");
-    ofTrialsPanel->add(renderParameters.useFaketrails.set("use fake trails", false));
-    ofTrialsPanel->add(renderParameters.fakeTrialsVisibility.set("trials visibility", 0.05, 0.0, 0.3));
-    ofTrialsPanel->add(renderParameters.videopreviewVisibility.set("video visibility", 0.3, 0.0, 1.0));
+    // video
+    ofxGuiGroup *vp = renderPanel->addGroup("video");
+    vp->add(renderParameters.showVideoPreview.set("visible", false));
+    vp->add(renderParameters.videopreviewVisibility.set("overlay", 0.3, 0.0, 1.0));
+
+    // trails
+    ofxGuiGroup *ofTrialsPanel = renderPanel->addGroup("trails");
+    ofTrialsPanel->add(renderParameters.useFaketrails.set("enable", false));
+    ofTrialsPanel->add(renderParameters.fakeTrialsVisibility.set("overlay", 0.05, 0.0, 0.3));
 
     // TODO: add particle size factor
-
     renderPanel->setBackgroundColor(ofColor(100, 20, 100, 100));
     renderPanel->loadTheme("support/gui-styles.json", true);
 
@@ -167,7 +168,7 @@ void Gui::configureVideoinitialPanel(int x, int y, int w, int h)
     
     // DEPTH CLIPPING
     ofxGuiGroup *cameraClippingPanel = videoOriginPanel->addGroup("depth clipping");
-    cameraParameters.clipNear.set("range", 20, 0, 255);
+    cameraParameters.clipNear.set("visibility range", 20, 0, 255);
     cameraParameters.clipFar.set(170);
     cameraClippingPanel->add<ofxGuiIntRangeSlider>(cameraParameters.clipNear, cameraParameters.clipFar);
     cameraClippingPanel->setWidth(w*30);
@@ -222,14 +223,27 @@ void Gui::configureVideoprocessingPanel(int x, int y, int w, int h)
 void Gui::configureSystemstatsPanel(int x, int y, int w, int h)
 {
     ofxGuiPanel *statsPanel = gui.addPanel("performance");
-    statsPanel->addFpsPlotter();
+    ofxGuiContainer *p = statsPanel->addContainer("", ofJson({{"direction", "horizontal"}}));
+    p->addFpsPlotter(ofJson({{"width", 200}}));
+    p->add(simulationParameters.limitedFps.set("30fps", true), ofJson({{"type", "radio"}}));
+
+    simulationParameters.limitedFps.addListener(this, &Gui::limiteFps);
 
     statsPanel->loadTheme("support/gui-styles.json", true);
 
     statsPanel->setPosition(x*30, y*30);
     statsPanel->setWidth(w*30);
+    // statsPanel->setDraggable(true);
 }
 
+void Gui::limiteFps(bool &v)
+{
+    if (v){
+        ofSetFrameRate(30);
+    } else {
+        ofSetFrameRate(60);
+    }
+}
 
 void Gui::configurePresetsPanel(int x, int y, int w, int h) {
 

@@ -9,6 +9,7 @@ void Simulator::setup(Gui::SimulationParameters* params, Gui* globalParams) {
     parameters = params;
     globalParameters = globalParams;
     parameters->ammount.addListener(this, &Simulator::onGUIChangeAmmount);
+    parameters->radius.addListener(this, &Simulator::onGUIChangeRadius);
     parameters->applyThermostat.addListener(this, &Simulator::onApplyThermostatChanged);
     parameters->targetTemperature.addListener(this, &Simulator::onTemperatureChanged);
     parameters->coupling.addListener(this, &Simulator::onCouplingChanged);
@@ -179,6 +180,12 @@ void Simulator::initializeParticles(int ammount) {
 
 void Simulator::onGUIChangeAmmount(float& value) {
     initializeParticles(value);
+}
+
+void Simulator::onGUIChangeRadius(int& value) {
+    for (auto &p : particles) {
+        p.radius = value;
+    }
 }
 
 void Simulator::onRenderwindowResize(glm::vec2& worldSize) {
