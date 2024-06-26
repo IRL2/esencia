@@ -137,8 +137,6 @@ void Camera::setFrameSize(int width, int height) {
 /// <param name="value"></param>
 void Camera::onGUIStartBackgroundReference(bool &value) {
     if (value == true) {
-        // to-do: add a callback for when the process ends, so i can restart the button state
-        //parameters->startBackgroundReference = false;
         startBackgroundReferenceSampling(BG_SAMPLE_FRAMES);
     }
 }
@@ -502,9 +500,6 @@ void Camera::addSampleToBackgroundReference(ofxCvGrayscaleImage newFrame, ofxCvG
         // to-do: use new bgref class state
         backgroundReferenceTaken = true;
         isTakingBackgroundReference = false;
-
-        // to-do: decouple this (gui call) with a callback or something
-        parameters->startBackgroundReference = false;
     }
 }
 

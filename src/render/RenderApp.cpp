@@ -3,10 +3,11 @@
 
 ofImage video;
 ofColor BACKGROUND_COLOR = ofColor::black;
+ofRectangle videoRectangle;
 
 //--------------------------------------------------------------
 void RenderApp::setup()
-{
+{    
     ofSetWindowTitle("esencia screen");
 
     ofDisableArbTex();
@@ -23,6 +24,10 @@ void RenderApp::update()
     if (parameters->showVideoPreview) {
     // update the segment image from the camera
         video.setFromPixels(globalParameters->cameraParameters.previewSegment.getPixels());
+        videoRectangle.x =((ofGetHeight()*video.getWidth()/video.getHeight()) - ofGetWidth()) / -2;
+        videoRectangle.y = 0;
+        videoRectangle.width = ofGetHeight()*video.getWidth()/video.getHeight();
+        videoRectangle.height = ofGetHeight();
     }
 }
 
@@ -45,10 +50,7 @@ void RenderApp::draw()
         // video
         if (parameters->showVideoPreview) {
             ofSetColor(255, 255, 255, (int)(parameters->videopreviewVisibility * 255));
-            video.draw( ((ofGetHeight()*video.getWidth()/video.getHeight()) - ofGetWidth()) / -2 ,
-                        0, 
-                        ofGetHeight()*video.getWidth()/video.getHeight(),
-                        ofGetHeight() );
+            video.draw(videoRectangle);
         }
 
         // particles

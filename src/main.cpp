@@ -20,7 +20,7 @@ int main()
 
 
     // gui window
-    settings.setSize(34*30, 25*30);
+    settings.setSize(34*30, 32*30);
     settings.setPosition(glm::vec2(0,50));
     settings.resizable = true;
     auto mainWindow = ofCreateWindow(settings);
@@ -41,7 +41,6 @@ int main()
 
     // this is the connection between the simulator and the render
     renderApp->particles = &(mainApp->simulator.particles);
-    // to-do: link camera to render for shader purposes
 
     // ** note that parameters are not defined and exposed by the system (class) as the oF common way
     //    all params are defined by the GUI class in ofApp, then linked to each system

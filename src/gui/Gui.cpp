@@ -38,9 +38,6 @@ void Gui::update()
 
 void Gui::draw()
 {
-    // cameraParameters.previewSource.draw(0,0, ofGetWidth(), ofGetHeight());
-    // return; 
-
     fbo.begin();
         ofBackgroundGradient(ofColor::darkSlateGray, ofColor::lightGoldenRodYellow, OF_GRADIENT_LINEAR);
 
@@ -97,12 +94,9 @@ void Gui::configureParticlesPanel(int x, int y, int w, int h)
 {
     particlesPanel = gui.addPanel("particles");
 	
-    // exponential slider
-    ofxGuiFloatFunctionSlider* functionSlider = particlesPanel->add<ofxGuiFloatFunctionSlider>(simulationParameters.ammount.set("ammount", PARTICLES_MAX/10, PARTICLES_MIN, PARTICLES_MAX) , ofJson({{"type", "circular"}, {"width", 180}, {"height", 130}, {"precision", 0}}) );
+    // this one uses exponential sliders
+    ofxGuiFloatFunctionSlider* functionSlider = particlesPanel->add<ofxGuiFloatFunctionSlider>(simulationParameters.ammount.set("ammount", PARTICLES_MAX/3, PARTICLES_MIN, PARTICLES_MAX) , ofJson({{"type", "circular"}, {"width", 180}, {"height", 130}, {"precision", 0}}) );
     functionSlider->setFunctions(inverseExponentialFunction, reversedInverseExponentialFunction);
-
-    // to plotter for the ammount parameter, for debugging the inv expo function
-    // particlesPanel->add<ofxGuiValuePlotter>(simulationParameters.ammount, ofJson({{"height", 100}}));
 
     particlesPanel->add(simulationParameters.radius.set("radius", 10, 1, 50));
 
@@ -125,7 +119,7 @@ void Gui::configureSimulationPanel(int x, int y, int w, int h)
     p->add(simulationParameters.targetTemperature.set("eq temp", 25000.0, 1000.0, 1000000.0) , ofJson({{"type", "circular"}, {"width", 150}, {"height", 100}, {"precision", 0}}));
     p->add(simulationParameters.coupling.set("coupling", 0.5, 0.1, 1.0), ofJson({{"type", "circular"}, {"width", 150}, {"height", 100}, {"precision", 3}}));
 
-    simulationPanel->setBackgroundColor(ofColor(100, 100, 100, 100));
+    simulationPanel->setBackgroundColor(ofColor(180, 180, 180, 100));
     simulationPanel->loadTheme("support/gui-styles.json", true);
 
     simulationPanel->setPosition(x*30, y*30);
@@ -173,8 +167,9 @@ void Gui::configureVideoinitialPanel(int x, int y, int w, int h)
     
     // DEPTH CLIPPING
     ofxGuiGroup *cameraClippingPanel = videoOriginPanel->addGroup("depth clipping");
-    cameraClippingPanel->add(cameraParameters.clipFar.set("far clipping", 172, 0, 255));
-    cameraClippingPanel->add(cameraParameters.clipNear.set("near clipping", 20, 0, 255));
+    cameraParameters.clipNear.set("range", 20, 0, 255);
+    cameraParameters.clipFar.set(170);
+    cameraClippingPanel->add<ofxGuiIntRangeSlider>(cameraParameters.clipNear, cameraParameters.clipFar);
     cameraClippingPanel->setWidth(w*30);
     cameraClippingPanel->minimize();
     // TODO: use a single range slider
@@ -182,7 +177,8 @@ void Gui::configureVideoinitialPanel(int x, int y, int w, int h)
     // BACKGROUND
     ofxGuiGroup *cameraBackgroundPanel = videoOriginPanel->addGroup("background");
     cameraBackgroundPanel->add<ofxGuiGraphics>("reference", &cameraParameters.previewBackground.getTexture() , ofJson({{"height", 200}}));
-    cameraBackgroundPanel->add(cameraParameters.startBackgroundReference.set("take background reference", false));
+    cameraBackgroundPanel->add<ofxGuiButton>(cameraParameters.startBackgroundReference.set("grab background frame", false), ofJson({{"type", "fullsize"}, {"text-align", "center"}}));
+
     cameraBackgroundPanel->setWidth(w*30);
     cameraBackgroundPanel->minimize();
 }
@@ -212,12 +208,12 @@ void Gui::configureVideoprocessingPanel(int x, int y, int w, int h)
 
     // POLYGONS
     ofxGuiGroup *cameraPolygonsPanel = videoProcessPanel->addGroup("polygons");
-    cameraPolygonsPanel->add(cameraParameters.blobMinArea.set("minArea Blobs", 0.05f, 0.0f, 0.3f));
-    cameraPolygonsPanel->add(cameraParameters.blobMaxArea.set("maxArea Blobs", 0.8f, 0.5f, 1.0f));
-    cameraPolygonsPanel->add(cameraParameters.nConsidered.set("maximum blobs number consider", 8, 0, 64));
+    cameraPolygonsPanel->add(cameraParameters.blobMinArea.set("min size blob", 0.05f, 0.0f, 0.3f));
+    cameraPolygonsPanel->add(cameraParameters.blobMaxArea.set("max size blob", 0.8f, 0.5f, 1.0f));
+    cameraPolygonsPanel->add(cameraParameters.nConsidered.set("maximum blobs", 8, 0, 64));
     cameraPolygonsPanel->add(cameraParameters.showPolygons.set("show polygons", false));
     cameraPolygonsPanel->add(cameraParameters.fillHolesOnPolygons.set("find holes on polygon", true));
-    cameraPolygonsPanel->add(cameraParameters.polygonTolerance.set("polygonApproximation", 1, 0, 5));
+    cameraPolygonsPanel->add(cameraParameters.polygonTolerance.set("polygon approximation", 1, 0, 5));
     cameraPolygonsPanel->setWidth(w*30);
     cameraPolygonsPanel->minimize();
 }

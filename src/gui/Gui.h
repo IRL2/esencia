@@ -121,3 +121,5 @@ public:
         // to store the preview videos from the camera, they will be displayed inside gui controls
         ofImage cameraSource, cameraSegment, cameraBackground;
 };
+
+
