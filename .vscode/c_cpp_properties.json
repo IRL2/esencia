@@ -88,6 +88,7 @@
                 "${workspaceRoot}/../../../libs/kiss/include",
                 "${workspaceRoot}/../../../addons/ofxOpenCv/src",
                 "${workspaceRoot}/../../../addons/ofxOrbbec/src",
+                "${workspaceRoot}/../../../addons/ofxOrbbec/libs/orbbec/include",
                 "${workspaceRoot}/../../../addons/ofxGuiExtended/src",
                 "${workspaceRoot}/../../../addons/ofxGuiExtended/src/containers",
                 "${workspaceRoot}/../../../addons/ofxGuiExtended/src/controls",
@@ -98,8 +99,7 @@
                 "/usr/include/cairo",
                 "/usr/include/gstreamer-1.0",
                 "/usr/include/glib-2.0",
-                "${workspaceRoot}",
-                "/home/luis/workspace/repos/openFrameworks/addons/ofxGuiExtended/src"
+                "${workspaceRoot}"
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,

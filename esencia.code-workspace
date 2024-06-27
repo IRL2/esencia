@@ -10,5 +10,27 @@
 			"path": "${workspaceRoot}/../../../../addons"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"files.associations": {
+			"*.inc": "cpp",
+			"*.glsl": "cpp",
+			"*.ipp": "cpp",
+			"atomic": "cpp",
+			"hash_map": "cpp",
+			"*.tcc": "cpp",
+			"deque": "cpp",
+			"forward_list": "cpp",
+			"list": "cpp",
+			"string": "cpp",
+			"unordered_map": "cpp",
+			"unordered_set": "cpp",
+			"vector": "cpp",
+			"any": "cpp",
+			"hash_set": "cpp",
+			"fstream": "cpp",
+			"limits": "cpp",
+			"sstream": "cpp",
+			"system_error": "cpp"
+		}
+	}
 }
