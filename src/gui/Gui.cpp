@@ -93,7 +93,7 @@ void Gui::configureParticlesPanel(int x, int y, int w, int h)
     particlesPanel = gui.addPanel("particles");
 	
     // this one uses exponential sliders
-    ofxGuiFloatFunctionSlider* functionAmmount = particlesPanel->add<ofxGuiFloatFunctionSlider>(simulationParameters.ammount.set("ammount", PARTICLES_MAX/3, PARTICLES_MIN, PARTICLES_MAX) , ofJson({{"type", "circular"}, {"width", 180}, {"height", 130}, {"precision", 0}}) );
+    ofxGuiFloatFunctionSlider* functionAmmount = particlesPanel->add<ofxGuiFloatFunctionSlider>(simulationParameters.ammount.set("ammount", 120, PARTICLES_MIN, PARTICLES_MAX) , ofJson({{"type", "circular"}, {"width", 180}, {"height", 130}, {"precision", 0}}) );
     functionAmmount->setFunctions(inverseExponentialFunction, reversedInverseExponentialFunction);
 
     particlesPanel->add(simulationParameters.radius.set("scale", 10, 1, 30), ofJson({{"height", 50}, {"precision", 0}}));
@@ -114,7 +114,7 @@ void Gui::configureSimulationPanel(int x, int y, int w, int h)
     simulationPanel->add(simulationParameters.applyThermostat.set("apply thermostat", true));
 
     ofxGuiContainer *p = simulationPanel->addContainer("" , ofJson({{"direction", "horizontal"}}) );
-    p->add(simulationParameters.targetTemperature.set("\nequilibrium\ntemperature", 25000.0, 1000.0, 1000000.0) , ofJson({{"width", 100}, {"height", 150}, {"precision", 0}}));
+    p->add(simulationParameters.targetTemperature.set("\nequilibrium\ntemperature", 25000.0, 1000.0, 100000.0) , ofJson({{"width", 100}, {"height", 150}, {"precision", 0}}));
     p->add(simulationParameters.coupling.set("Berendsen\nthermostat\ncoupling", 0.5, 0.1, 1.0), ofJson({{"width", 100}, {"height", 150}, {"precision", 3}}));
 
     simulationPanel->setBackgroundColor(ofColor(180, 180, 180, 100));
@@ -135,6 +135,7 @@ void Gui::configureRenderPanel(int x, int y, int w, int h)
     ofxGuiGroup *vp = renderPanel->addGroup("video");
     vp->add(renderParameters.showVideoPreview.set("visible", false));
     vp->add(renderParameters.videopreviewVisibility.set("overlay", 0.3, 0.0, 1.0));
+    vp->add(renderParameters.videoColor.set("color", ofColor::white))->minimize();
 
     // trails
     ofxGuiGroup *ofTrialsPanel = renderPanel->addGroup("trails");
@@ -202,7 +203,7 @@ void Gui::configureVideoprocessingPanel(int x, int y, int w, int h)
 
     // PROCESSING
     ofxGuiGroup *cameraProcessingPanel = videoProcessPanel->addGroup("processing");
-    cameraProcessingPanel->add(cameraParameters.gaussianBlur.set("final gaussian blur", 0, 0, 100));
+    cameraProcessingPanel->add(cameraParameters.gaussianBlur.set("final gaussian blur", 0, 0, 130));
     cameraProcessingPanel->add(cameraParameters.floodfillHoles.set("floodfill holes", false));
     cameraProcessingPanel->add(cameraParameters.useMask.set("preserve depth", false));
     cameraProcessingPanel->setWidth(w*30);

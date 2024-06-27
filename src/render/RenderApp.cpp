@@ -49,7 +49,7 @@ void RenderApp::draw()
 
         // video
         if (parameters->showVideoPreview) {
-            ofSetColor(255, 255, 255, (int)(parameters->videopreviewVisibility * 255));
+            ofSetColor(parameters->videoColor, (int)(parameters->videopreviewVisibility * 255));
             video.draw(videoRectangle);
         }
 

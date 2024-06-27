@@ -51,6 +51,7 @@ public:
         ofParameter<bool> showVideoPreview = false;
         ofParameter<float> fakeTrialsVisibility = 0.0; // layer alpha value that produces particle trails
         ofParameter<float> videopreviewVisibility = 0.0; // layer alpha value
+        ofParameter<ofColor> videoColor;
     };
     RenderParameters renderParameters;
 
