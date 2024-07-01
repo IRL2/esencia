@@ -106,7 +106,6 @@ OF_ROOT = ../../..
 #   Note: Leave a leading space when adding list items with the += operator
 ################################################################################
 # PROJECT_CFLAGS = 
-PROJECT_CFLAGS += -w
 
 ################################################################################
 # PROJECT OPTIMIZATION CFLAGS
@@ -141,3 +140,7 @@ PROJECT_CFLAGS += -w
 ################################################################################
 # PROJECT_CXX = 
 # PROJECT_CC = 
+
+# Uncomment/comment below to switch between C++11 and C++17 ( or newer ). On macOS C++17 needs 10.15 or above.
+export MAC_OS_MIN_VERSION = 10.15
+export MAC_OS_CPP_VER = -std=c++17
