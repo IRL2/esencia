@@ -27,8 +27,8 @@ Currently working on the [Orbbec Femto Bolt](https://www.orbbec.com/products/tof
 2. Pull this repo on apps folder `{openframeworks_folder}/apps/myApps/`
 
 3. Pull the following addons on the addons folder `{openframeworks_folder}/addons/`:
-   - [ofxOrbbec](https://github.com/IRL2/ofxOrbbec/) (forked from [design-io] (https://github.com/design-io/ofxOrbbec/))
-   - [ofxGuiExtended](https://github.com/IRL2/ofxOrbbec/) (forked from [frauzufall](https://github.com/frauzufall/ofxGuiExtended) and [radamchin](https://github.com/radamchin/ofxGuiExtended))
+   - [ofxOrbbec](https://github.com/IRL2/ofxOrbbec/) (forked from [design-io](https://github.com/design-io/ofxOrbbec/))
+   - [ofxGuiExtended](https://github.com/IRL2/ofxOrbbec/) (forked from [frauzufall](https://github.com/frauzufall/ofxGuiExtended) via [radamchin fix](https://github.com/radamchin/ofxGuiExtended))
 
 \*Note this repo already includes the orbbec shared libraries on the bin and bin/libs folder, from the ofxOrbbec addon.
 
@@ -47,6 +47,8 @@ Currently working on the [Orbbec Femto Bolt](https://www.orbbec.com/products/tof
 - For Linux Visual Studio Code (min 1.80) open `esencia.code-workspace`
 - For macOS Xcode (14.1 or newer) open `esencia.xcode-project`:
 - Or just run `make` from the terminal
+*Release mode gives better performance.
 
-3. Play whith the rest of the parameters. [See the wiki](https://github.com/IRL2/esencia/wiki)
+3. Play whith the gui parameters [See the wiki](https://github.com/IRL2/esencia/wiki).
+   - Currently the simulation runs on CPU so its limited to 200 particles.
 
