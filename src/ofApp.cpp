@@ -3,14 +3,13 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 
-    ofSetWindowTitle("GUI");
+    ofSetWindowTitle("esencia");
 
     ofSetVerticalSync(false);
-    ofSetFrameRate(60);
+    ofSetFrameRate(30);
 
     gui.setup();
     
-    ofBackground(0);
 
     // to-do: pass camera parameters though setup
     camera.setup(&gui.cameraParameters);
@@ -30,7 +29,7 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    camera.draw();
+    // camera.draw();
     gui.draw();
 }
 
@@ -70,11 +69,13 @@ void ofApp::keyReleased(int key)
         break;
 
     }
-
-
-
 }
 
+
+void ofApp::windowResized(int w, int h)
+{
+    gui.windowResized(w, h);
+}
 
 
 /// <summary>

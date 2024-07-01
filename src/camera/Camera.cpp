@@ -114,7 +114,7 @@ void Camera::setFrameSize(int width, int height) {
     IMG_HEIGHT_4 = IMG_HEIGHT / 4;
     IMG_WIDTH_4 = IMG_WIDTH / 4;
 
-    cameraImage.allocate(IMG_WIDTH, IMG_HEIGHT);
+    source.allocate(IMG_WIDTH, IMG_HEIGHT);
     processedImage.allocate(IMG_WIDTH, IMG_HEIGHT);
     backgroundNewFrame.allocate(IMG_WIDTH, IMG_HEIGHT);
     backgroundReference.allocate(IMG_WIDTH, IMG_HEIGHT);
@@ -122,8 +122,12 @@ void Camera::setFrameSize(int width, int height) {
     segment.allocate(IMG_WIDTH, IMG_HEIGHT);
     fillMaskforHoles.allocate(IMG_WIDTH+2, IMG_HEIGHT+2);
     colorFrame.allocate(IMG_WIDTH, IMG_HEIGHT);
+    
+    parameters->previewSource.allocate(IMG_WIDTH, IMG_HEIGHT, OF_IMAGE_GRAYSCALE);
+    parameters->previewSegment.allocate(IMG_WIDTH, IMG_HEIGHT, OF_IMAGE_GRAYSCALE);
+    parameters->previewBackground.allocate(IMG_WIDTH, IMG_HEIGHT, OF_IMAGE_GRAYSCALE);
 
-    // to-do: if the prev/current background reference image has different resolution from the new video source: kaput.
+    // TO-DO: if the prev/current background reference image has different resolution from the new video source: kaput.
 }
 
 
@@ -133,8 +137,6 @@ void Camera::setFrameSize(int width, int height) {
 /// <param name="value"></param>
 void Camera::onGUIStartBackgroundReference(bool &value) {
     if (value == true) {
-        // to-do: add a callback for when the process ends, so i can restart the button state
-        //parameters->startBackgroundReference = false;
         startBackgroundReferenceSampling(BG_SAMPLE_FRAMES);
     }
 }
@@ -218,7 +220,7 @@ void Camera::draw() {
     ofSetHexColor(0xffffff);
     
     //prerecordedVideo.draw(1, 1);
-    cameraImage.draw(1, 1, IMG_WIDTH_2-1, IMG_HEIGHT_2-1);
+    source.draw(1, 1, IMG_WIDTH_2-1, IMG_HEIGHT_2-1);
     ofDrawBitmapStringHighlight("Raw camera", 11, 20, ofColor(30,30,30), ofColor(104,140,247));
 
     backgroundNewFrame.draw(1, IMG_HEIGHT_2+1, IMG_WIDTH_2-1, IMG_HEIGHT_2-1);
@@ -268,7 +270,7 @@ void Camera::update() {
 
         if (prerecordedVideo.isFrameNew()) {
             colorFrame.setFromPixels(prerecordedVideo.getPixels());
-            cameraImage = colorFrame;
+            source = colorFrame;
         }
     }
 
@@ -276,19 +278,25 @@ void Camera::update() {
         orbbecCam.update();
 
         if (orbbecCam.isFrameNewDepth()) {
-            cameraImage.setFromPixels(orbbecCam.getDepthPixels());
+            source.setFromPixels(orbbecCam.getDepthPixels());
         }
     }
 
     // to-do: make backgroundref an object with state?
     if (isTakingBackgroundReference) {
-        addSampleToBackgroundReference(cameraImage, backgroundReference, BG_SAMPLE_FRAMES);
+        addSampleToBackgroundReference(source, backgroundReference, BG_SAMPLE_FRAMES);
         return;
     }
 
-    processCameraFrame(cameraImage, backgroundReference);
-}
+    // all the processing from source to extract the final segment
+    processCameraFrame(source, backgroundReference);
 
+
+    // update the preview images on the shared parameters data structure for the GUI
+    parameters->previewSource.setFromPixels(source.getPixels());
+    convertToTransparent(segment, parameters->previewSegment); // to-do: should be called only when accessed 
+    // parameters->previewBackground.setFromPixels(backgroundReference.getPixels()); // this does not need to run every update, so its placed when updating backgroundReference data
+}
 
 #pragma region Frame processing
 
@@ -375,15 +383,17 @@ void Camera::processCameraFrame(ofxCvGrayscaleImage frame, ofxCvGrayscaleImage b
     processedImage.erode();
 
 
-    // 5. Mask image
+    // 5. Mask image = preserve depth
     // ---------
     //// use the mask against the original frame, to get the original depth values from the roi
     ////maskImage = segment; // or use a previous state of segment before holes were filled
     //maskImage = segment;
     if (parameters->useMask) {
         maskImage = processedImage;
-        segment *= maskImage; // this is for masking the original frame against the masked!
-        processedImage = segment;
+        processedImage = source;
+        processedImage *= maskImage;
+        // source *= maskImage;  // this is for masking the original frame against the masked!
+        // processedImage = source;
         saveDebugImage(processedImage, "processedImage", "masked");
     }
 
@@ -449,7 +459,7 @@ void Camera::addSampleToBackgroundReference(ofxCvGrayscaleImage newFrame, ofxCvG
 
     // original artwork strategy: sampleFrame = (sampleFrame + newFrame) * currentsamplef * (1 / (currentsamplef + 1)) //wtf?
 
-    output = cameraImage; // good enough for 1 frame!!
+    output = source; // good enough for 1 frame!!
 
     // ---- failed strategies:
 
@@ -490,9 +500,6 @@ void Camera::addSampleToBackgroundReference(ofxCvGrayscaleImage newFrame, ofxCvG
         // to-do: use new bgref class state
         backgroundReferenceTaken = true;
         isTakingBackgroundReference = false;
-
-        // to-do: decouple this (gui call) with a callback or something
-        parameters->startBackgroundReference = false;
     }
 }
 
@@ -508,13 +515,14 @@ void Camera::startBackgroundReferenceSampling(int samples) {
     isTakingBackgroundReference = true;
     backgroundReferenceTaken = false;
     clearBackgroundReference();
-    backgroundReference = cameraImage; // Important step to take an initial sample, so any strategy of adding/weighting/... dont start from a black image
+    backgroundReference = source; // Important step to take an initial sample, so any strategy of adding/weighting/... dont start from a black image
     backgroundReferenceLeftFrames = samples;
 }
 
 void Camera::clearBackgroundReference() {
     ofLogNotice("Camera::clearBackgroundReference()") << "Clearing background";
     backgroundReference.set(0);
+    parameters->previewBackground.clear();
 }
 
 
@@ -528,6 +536,7 @@ void Camera::saveBackgroundReference(ofxCvGrayscaleImage image) {
         ofLogNotice("Camera::saveBackgroundReference()") << "File already exist, will be overwriten";
     }
     ofSaveImage(image.getPixels(), BG_REFERENCE_FILENAME);
+    parameters->previewBackground.setFromPixels(backgroundReference.getPixels()); // updates the gui preview
 }
 
 
@@ -545,6 +554,7 @@ bool Camera::restoreBackgroundReference(ofxCvGrayscaleImage & outputImage) {
         outputImage.allocate(pixels.getWidth(), pixels.getHeight());
         outputImage.setFromPixels(pixels);
         backgroundReferenceTaken = true;
+        parameters->previewBackground.setFromPixels(backgroundReference.getPixels()); // updates the gui preview // not perfect code, since this function should be agnostic and saving value to a pointer, but this param access is used directly
         ofLogNotice("Camera::restoreBackgroundReference") << "Load successfull";
     }
     else {
@@ -558,6 +568,28 @@ bool Camera::restoreBackgroundReference(ofxCvGrayscaleImage & outputImage) {
 
 
 #pragma region utils
+
+/// <summary>
+/// convert a grayscale image to a ofimage where black is full transparency, and shades of gray are white color but shades of transparency
+/// </summary>
+void convertToTransparent(ofxCvGrayscaleImage &grayImage, ofImage &rgbaImage) {
+    // use a mat(erial) for performance
+    cv::Mat cvGrayImage = cv::cvarrToMat(grayImage.getCvImage());
+    cv::Mat cvRgbaImage(cvGrayImage.rows, cvGrayImage.cols, CV_8UC4);
+
+    // grays to trnsparents
+    for (int y = 0; y < cvGrayImage.rows; ++y) {
+        for (int x = 0; x < cvGrayImage.cols; ++x) {
+            uchar grayValue = cvGrayImage.at<uchar>(y, x);
+            cvRgbaImage.at<cv::Vec4b>(y, x) = cv::Vec4b(255, 255, 255, grayValue);
+        }
+    }
+
+    // regenerate the modified data to an image
+    rgbaImage.allocate(cvRgbaImage.cols, cvRgbaImage.rows, OF_IMAGE_COLOR_ALPHA);
+    rgbaImage.setFromPixels(cvRgbaImage.data, cvRgbaImage.cols, cvRgbaImage.rows, OF_IMAGE_COLOR_ALPHA);
+}
+
 
 /// <summary>
 /// save an image, used for debugging and documentation

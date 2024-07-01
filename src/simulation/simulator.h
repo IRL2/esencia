@@ -27,7 +27,8 @@ public:
 	// listeners
 	void updateWorldSize(int _width, int _height);
     void onRenderwindowResize(glm::vec2& worldSize);
-	void onGUIChangeAmmount(int& value);
+	void onGUIChangeAmmount(float& value);
+    void onGUIChangeRadius(int& value);
     void onApplyThermostatChanged(bool& value);
     void onTemperatureChanged(float& value);
     void onCouplingChanged(float& value);
@@ -60,8 +61,9 @@ public:
 
 private:
 	void initializeParticles(int ammount);
+	void initializeParticles(float ammount);
     
-
+    
 };
 
 

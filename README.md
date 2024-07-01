@@ -26,14 +26,11 @@ Currently working on the [Orbbec Femto Bolt](https://www.orbbec.com/products/tof
 
 2. Pull this repo on apps folder `{openframeworks_folder}/apps/myApps/`
 
-3. Pull [ofxOrbbec addon](https://github.com/IRL2/ofxOrbbec/) on addons folder `{openframeworks_folder}/addons/`
-	- ([official design-io addon](https://github.com/design-io/ofxOrbbec/))
+3. Pull the following addons on the addons folder `{openframeworks_folder}/addons/`:
+   - [ofxOrbbec](https://github.com/IRL2/ofxOrbbec/) (forked from [design-io] (https://github.com/design-io/ofxOrbbec/))
+   - [ofxGuiExtended](https://github.com/IRL2/ofxOrbbec/) (forked from [frauzufall](https://github.com/frauzufall/ofxGuiExtended) and [radamchin](https://github.com/radamchin/ofxGuiExtended))
 
-(deprecated, binary files are already included in the repo for convenience)
-4. Manually copy the compiled shared camera libraries into the project
-	- From `{openframeworks_folder}/addons/ofxOrbbec/libs/orbbec/lib/{your operating system}`
-	- Into `{openframeworks_folder}/apps/myApps/esencia/bin/`
-
+\*Note this repo already includes the orbbec shared libraries on the bin and bin/libs folder, from the ofxOrbbec addon.
 
 ### Flags
 - DEBUG_IMAGES shows a button to allow save each step of the video frame processing
@@ -42,16 +39,14 @@ Currently working on the [Orbbec Femto Bolt](https://www.orbbec.com/products/tof
 ## Usage
 
 1. Connect the camera
+- If ther camera is not connected or detected, it will automatically play a prerecorded video instead (file included).
 
 2. Run the project:
 
 - For Windows Visual Studio 2019 open the solution `esencia.sln`
 - For Linux Visual Studio Code (min 1.80) open `esencia.code-workspace`
 - For macOS Xcode (14.1 or newer) open `esencia.xcode-project`:
+- Or just run `make` from the terminal
 
-3. Press "sample background reference" and wait a second
-
-4. Adjust the thresholds to clip background objects
-
-5. Play whith the rest of the parameters. [See the wiki](https://github.com/IRL2/esencia/wiki)
+3. Play whith the rest of the parameters. [See the wiki](https://github.com/IRL2/esencia/wiki)
 

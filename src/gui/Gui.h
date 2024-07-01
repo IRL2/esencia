@@ -1,10 +1,17 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxGui.h"
+#include "ofxGuiExtended.h"
+#include "ofxOpenCv.h"
+
 
 //#define DEBUG_IMAGES true
 //#define RECORD_TESTING_VIDEO true
+
+
+const float PARTICLES_MIN = 1.0;
+const float PARTICLES_MAX = 200.0;
+
 
 class Gui
 {
@@ -13,63 +20,59 @@ public:
     void update();
     void draw();
 
-    ofxPanel guiPanel;
+    void keyReleased(int key);
+    void windowResized(int w, int h);
 
-    // ofxPanel simulationPanel;
-    // ofxPanel renderPanel;
-
-    ofParameterGroup parameters;
-
-    // (sub)groups for each system
-    ofParameterGroup simulation;
-    ofParameterGroup render;
-    ofParameterGroup camera;
-
-    ofParameter<string> guiSeparator;
-
+    ofxGui gui;
+    
     // structs to separate different engine values (and allow name duplication without extra verbosity) 
     // so each groups/struct can be assigned to its specific system
 
     struct SimulationParameters
     {
-        ofParameter<int> ammount;
-        ofParameter<int> radius;
+        ofParameter<float> ammount = 10;
+        ofParameter<int> radius = 1;
         ofParameter<float> targetTemperature;
         ofParameter<float> coupling;
         ofParameter<bool> applyThermostat;
         ofParameter<glm::vec2> worldSize;
+        ofParameter<bool> limitedFps = true;
+        // ofParameter<int> fps = 30;
     };
     SimulationParameters simulationParameters;
 
     struct RenderParameters
     {
-        ofParameter<int> size;
+        ofParameter<int> size = 3;
         ofParameter<ofColor> color;
-        ofParameter<bool> useShaders;
-        ofParameter<bool> useFaketrails;
         ofParameter<glm::vec2> windowSize; // right now its equals to the render window size
+        ofParameter<bool> useShaders = false;
+        ofParameter<bool> useFaketrails = false;
+        ofParameter<bool> showVideoPreview = false;
+        ofParameter<float> fakeTrialsVisibility = 0.0; // layer alpha value that produces particle trails
+        ofParameter<float> videopreviewVisibility = 0.0; // layer alpha value
+        ofParameter<ofColor> videoColor;
     };
     RenderParameters renderParameters;
 
 
     struct CameraParameters
     {
-        ofParameter<bool> enableClipping;
-        ofParameter<int> clipFar; // threshold low
-        ofParameter<int> clipNear; // threshold hi
+        ofParameter<bool> enableClipping = true;
+        ofParameter<int> clipFar = 170; // threshold low
+        ofParameter<int> clipNear = 20; // threshold hi
 
-        ofParameter<float> blobMinArea;
-        ofParameter<float> blobMaxArea;
-        ofParameter<int> gaussianBlur;
-        ofParameter<int> nConsidered;
-        ofParameter<bool> fillHolesOnPolygons;
-        ofParameter<bool> floodfillHoles;
+        ofParameter<float> blobMinArea = 0.05f;
+        ofParameter<float> blobMaxArea = 0.8f;
+        ofParameter<int> gaussianBlur = 0;
+        ofParameter<int> nConsidered = 0;
+        ofParameter<bool> fillHolesOnPolygons = false;
+        ofParameter<bool> floodfillHoles = true;
 
         ofParameter<float> polygonTolerance = 2.0f;
-        ofParameter<bool> showPolygons;
+        ofParameter<bool> showPolygons = false;
 
-        ofParameter<bool> startBackgroundReference;
-        //ofParameter<int> backgroundSamples;
+        ofParameter<bool> startBackgroundReference = true;
         ofParameter<bool> saveDebugImages = false;
         ofParameter<bool> recordTestingVideo = false;
         ofParameter<bool> useMask = false;
@@ -77,8 +80,52 @@ public:
         ofParameter<bool> _sourceOrbbec = false;
         ofParameter<bool> _sourceVideofile = false;
         ofParameter<bool> _sourceWebcam = false;
+
+        ofImage previewSegment;
+        ofImage previewSource;
+        ofImage previewBackground;
+        // ofParameter<ofxGuiGraphics> background;
     };
     CameraParameters cameraParameters;
 
+    private:
+        // ofParameterGroup *simulationConfig;
 
+        ofxGuiPanel* particlesPanel;
+        ofxGuiPanel* simulationPanel;
+        ofxGuiPanel* renderPanel;
+        ofxGuiPanel* statsPanel;
+        ofxGuiPanel* videoOriginPanel;
+        ofxGuiPanel* videoProcessPanel;
+
+        // actually sub groups
+        ofxGuiPanel* cameraSourcePreview;
+        ofxGuiPanel* cameraSourcePanel;
+        ofxGuiPanel* cameraClippingPanel;
+        ofxGuiPanel* cameraProcessingPanel;
+        ofxGuiPanel* cameraPolygonsPanel;
+        ofxGuiPanel* cameraBackgroundPanel;
+
+        ofxGuiPanel cameraGroup;
+
+        void configureParticlesPanel(int x, int y, int w, int h);
+        void configureSimulationPanel(int x, int y, int w, int h);
+        void configureVideoinitialPanel(int x, int y, int w, int h);
+        void configureVideoprocessingPanel(int x, int y, int w, int h);
+        void configureRenderPanel(int x, int y, int w, int h);
+        void configureSystemstatsPanel(int x, int y, int w, int h);
+        void configurePresetsPanel(int x, int y, int w, int h);
+        
+        void drawLineBetween(ofxGuiPanel &a, ofxGuiPanel &b);
+
+        // for the extra layers behind the GUI (lines, background, etc)
+        ofFbo fbo;
+
+        // to store the preview videos from the camera, they will be displayed inside gui controls
+        ofImage cameraSource, cameraSegment, cameraBackground;
+
+        // listener
+        void limiteFps(bool &v);
 };
+
+
