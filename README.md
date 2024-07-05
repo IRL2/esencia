@@ -23,12 +23,13 @@ Currently working on the [Orbbec Femto Bolt](https://www.orbbec.com/products/tof
 1. [Install and setup openFrameworks 0.12](https://openframeworks.cc/download/)
 	- [Windows visual studio 2019](https://openframeworks.cc/setup/vs/)
 	- [Linux visual studio code](https://openframeworks.cc/setup/vscode/)
+        - [OSX/macOS via Xcode](https://openframeworks.cc/setup/xcode/)
 
-2. Pull this repo on apps folder `{openframeworks_folder}/apps/myApps/`
+2. Clone this repo on apps folder `{openframeworks_folder}/apps/myApps/`
 
-3. Pull the following addons on the addons folder `{openframeworks_folder}/addons/`:
+3. Clone the following addons on the addons folder `{openframeworks_folder}/addons/`
    - [ofxOrbbec](https://github.com/IRL2/ofxOrbbec/) (forked from [design-io](https://github.com/design-io/ofxOrbbec/))
-   - [ofxGuiExtended](https://github.com/IRL2/ofxOrbbec/) (forked from [frauzufall](https://github.com/frauzufall/ofxGuiExtended) via [radamchin fix](https://github.com/radamchin/ofxGuiExtended))
+   - [ofxGuiExtended](https://github.com/radamchin/ofxGuiExtended) (forked from [frauzufall](https://github.com/frauzufall/ofxGuiExtended) via [radamchin fix](https://github.com/radamchin/ofxGuiExtended))
 
 \*Note this repo already includes the orbbec shared libraries on the bin and bin/libs folder, from the ofxOrbbec addon.
 
@@ -45,7 +46,7 @@ Currently working on the [Orbbec Femto Bolt](https://www.orbbec.com/products/tof
 
 - For Windows Visual Studio 2019 open the solution `esencia.sln`
 - For Linux Visual Studio Code (min 1.80) open `esencia.code-workspace`
-- For macOS Xcode (14.1 or newer) open `esencia.xcode-project`:
+- For macOS Xcode (14.1 or newer) open `esencia.xcode-project`
 - Or just run `make` from the terminal
 *Release mode gives better performance.
 
