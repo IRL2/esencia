@@ -3,19 +3,7 @@
 #include "ofMain.h"
 #include "../gui/Gui.h"
 #include "ofxOpenCv.h" // TODO: research on using a different datastructure to pass the frame segment and avoid loading opencv here
-
-struct Particle {
-    glm::vec2 position;
-    glm::vec2 velocity;
-    float mass = 5.0;
-    float kineticEnergy;
-    float radius;
-    std::vector<float> minimumDistance;
-    std::vector<float> LJenergyTermA;
-    std::vector<float> LJenergyTermB;
-    std::vector<float> LJgradientTermA;
-    std::vector<float> LJgradientTermB;
-};
+#include "Particle.h"
 
 class Simulator
 {

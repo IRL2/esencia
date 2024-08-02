@@ -1,9 +1,14 @@
 #include "simulator.h"
+#include "GPUMoveParticles.hpp"
+
 
 // <summary>
 // assign params pointer and listeners to value changes
 // </summary>
 // <param name="params">pointer from the gui structure</param>
+
+GPUMoveParticles moveParticles;
+
 
 void Simulator::setup(Gui::SimulationParameters* params, Gui* globalParams) {
     parameters = params;
@@ -16,24 +21,33 @@ void Simulator::setup(Gui::SimulationParameters* params, Gui* globalParams) {
 
     globalParameters->renderParameters.windowSize.addListener(this, &Simulator::onRenderwindowResize);
     initializeParticles(parameters->ammount);
-}
+
+    moveParticles.setup(particles);
+ }
 
 
 void Simulator::update() {
+    moveParticles.run(particles);
+    //for (auto& particle : particles) {
+    //    particle.position.x = particle.x;
+    //    particle.position.y = particle.y;
+    //    particle.velocity.x = particle.vx;
+    //    particle.velocity.y = particle.vy;
+    //}
+    return;
+
     for (auto &particle : particles) {
-            updateParticle(particle, timeStep);
-        }
+        updateParticle(particle, timeStep);
+    }
 
-    
-//            initializeParticles(parameters->ammount);
-
-        if(applyThermostat) {
-            applyBerendsenThermostat();
-        }
-        for (auto &particle : particles) {
-            checkWallCollisions(particle);
-        }
+    if(applyThermostat) {
+        applyBerendsenThermostat();
+    }
+    for (auto &particle : particles) {
+        checkWallCollisions(particle);
+    }
 }
+
 void Simulator::calculateEnergyTerms() {
     int count = particles.size();
     for (int i = 0; i < count; ++i) {
@@ -115,7 +129,7 @@ void Simulator::applyBerendsenThermostat() {
     float tau = coupling; // m_BerendsenThermostatCoupling
     float kB = 8.314; // Boltzmann constant
 
-    // temp calculation
+    //// temp calculation
     float currentTemperature = 0.0;
     float kineticEnergy = 0.0;
     for (const auto& particle : particles) {
@@ -158,6 +172,12 @@ void Simulator::initializeParticles(int ammount) {
             isOverlapping = false;
             p.position = glm::vec2(ofRandom(0, width), ofRandom(0, height));
             p.velocity = glm::vec2(ofRandom(-100.0f, 200.0f), ofRandom(-100.0f, 200.0f));
+
+            p.x = ofRandomWidth();
+            p.y = ofRandomHeight();
+            p.vx = ofRandom(-2, 2);
+            p.vy = ofRandom(-2, 2);
+
             p.radius = 5.0f;
             p.mass = 5.0f; // Adjust as necessary
 
@@ -193,7 +213,7 @@ void Simulator::onRenderwindowResize(glm::vec2& worldSize) {
 }
 
 void Simulator::updateWorldSize(int _width, int _height) {
-    ofLogNotice("Simulator::updateWorldSize()") << "wew size: " << _width << "," << _height;
+    ofLogNotice("Simulator::updateWorldSize()") << "new size: " << _width << "," << _height;
 
     width = _width;
     height = _height;

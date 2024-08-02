@@ -15,7 +15,7 @@ void RenderApp::setup()
 
     windowResized(ofGetWidth(), ofGetHeight());
 
-    shader.load("shaderBlur");
+    shader.load("shaders/shaderBlur");
 }
 
 //--------------------------------------------------------------
@@ -56,7 +56,8 @@ void RenderApp::draw()
         // particles
         ofSetColor(parameters->color);
         for (const auto &particle : *particles) {
-            ofDrawCircle(particle.position, particle.radius);
+            //ofDrawCircle(particle.position, particle.radius);
+            ofDrawCircle(particle.x, particle.y, 2);
         }
 
     fbo.end();
