@@ -819,9 +819,9 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="bin\data\kernels\moveParticle.cl" />
     <None Include="bin\data\shaders\shaderBlur.frag" />
     <None Include="bin\data\shaders\shaderBlur.vert" />
+    <None Include="bin\kernels\moveParticle.cl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ProjectExtensions>

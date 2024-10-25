@@ -480,11 +480,11 @@
     <Filter Include="addons\ofxOrbbec\libs\orbbec\include\libobsensor\hpp">
       <UniqueIdentifier>{65FB934E--371-8-4A-FF-9-3AE-EE79CC3912F6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\simulation\kernels">
-      <UniqueIdentifier>{574eedba-43f1-42aa-97c0-a9cfadb27dc3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="src\render\shaders">
       <UniqueIdentifier>{c6e1bd22-eb1c-46ef-a207-dd4c4a992e6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\simulation\kernels">
+      <UniqueIdentifier>{25c98b58-56a4-4a62-9f30-60e6c77e6d91}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -2467,7 +2467,7 @@
     <None Include="bin\data\shaders\shaderBlur.vert">
       <Filter>src\render\shaders</Filter>
     </None>
-    <None Include="bin\data\kernels\moveParticle.cl">
+    <None Include="bin\kernels\moveParticle.cl">
       <Filter>src\simulation\kernels</Filter>
     </None>
   </ItemGroup>

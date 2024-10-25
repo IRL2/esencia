@@ -43,6 +43,9 @@ void GPURunner::setupKernel(std::string_view kernelFilename, std::string_view ke
 
         // Load kernel code from file
         std::string kernelCode = loadKernel(kernelFilenameStr);
+        std::cout << "GPURunner::setupKernel():Kernel code:\n" << kernelCode;
+        std::cout << "GPURunner::setupKernel():Kernel program:\n" << kernelProgramStr.c_str();
+
 
         // Build the kernel code
         program = cl::Program(context, kernelCode);

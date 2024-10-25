@@ -13,7 +13,7 @@ public:
 
 
 void GPUMoveParticles::setup(std::vector<Particle>& particles) {
-    setupKernel("moveParticle.cl", "moveParticle");
+    setupKernel("kernels\\moveParticle.cl", "moveParticles");
 
     numParticles = sizeof( particles);
     cout << numParticles;

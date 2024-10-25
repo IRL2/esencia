@@ -10,22 +10,25 @@ struct Particle {
     float x, y;
     float vx, vy;
 
+    //float radius;
+    //float mass;
+
     // todo: use glm::vec2 everywhere
-    glm::vec2 position;
-    glm::vec2 velocity;
-    float mass = 5.0;
-    float kineticEnergy;
-    float radius;
-    std::vector<float> minimumDistance;
-    std::vector<float> LJenergyTermA;
-    std::vector<float> LJenergyTermB;
-    std::vector<float> LJgradientTermA;
-    std::vector<float> LJgradientTermB;
+    //glm::vec2 position;
+    //glm::vec2 velocity;
+    //float mass = 5.0;
+    //float kineticEnergy;
+    //std::vector<float> minimumDistance;
+    //std::vector<float> LJenergyTermA;
+    //std::vector<float> LJenergyTermB;
+    //std::vector<float> LJgradientTermA;
+    //std::vector<float> LJgradientTermB;
 };
 
 
 // lighter structure for kernel program, using simpler types // wip 
-struct Particle2 {
-    float x, y;
-    float vx, vy;
-};
+//struct Particle2 {
+//    float x, y;
+//    float vx, vy;
+//    float radius;
+//};
