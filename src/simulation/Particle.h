@@ -10,13 +10,12 @@ struct Particle {
     float x, y;
     float vx, vy;
 
-    //float radius;
-    //float mass;
+    float mass;
+    float radius;
 
     // todo: use glm::vec2 everywhere
     //glm::vec2 position;
     //glm::vec2 velocity;
-    //float mass = 5.0;
     //float kineticEnergy;
     //std::vector<float> minimumDistance;
     //std::vector<float> LJenergyTermA;

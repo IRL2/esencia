@@ -1,6 +1,17 @@
 struct Particle {
+    // WARNING!
+    // Be sure that this particle structure match to the one passed from the simulator GPURunner
+    // if not you must transform it when pushing in-out to-from the kernel
+    // otherwhise the buffer wont match and the calculations will be stored in different memory addresses
+
     float x, y;
     float vx, vy;
+
+    float mass;
+    float radius;
+
+    //glm::vec2 position;
+    //std::vector<float> minimumDistance;
 };
 
 kernel void moveParticles(global struct Particle* particles) {

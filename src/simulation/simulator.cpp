@@ -28,10 +28,6 @@ void Simulator::setup(Gui::SimulationParameters* params, Gui* globalParams) {
 
 void Simulator::update() {
     moveParticles.run(particles);
-    //for (auto& particle : particles) {
-    //    particle.x += particle.vx;
-    //    particle.y += particle.vy;
-    //}
     return;
 
     for (auto &particle : particles) {
@@ -123,6 +119,8 @@ void Simulator::updateParticle(Particle &particle, float deltaTime) {
 }
 
 void Simulator::applyBerendsenThermostat() {
+    ///// ----- 
+
     //float targetTemp = targetTemperature; // m_EquilibriumTemperature
     //float tau = coupling; // m_BerendsenThermostatCoupling
     //float kB = 8.314; // Boltzmann constant
@@ -159,36 +157,45 @@ void Simulator::initializeParticles(float ammount) {
     initializeParticles((int)ammount);
 }
 
+//
+//
+/// <summary>
+/// Fullfills the particles vector
+/// Reuses pre-existent particles
+/// <summary>
+/// <param name="params">tottal ammount of particles</param>
 void Simulator::initializeParticles(int ammount) {
-    particles.clear(); // Clear existing particles
-    //particles.resize(ammount); // Resize to hold the new particles
+    int previousAmmount = particles.size();
+    particles.resize(ammount); // Resize to hold the new particles
 
-    for (int i = 0; i < ammount; ++i) {
-        Particle p;
-        bool isOverlapping;
-        do {
-            isOverlapping = false;
-            p.x = ofRandomWidth();
-            p.y = ofRandomHeight();
-            p.vx = 0.1 + ofRandom(2);
-            p.vy = 0.1 + ofRandom(2);
+    // only initialize new particles when the ammount grows
+    if (ammount > previousAmmount) {
+        for (int i = previousAmmount; i < ammount; ++i) {
+            Particle p = particles[i];
+            bool isOverlapping = false;
+            do {
+                isOverlapping = false;
+                p.x = ofRandomWidth();
+                p.y = ofRandomHeight();
+                p.vx = ofRandom(-2.0, 2.0);
+                p.vy = ofRandom(-2.0, 2.0);
 
+                p.radius = 2.0f;
+                p.mass = 5.0f;
 
-            //p.radius = 5.0f;
-            //p.mass = 5.0f;
-
-            // Check for overlap with existing particles
-            //for (const auto& other : particles) {
-            //    if (glm::distance(p.position, other.position) < (p.radius + other.radius)) {
-            //        isOverlapping = true;
-            //        break;
-            //    }
-            //}
-        } while (isOverlapping); // Try new positions for the current particle until no overlap
+                // Check for overlap with existing particles
+                for (const auto& other : particles) {
+                    if (abs(p.x - other.x) < p.radius && abs(p.y - other.y) < p.radius) {
+                        isOverlapping = true;
+                        break;
+                    }
+                }
+            } while (isOverlapping); // Try new positions for the current particle until no overlap
         
-        particles.push_back(p);
+            particles[i] = p;
+        }
     }
-    ofLogNotice("Simulator::initializeParticles():Number of particles") << particles.size() << "\\n";
+    ofLogVerbose("Simulator::initializeParticles():Number of particles") << particles.size();
 
     calculateEnergyTerms(); // Calculate the energy terms after initializing particles
 }
@@ -197,11 +204,14 @@ void Simulator::initializeParticles(int ammount) {
 
 void Simulator::onGUIChangeAmmount(float& value) {
     initializeParticles(value);
+    moveParticles.setBufferSize(particles);
 }
 
 void Simulator::onGUIChangeRadius(int& value) {
+    // to-do: radius can be a global value for the whole particles set
+    //        no need to add this to each item, for now (when more than one particle kind were included, we can separate this)
     for (auto &p : particles) {
-        //p.radius = value;
+        p.radius = value;
     }
 }
 

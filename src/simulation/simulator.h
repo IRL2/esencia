@@ -25,7 +25,7 @@ public:
 	void recieveFrame(ofxCvGrayscaleImage frame);
 
 	// properties
-	vector<Particle> particles;
+	std::vector<Particle> particles;
     float epsilon = 5.0f;
     float timeStep = 0.01;
     void calculateEnergyTerms();
