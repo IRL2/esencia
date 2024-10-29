@@ -9,8 +9,9 @@
 //#define RECORD_TESTING_VIDEO true
 
 
-const float PARTICLES_MIN = 1.0;
-const float PARTICLES_MAX = 2000.0;
+const float PARTICLES_MIN  = 1.0;
+const float PARTICLES_MAX  = 10000.0;
+const float PARTICLES_INIT = 1000.0;
 
 
 class Gui

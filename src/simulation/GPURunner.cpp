@@ -43,9 +43,7 @@ void GPURunner::setupKernel(std::string_view kernelFilename, std::string_view ke
 
         // Load kernel code from file
         std::string kernelCode = loadKernel(kernelFilenameStr);
-        std::cout << "GPURunner::setupKernel():Kernel code:\n" << kernelCode;
-        std::cout << "GPURunner::setupKernel():Kernel program:\n" << kernelProgramStr.c_str();
-
+        ofLogVerbose("GPURunner::setupKernel():Kernel code") << kernelCode;
 
         // Build the kernel code
         program = cl::Program(context, kernelCode);
@@ -56,10 +54,10 @@ void GPURunner::setupKernel(std::string_view kernelFilename, std::string_view ke
 
         // Log build info
         std::string buildLog = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]);
-        std::cout << "GPURunner::setupKernel()::Build Log: " << buildLog;
+        ofLogNotice("GPURunner::setupKernel()::Build Log") << buildLog;
     }
     catch (std::exception& ex) {
-        std::cerr << "GPURunner::setupKernel()::Exception: " << ex.what() << std::endl;
+        ofLogFatalError("GPURunner::setupKernel()::Exception") << ex.what() << std::endl;
     }
 }
 

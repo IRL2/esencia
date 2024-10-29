@@ -9,8 +9,6 @@ struct Particle {
     // kernel simpler types wip 
     float x, y;
     float vx, vy;
-
-    float mass;
     float radius;
 
     // todo: use glm::vec2 everywhere
@@ -22,12 +20,6 @@ struct Particle {
     //std::vector<float> LJenergyTermB;
     //std::vector<float> LJgradientTermA;
     //std::vector<float> LJgradientTermB;
+    //float mass;
 };
 
-
-// lighter structure for kernel program, using simpler types // wip 
-//struct Particle2 {
-//    float x, y;
-//    float vx, vy;
-//    float radius;
-//};

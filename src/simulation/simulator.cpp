@@ -28,11 +28,11 @@ void Simulator::setup(Gui::SimulationParameters* params, Gui* globalParams) {
 
 void Simulator::update() {
     moveParticles.run(particles);
-    return;
 
     for (auto &particle : particles) {
         updateParticle(particle, timeStep);
     }
+    return;
 
     if(applyThermostat) {
         applyBerendsenThermostat();
@@ -108,6 +108,20 @@ glm::vec2 Simulator::computeForce(Particle &particle) {
 }
 
 void Simulator::updateParticle(Particle &particle, float deltaTime) {
+    int c = 255;
+    if (particle.x > 0 && particle.x < globalParameters->cameraParameters.previewSegment.getWidth() &&
+        particle.y > 0 && particle.y < globalParameters->cameraParameters.previewSegment.getHeight()) {
+        c = globalParameters->cameraParameters.previewSource.getColor(particle.x, particle.y).a;
+        c = clamp(c, 1, 255);
+        if (c < 100) {
+            particle.vx *= -1;
+            particle.vy *= -1;
+        }
+    }
+    //float cc = 1.0 - (c / 250); // so it goes from 1.0 to 0.0
+    //particle.vx *= cc;
+    //particle.vy *= cc;
+
     // Velocity Verlet Integration
     //glm::vec2 force = computeForce(particle);
     //glm::vec2 acceleration = force / particle.mass;
@@ -181,7 +195,6 @@ void Simulator::initializeParticles(int ammount) {
                 p.vy = ofRandom(-2.0, 2.0);
 
                 p.radius = 2.0f;
-                p.mass = 5.0f;
 
                 // Check for overlap with existing particles
                 for (const auto& other : particles) {
