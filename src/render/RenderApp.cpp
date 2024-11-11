@@ -15,7 +15,7 @@ void RenderApp::setup()
 
     windowResized(ofGetWidth(), ofGetHeight());
 
-    shader.load("shaderBlur");
+    shader.load("shaders\\shaderBlur");
 }
 
 //--------------------------------------------------------------
