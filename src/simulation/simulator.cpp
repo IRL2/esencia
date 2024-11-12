@@ -8,14 +8,14 @@
 void Simulator::setup(Gui::SimulationParameters* params, Gui* globalParams) {
     parameters = params;
     globalParameters = globalParams;
-    parameters->ammount.addListener(this, &Simulator::onGUIChangeAmmount);
+    parameters->amount.addListener(this, &Simulator::onGUIChangeAmmount);
     parameters->radius.addListener(this, &Simulator::onGUIChangeRadius);
     parameters->applyThermostat.addListener(this, &Simulator::onApplyThermostatChanged);
     parameters->targetTemperature.addListener(this, &Simulator::onTemperatureChanged);
     parameters->coupling.addListener(this, &Simulator::onCouplingChanged);
 
     globalParameters->renderParameters.windowSize.addListener(this, &Simulator::onRenderwindowResize);
-    particles = ParticleSystem(10000, parameters->ammount);
+    particles.setup(10000, parameters->amount);
 }
 
 
@@ -140,8 +140,8 @@ void Simulator::checkWallCollisions(Particle &particle) {
     }
 }
 
-void Simulator::initializeParticles(int ammount) {
-    particles.resize(ammount); // Resize to hold the new particles
+void Simulator::initializeParticles(int amount) {
+    particles.resize(amount); // Resize to hold the new particles
 
     calculateEnergyTerms(); // Calculate the energy terms after initializing particles
 }

@@ -93,7 +93,7 @@ void Gui::configureParticlesPanel(int x, int y, int w, int h)
     particlesPanel = gui.addPanel("particles");
 	
     // this one uses exponential sliders
-    ofxGuiFloatFunctionSlider* functionAmmount = particlesPanel->add<ofxGuiFloatFunctionSlider>(simulationParameters.ammount.set("ammount", 120, PARTICLES_MIN, PARTICLES_MAX) , ofJson({{"type", "circular"}, {"width", 180}, {"height", 130}, {"precision", 0}}) );
+    ofxGuiFloatFunctionSlider* functionAmmount = particlesPanel->add<ofxGuiFloatFunctionSlider>(simulationParameters.amount.set("amount", 120, PARTICLES_MIN, PARTICLES_MAX) , ofJson({{"type", "circular"}, {"width", 180}, {"height", 130}, {"precision", 0}}) );
     functionAmmount->setFunctions(inverseExponentialFunction, reversedInverseExponentialFunction);
 
     particlesPanel->add(simulationParameters.radius.set("scale", 10, 1, 30), ofJson({{"height", 50}, {"precision", 0}}));

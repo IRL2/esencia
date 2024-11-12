@@ -30,7 +30,7 @@ public:
 
     struct SimulationParameters
     {
-        ofParameter<float> ammount = 10;
+        ofParameter<float> amount = 10;
         ofParameter<int> radius = 1;
         ofParameter<float> targetTemperature;
         ofParameter<float> coupling;

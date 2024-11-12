@@ -29,10 +29,8 @@ public:
     std::vector<Particle> pool;
 
 
-    // Constructor that takes the maximum pool size
-    //ParticleSystem(size_t maxPoolSize) : pool(maxPoolSize), activeCount(0) {
-    ParticleSystem(size_t maxPoolSize, size_t initialAmmount) {
-
+    // Setup to initialize the pool size and define the initial active amount of particles
+    void setup(size_t maxPoolSize, size_t initialAmount) {
         ofLogVerbose("ParticleSystem::ParticleSystem():Initializing particle pool with: ") << maxPoolSize;
 
         pool.resize(maxPoolSize);
@@ -49,9 +47,8 @@ public:
         }
 
         active = pool;
-        //activeCount = maxPoolSize;
 
-        resize(initialAmmount);
+        resize(initialAmount);
     }
 
     // Resize the active particle count
@@ -73,7 +70,6 @@ public:
                 pool[i] = active[i];
             }
 
-
             // then, remove elements from active
             active.erase(active.begin() + newSize, active.end());
         }
@@ -82,8 +78,6 @@ public:
                 active.push_back(pool[i]);
             }
         }
-
-        //activeCount = newSize;
     }
 
     size_t size() {

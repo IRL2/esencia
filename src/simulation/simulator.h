@@ -24,7 +24,7 @@ public:
 
 	void recieveFrame(ofxCvGrayscaleImage frame);
 
-    ParticleSystem particles = ParticleSystem(10000, 200);
+    ParticleSystem particles;
 
     // sim properties
     float epsilon = 5.0f;
@@ -49,7 +49,7 @@ public:
     float coupling = 0.5;
 
 private:
-	void initializeParticles(int ammount);
+	void initializeParticles(int amount);
     
     
 };
