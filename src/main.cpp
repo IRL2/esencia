@@ -40,7 +40,7 @@ int main()
     // ofAddListener(renderApp->viewportResizeEvent, mainApp.get(), &ofApp::onViewportResizeEvent);
 
     // this is the connection between the simulator and the render
-    //renderApp->particles = &(mainApp->simulator.particles.getActiveParticles());
+    renderApp->particles = &(mainApp->simulator.particles.active);
 
     // ** note that parameters are not defined and exposed by the system (class) as the oF common way
     //    all params are defined by the GUI class in ofApp, then linked to each system

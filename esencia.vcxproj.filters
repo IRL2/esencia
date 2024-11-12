@@ -2448,4 +2448,8 @@
   <ItemGroup>
     <ResourceCompile Include="icon.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="bin\data\shaders\shaderBlur.frag" />
+    <None Include="bin\data\shaders\shaderBlur.vert" />
+  </ItemGroup>
 </Project>

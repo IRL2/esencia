@@ -1,10 +1,12 @@
 #pragma once
 #include <vector>
-#include <string_view>
+#include <algorithm>
+//#include <ranges>
 #include "ofMain.h"
 
 
 struct Particle {
+    int index;
     glm::vec2 position;
     glm::vec2 velocity;
     float mass = 5.0;
@@ -17,75 +19,75 @@ struct Particle {
     std::vector<float> LJgradientTermB;
 };
 
-class ParticlePool {
+
+class ParticleSystem {
 private:
-    std::vector<Particle> particles;
-    size_t size;
+    //size_t activeCount;
 
 public:
-    class ParticlesView {
-    private:
-        Particle* data;
-        size_t count;
+    std::vector<Particle> active;
+    std::vector<Particle> pool;
 
-    public:
-        ParticlesView(Particle* ptr, size_t size) : data(ptr), count(size) {}
 
-        Particle* begin() { return data; }
-        Particle* end() { return data + count; }
-        const Particle* begin() const { return data; }
-        const Particle* end() const { return data + count; }
-        size_t size() const   { return count; } // internally named count so dont get confused with the pool's size
-        size_t length() const { return size(); } // internally named count so dont get confused with the pool's size
-        Particle& operator[](size_t index) { return data[index]; }
-        const Particle& operator[](size_t index) const { return data[index]; }
-    };
+    // Constructor that takes the maximum pool size
+    //ParticleSystem(size_t maxPoolSize) : pool(maxPoolSize), activeCount(0) {
+    ParticleSystem(size_t maxPoolSize, size_t initialAmmount) {
 
-    ParticlePool(size_t poolSize) : size(0) {
-        ParticlePool(poolSize, ofGetWindowWidth(), ofGetWindowHeight());
-    }
+        ofLogVerbose("ParticleSystem::ParticleSystem():Initializing particle pool with: ") << maxPoolSize;
 
-    ParticlePool(size_t poolSize, float width, float height) : size(0) {
-        particles.resize(poolSize);
+        pool.resize(maxPoolSize);
 
-        for (int i = 0; i <= poolSize; i++) {
-            Particle p = particles[i];
-            bool isOverlapping = false;
-            do {
-                isOverlapping = false;
-                p.position.x = ofRandom(width);
-                p.position.y = ofRandom(height);
-                p.velocity.x = ofRandom(-2.0, 2.0);
-                p.velocity.y = ofRandom(-2.0, 2.0);
-
-                // Check for overlap with existing particles
-                for (const auto& other : particles) {
-                    if (abs(p.position.x - other.position.x) < p.radius && abs(p.position.y - other.position.y) < p.radius) {
-                        isOverlapping = true;
-                        break;
-                    }
-                }
-            } while (isOverlapping); // Try new positions for the current particle until no overlap
-
-            particles[i] = p;
+        int i = 0;
+        // Initialize the particles in the pool
+        for (auto& p : pool) {
+            p.index = i++;
+            // Set initial position, velocity, etc.
+            p.position.x = ofRandomWidth();
+            p.position.y = ofRandomHeight();
+            p.velocity.x = ofRandom(-2.0, 2.0);
+            p.velocity.y = ofRandom(-2.0, 2.0);
         }
-        ofLogVerbose("ParticlesPool::ParticlesPool():Initialized ") << poolSize << " particles";
+
+        active = pool;
+        //activeCount = maxPoolSize;
+
+        resize(initialAmmount);
     }
 
-    std::vector<Particle> getAllParticles() {
-        return particles;
+    // Resize the active particle count
+    void resize(size_t newActiveCount) {
+        ofLogVerbose("ParticleSystem::resize():Resizing to ") << newActiveCount;
+
+        
+        size_t currentSize = active.size();
+        size_t newSize = std::min(newActiveCount, pool.size());
+
+        if (currentSize == newSize) return;
+
+        //active = std::vector<Particle>(pool.begin(), pool.begin() + newSize); // working, but does not update pool
+
+        if (newSize < currentSize) { // remove items from active
+
+            // first update the pool with current active values
+            for (int i = newSize; i < currentSize; i++) {
+                pool[i] = active[i];
+            }
+
+
+            // then, remove elements from active
+            active.erase(active.begin() + newSize, active.end());
+        }
+        else if (newSize > currentSize) {  // add elements to active from pool
+            for (int i = currentSize; i < newSize; ++i) {
+                active.push_back(pool[i]);
+            }
+        }
+
+        //activeCount = newSize;
     }
 
-    ParticlesView getActiveParticles() {
-        return ParticlesView(particles.data(), size);
+    size_t size() {
+        return active.size();
     }
-
-    void resize(size_t newSize) {
-        size = newSize;
-    }
-
-    size_t getActiveCount() const { return size; }
-
-    size_t getPoolSize() const { return particles.size(); }
-
 };
+

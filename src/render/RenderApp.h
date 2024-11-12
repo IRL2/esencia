@@ -4,7 +4,7 @@
 #include "../ofApp.h"
 #include "../gui/Gui.h"
 #include "ofEvents.h"
-// #include <glm>
+#include "particles.h"
 
 class RenderApp : public ofBaseApp
 {

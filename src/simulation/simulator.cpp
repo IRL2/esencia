@@ -15,29 +15,26 @@ void Simulator::setup(Gui::SimulationParameters* params, Gui* globalParams) {
     parameters->coupling.addListener(this, &Simulator::onCouplingChanged);
 
     globalParameters->renderParameters.windowSize.addListener(this, &Simulator::onRenderwindowResize);
-    //initializeParticles(parameters->ammount);
+    particles = ParticleSystem(10000, parameters->ammount);
 }
 
 
 void Simulator::update() {
-    for (auto &particle : particles.getActiveParticles()) {
+    for (auto &particle : particles.active) {
             updateParticle(particle, timeStep);
         }
-
-    
-//            initializeParticles(parameters->ammount);
 
         if(applyThermostat) {
             applyBerendsenThermostat();
         }
-        for (auto &particle : particles.getActiveParticles()) {
+        for (auto &particle : particles.active) {
             checkWallCollisions(particle);
         }
 }
 void Simulator::calculateEnergyTerms() {
-    int count = particles.getActiveCount();
+    int count = particles.size();
     for (int i = 0; i < count; ++i) {
-        Particle &particle = particles.getActiveParticles()[i];
+        Particle &particle = particles.active[i];
         particle.minimumDistance.resize(count);
         particle.LJenergyTermA.resize(count);
         particle.LJenergyTermB.resize(count);
@@ -46,7 +43,7 @@ void Simulator::calculateEnergyTerms() {
 
         for (int j = 0; j < count; ++j) {
             float radiusi = particle.radius;
-            float radiusj = particles.getActiveParticles()[j].radius;
+            float radiusj = particles.active[j].radius;
 
             float MinDistance = 2.0f * (radiusi + radiusj);
             particle.minimumDistance[j] = MinDistance * MinDistance;
@@ -63,12 +60,12 @@ glm::vec2 Simulator::computeForce(Particle &particle) {
     float maxForce = 100000.0f;
     float minForce = 1e-6f;
 
-    int i = &particle - &particles.getActiveParticles()[0]; // Get the index of the particle
+    int i = &particle - &particles.active[0]; // Get the index of the particle
 
-    for (int j = 0; j < particles.getActiveCount(); ++j) {
+    for (int j = 0; j < particles.size(); ++j) {
         if (i == j) continue;
 
-        Particle &other = particles.getActiveParticles()[j];
+        Particle &other = particles.active[j];
         glm::vec2 rVec = particle.position - other.position;
         float r = glm::length(rVec);
         if (r < epsilon) {
@@ -118,7 +115,7 @@ void Simulator::applyBerendsenThermostat() {
     // temp calculation
     float currentTemperature = 0.0;
     float kineticEnergy = 0.0;
-    for (const auto& particle : particles.getActiveParticles()) {
+    for (const auto& particle : particles.active) {
         kineticEnergy += 0.5f * particle.mass * glm::length2(particle.velocity);
     }
     currentTemperature = kineticEnergy / (3.0 * kB);
@@ -127,7 +124,7 @@ void Simulator::applyBerendsenThermostat() {
     float scaleFactor = sqrt(targetTemp / (tau * currentTemperature));
 
     scaleFactor = ofClamp(scaleFactor, 0.95, 1.05);
-    for (auto& particle : particles.getActiveParticles()) {
+    for (auto& particle : particles.active) {
         particle.velocity *= scaleFactor;
     }
 }
@@ -143,10 +140,6 @@ void Simulator::checkWallCollisions(Particle &particle) {
     }
 }
 
-void Simulator::initializeParticles(float ammount) {
-    initializeParticles((int)ammount);
-}
-
 void Simulator::initializeParticles(int ammount) {
     particles.resize(ammount); // Resize to hold the new particles
 
@@ -156,11 +149,11 @@ void Simulator::initializeParticles(int ammount) {
 #pragma region Listeners
 
 void Simulator::onGUIChangeAmmount(float& value) {
-    initializeParticles(value);
+    particles.resize(value);
 }
 
 void Simulator::onGUIChangeRadius(int& value) {
-    for (auto &p : particles.getAllParticles()) {
+    for (auto &p : particles.active) { // TODO: On the particlesystem class update radious/anything from both vectors
         p.radius = value;
     }
 }

@@ -24,24 +24,24 @@ public:
 
 	void recieveFrame(ofxCvGrayscaleImage frame);
 
-	// properties
-    ParticlePool particles;
-	//vector<Particle> particles;
+    ParticleSystem particles = ParticleSystem(10000, 200);
+
+    // sim properties
     float epsilon = 5.0f;
     float timeStep = 0.01;
+
+    // sim functions
     void calculateEnergyTerms();
     glm::vec2 computeForce(Particle &particle);
     void calculateTotalKineticEnergy(Particle &particle);
     void updateParticle(Particle &particle, float deltaTime);
     void checkWallCollisions(Particle &particle);
-    
 
-//    void initializeParticles(int ammount);
 	// environment
     int width = 700;
     int height = 600;
 
-	// parameters
+	// gui parameters
 	Gui::SimulationParameters* parameters;
 	Gui* globalParameters;
     bool applyThermostat = true;
@@ -50,7 +50,6 @@ public:
 
 private:
 	void initializeParticles(int ammount);
-	void initializeParticles(float ammount);
     
     
 };
