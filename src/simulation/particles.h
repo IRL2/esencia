@@ -47,4 +47,6 @@ public:
     void resize(size_t newActiveCount);
 
     size_t size();
+
+    void updateRadiuses(float newRadius);
 };

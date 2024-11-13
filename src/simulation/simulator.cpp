@@ -16,6 +16,7 @@ void Simulator::setup(Gui::SimulationParameters* params, Gui* globalParams) {
 
     globalParameters->renderParameters.windowSize.addListener(this, &Simulator::onRenderwindowResize);
     particles.setup(10000, parameters->amount);
+    particles.updateRadiuses(parameters->radius);
 }
 
 
@@ -153,9 +154,7 @@ void Simulator::onGUIChangeAmmount(float& value) {
 }
 
 void Simulator::onGUIChangeRadius(int& value) {
-    for (auto &p : particles.active) { // TODO: On the particlesystem class update radious/anything from both vectors
-        p.radius = value;
-    }
+    particles.updateRadiuses(value);
 }
 
 void Simulator::onRenderwindowResize(glm::vec2& worldSize) {

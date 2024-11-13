@@ -15,10 +15,10 @@ void ParticleSystem::setup(size_t maxPoolSize, size_t initialAmount) {
     for (auto& p : pool) {
         p.index = i++;
         // Set initial position, velocity, etc.
-        p.position.x = ofRandomWidth();
-        p.position.y = ofRandomHeight();
-        p.velocity.x = ofRandom(-2.0, 2.0);
-        p.velocity.y = ofRandom(-2.0, 2.0);
+        p.position.x = ofRandomUniform(0, ofGetWidth());
+        p.position.y = ofRandomUniform(0, ofGetHeight());
+        p.velocity.x = ofRandom(0.5, 2.0) * (ofRandom(1.0) > 0.5 ? 1 : -1);
+        p.velocity.y = ofRandom(0.5, 2.0)* (ofRandom(1.0) > 0.5 ? 1 : -1);
 
         //TODO: Check for 'collisions at birth'
     }
@@ -67,5 +67,20 @@ void ParticleSystem::resize(size_t newActiveAmount) {
 /// <returns></returns>
 size_t ParticleSystem::size() {
     return active.size();
+}
+
+
+/// <summary>
+/// Update the radius in all particles, active and pool
+/// TODO: If radius is allways the same for all particles, we must use a single variable (maybe on the particle system) instead of having it on each particle, mostly because radius is a visual property not used in the simulation (not as mass for example)
+/// </summary>
+/// <param name="newRadiuses"></param>
+void ParticleSystem::updateRadiuses(float newRadiuses) {
+    for (auto &p : active) {
+        p.radius = newRadiuses;
+    }
+    for (auto &p : pool) {
+        p.radius = newRadiuses;
+    }
 }
 
