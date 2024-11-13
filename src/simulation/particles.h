@@ -4,14 +4,19 @@
 //#include <ranges>
 #include "ofMain.h"
 
-
+/// <summary>
+/// Partice structure to hold all data from a single particle
+/// </summary>
 struct Particle {
     int index;
+
     glm::vec2 position;
     glm::vec2 velocity;
+
     float mass = 5.0;
     float kineticEnergy = 1.0;
     float radius = 2.0;
+
     std::vector<float> minimumDistance;
     std::vector<float> LJenergyTermA;
     std::vector<float> LJenergyTermB;
@@ -20,68 +25,26 @@ struct Particle {
 };
 
 
+/// <summary>
+/// Particle system responsible of provide new particles to the simulation
+/// Creates a pool from the begining from which takes in out particles
+/// Pool is in sync from the active particle updates
+/// </summary>
 class ParticleSystem {
-private:
-    //size_t activeCount;
-
 public:
+    /// <summary>
+    /// The active particle set, the one used by the simulation
+    /// </summary>
     std::vector<Particle> active;
+    
+    /// <summary>
+    /// Holds the larger pool set from where new particles comes from
+    /// </summary>
     std::vector<Particle> pool;
 
+    void setup(size_t maxPoolSize, size_t initialAmount);
 
-    // Setup to initialize the pool size and define the initial active amount of particles
-    void setup(size_t maxPoolSize, size_t initialAmount) {
-        ofLogVerbose("ParticleSystem::ParticleSystem():Initializing particle pool with: ") << maxPoolSize;
+    void resize(size_t newActiveCount);
 
-        pool.resize(maxPoolSize);
-
-        int i = 0;
-        // Initialize the particles in the pool
-        for (auto& p : pool) {
-            p.index = i++;
-            // Set initial position, velocity, etc.
-            p.position.x = ofRandomWidth();
-            p.position.y = ofRandomHeight();
-            p.velocity.x = ofRandom(-2.0, 2.0);
-            p.velocity.y = ofRandom(-2.0, 2.0);
-        }
-
-        active = pool;
-
-        resize(initialAmount);
-    }
-
-    // Resize the active particle count
-    void resize(size_t newActiveCount) {
-        ofLogVerbose("ParticleSystem::resize():Resizing to ") << newActiveCount;
-
-        
-        size_t currentSize = active.size();
-        size_t newSize = std::min(newActiveCount, pool.size());
-
-        if (currentSize == newSize) return;
-
-        //active = std::vector<Particle>(pool.begin(), pool.begin() + newSize); // working, but does not update pool
-
-        if (newSize < currentSize) { // remove items from active
-
-            // first update the pool with current active values
-            for (int i = newSize; i < currentSize; i++) {
-                pool[i] = active[i];
-            }
-
-            // then, remove elements from active
-            active.erase(active.begin() + newSize, active.end());
-        }
-        else if (newSize > currentSize) {  // add elements to active from pool
-            for (int i = currentSize; i < newSize; ++i) {
-                active.push_back(pool[i]);
-            }
-        }
-    }
-
-    size_t size() {
-        return active.size();
-    }
+    size_t size();
 };
-
