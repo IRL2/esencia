@@ -93,10 +93,10 @@ void Gui::configureParticlesPanel(int x, int y, int w, int h)
     particlesPanel = gui.addPanel("particles");
 	
     // this one uses exponential sliders
-    ofxGuiFloatFunctionSlider* functionAmmount = particlesPanel->add<ofxGuiFloatFunctionSlider>(simulationParameters.ammount.set("ammount", 120, PARTICLES_MIN, PARTICLES_MAX) , ofJson({{"type", "circular"}, {"width", 180}, {"height", 130}, {"precision", 0}}) );
+    ofxGuiFloatFunctionSlider* functionAmmount = particlesPanel->add<ofxGuiFloatFunctionSlider>(simulationParameters.ammount.set("ammount", 100, PARTICLES_MIN, PARTICLES_MAX) , ofJson({{"type", "circular"}, {"width", 180}, {"height", 130}, {"precision", 0}}) );
     functionAmmount->setFunctions(inverseExponentialFunction, reversedInverseExponentialFunction);
 
-    particlesPanel->add(simulationParameters.radius.set("scale", 10, 1, 30), ofJson({{"height", 50}, {"precision", 0}}));
+    particlesPanel->add(simulationParameters.radius.set("scale", 5, 1, 30), ofJson({{"height", 50}, {"precision", 0}}));
 
     particlesPanel->setBackgroundColor(ofColor(200, 20, 20, 100));
     particlesPanel->loadTheme("support/gui-styles.json", true);
@@ -242,7 +242,7 @@ void Gui::limiteFps(bool &v)
     if (v){
         ofSetFrameRate(30);
     } else {
-        ofSetFrameRate(60);
+        ofSetFrameRate(120);
     }
 }
 
