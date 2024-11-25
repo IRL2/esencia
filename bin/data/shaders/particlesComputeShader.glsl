@@ -1,4 +1,3 @@
-// Shader code: particlesComputeShader.glsl
 #version 430
 
 layout(local_size_x = 256) in;
@@ -6,6 +5,7 @@ layout(local_size_x = 256) in;
 struct Particle {
     vec2 position;
     vec2 velocity;
+    float radius;
     float mass;
 };
 
@@ -13,30 +13,40 @@ layout(std430, binding = 0) buffer Particles {
     Particle particles[];
 };
 
+layout(binding = 0) uniform sampler2D depthField;
+
 uniform float deltaTime;
 uniform vec2 worldSize;
 uniform float targetTemperature;
 uniform float coupling;
 uniform bool applyThermostat;
-
-// Gravity or other global forces can be declared here.
-const vec2 globalForce = vec2(0.0, -9.8);
+uniform float depthFieldScale;
 
 void main() {
     uint index = gl_GlobalInvocationID.x;
-    
-    if (index >= particles.length()) {
-        return;
-    }
+    if (index >= particles.length()) return;
 
     Particle p = particles[index];
 
-    // Compute acceleration from forces
-    vec2 force = globalForce; // You can add other forces here
-    vec2 acceleration = force / p.mass;
+    // Sample depth field
+    vec2 texCoord = clamp(p.position / worldSize, vec2(0.0), vec2(1.0));
+    float depth = texture(depthField, texCoord).r;
 
-    // Update velocity using Euler integration
-    p.velocity += deltaTime * acceleration;
+    // Calculate gradient with correct force direction
+    vec2 texelSize = 1.0 / worldSize;
+    float dx = (texture(depthField, clamp(texCoord + vec2(texelSize.x, 0), vec2(0), vec2(1))).r -
+        texture(depthField, clamp(texCoord - vec2(texelSize.x, 0), vec2(0), vec2(1))).r) * 0.5;
+    float dy = (texture(depthField, clamp(texCoord + vec2(0, texelSize.y), vec2(0), vec2(1))).r -
+        texture(depthField, clamp(texCoord - vec2(0, texelSize.y), vec2(0), vec2(1))).r) * 0.5;
+
+    // Force points downhill (towards darker regions)
+    vec2 depthForce = depthFieldScale * vec2(dx, dy);
+
+    // Combined force and acceleration
+    vec2 acceleration = depthForce / p.mass;
+
+    // Update velocity with damping for stability
+    p.velocity = p.velocity * 0.99 + acceleration * deltaTime;
 
     // Apply thermostat if enabled
     if (applyThermostat) {
@@ -47,16 +57,16 @@ void main() {
         p.velocity *= scaleFactor;
     }
 
-    // Update position using Euler integration
-    p.position += deltaTime * p.velocity;
+    // Update position
+    p.position += p.velocity * deltaTime;
 
-    // Boundary conditions (bouncing off walls)
+    // Boundary conditions
     if (p.position.x < 0.0 || p.position.x > worldSize.x) {
-        p.velocity.x *= -1.0;
+        p.velocity.x *= -0.9;  // Added damping on collision
         p.position.x = clamp(p.position.x, 0.0, worldSize.x);
     }
     if (p.position.y < 0.0 || p.position.y > worldSize.y) {
-        p.velocity.y *= -1.0;
+        p.velocity.y *= -0.9;  // Added damping on collision
         p.position.y = clamp(p.position.y, 0.0, worldSize.y);
     }
 

@@ -8,7 +8,18 @@ void Simulator::setup(Gui::SimulationParameters* params, Gui* globalParams) {
     initializeParticles(parameters->ammount);
     setupComputeShader();
 
-    // Add listeners for real-time parameter updates
+    glGenTextures(1, &depthFieldTexture);
+    glBindTexture(GL_TEXTURE_2D, depthFieldTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    depthFieldScale = -500000.0f;
+    std::vector<float> initialDepth(width * height, 0.5f);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, initialDepth.data());
+    glBindTexture(GL_TEXTURE_2D, 0);
+
     parameters->ammount.addListener(this, &Simulator::onGUIChangeAmmount);
     parameters->radius.addListener(this, &Simulator::onGUIChangeRadius);
     parameters->applyThermostat.addListener(this, &Simulator::onApplyThermostatChanged);
@@ -47,6 +58,7 @@ void Simulator::setupComputeShader() {
     if (compileStatus != GL_TRUE) {
         char buffer[512];
         glGetShaderInfoLog(computeShader, 512, nullptr, buffer);
+        ofLogError() << "Shader compilation failed: " << buffer;
     }
 
     glAttachShader(computeShaderProgram, computeShader);
@@ -81,6 +93,11 @@ void Simulator::updateParticlesOnGPU() {
     glUniform1f(glGetUniformLocation(computeShaderProgram, "targetTemperature"), targetTemperature);
     glUniform1f(glGetUniformLocation(computeShaderProgram, "coupling"), coupling);
     glUniform1i(glGetUniformLocation(computeShaderProgram, "applyThermostat"), applyThermostat ? 1 : 0);
+    glUniform1f(glGetUniformLocation(computeShaderProgram, "depthFieldScale"), hasDepthField ? depthFieldScale : 0.0f);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, depthFieldTexture);
+    glUniform1i(glGetUniformLocation(computeShaderProgram, "depthField"), 0);
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssboParticles);
     glDispatchCompute((particles.size() + 255) / 256, 1, 1);
@@ -101,8 +118,40 @@ void Simulator::updateWorldSize(int _width, int _height) {
     parameters->worldSize.set(glm::vec2(_width, _height)); // we may also use the parameters->worlSize.x directly
 }
 
+
+
+void Simulator::updateDepthFieldTexture() {
+    if (!hasDepthField) return;
+
+    const unsigned char* pixels = currentDepthField.getPixels().getData();
+    int frameWidth = currentDepthField.getWidth();
+    int frameHeight = currentDepthField.getHeight();
+    std::vector<float> normalizedPixels(frameWidth * frameHeight);
+
+    // Normalize and invert pixels
+    for (int i = 0; i < frameWidth * frameHeight; i++) {
+        normalizedPixels[i] = 1.0f - (pixels[i] / 255.0f);
+    }
+
+    // Update texture dimensions if changed
+    if (frameWidth != width || frameHeight != height) {
+        width = frameWidth;
+        height = frameHeight;
+        glBindTexture(GL_TEXTURE_2D, depthFieldTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, normalizedPixels.data());
+    }
+    else {
+        glBindTexture(GL_TEXTURE_2D, depthFieldTexture);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RED, GL_FLOAT, normalizedPixels.data());
+    }
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 void Simulator::recieveFrame(ofxCvGrayscaleImage frame) {
-    return;
+    if (frame.getWidth() == 0 || frame.getHeight() == 0) return;
+    currentDepthField = frame;
+    hasDepthField = true;
+    updateDepthFieldTexture();
 }
 
 void Simulator::onGUIChangeAmmount(float& value) {

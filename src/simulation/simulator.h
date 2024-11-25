@@ -23,6 +23,7 @@ private:
     void initializeParticles(int amount);
     void setupComputeShader();
     void updateParticlesOnGPU();
+    void updateDepthFieldTexture();
 
     // Original listeners
     void onRenderwindowResize(glm::vec2& worldSize);
@@ -35,14 +36,18 @@ private:
 
     GLuint ssboParticles;
     GLuint computeShaderProgram;
+    GLuint depthFieldTexture;
     std::vector<Particle> particles;
 
-    int width = 700;
-    int height = 700;
+    int width = 640;
+    int height = 576;
     bool applyThermostat = true;
     float targetTemperature = 2000.0;
     float coupling = 0.5;
+    float depthFieldScale = -500000.0f;
+    bool hasDepthField = false;
 
+    ofxCvGrayscaleImage currentDepthField;
     Gui::SimulationParameters* parameters;
     Gui* globalParameters;
 };

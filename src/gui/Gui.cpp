@@ -133,7 +133,7 @@ void Gui::configureRenderPanel(int x, int y, int w, int h)
 
     // video
     ofxGuiGroup *vp = renderPanel->addGroup("video");
-    vp->add(renderParameters.showVideoPreview.set("visible", false));
+    vp->add(renderParameters.showVideoPreview.set("visible", true));
     vp->add(renderParameters.videopreviewVisibility.set("overlay", 0.3, 0.0, 1.0));
     vp->add(renderParameters.videoColor.set("color", ofColor::white))->minimize();
 
@@ -203,7 +203,7 @@ void Gui::configureVideoprocessingPanel(int x, int y, int w, int h)
 
     // PROCESSING
     ofxGuiGroup *cameraProcessingPanel = videoProcessPanel->addGroup("processing");
-    cameraProcessingPanel->add(cameraParameters.gaussianBlur.set("final gaussian blur", 0, 0, 130));
+    cameraProcessingPanel->add(cameraParameters.gaussianBlur.set("final gaussian blur", 90, 0, 130));
     cameraProcessingPanel->add(cameraParameters.floodfillHoles.set("floodfill holes", false));
     cameraProcessingPanel->add(cameraParameters.useMask.set("preserve depth", false));
     cameraProcessingPanel->setWidth(w*30);
