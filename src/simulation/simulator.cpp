@@ -15,7 +15,7 @@ void Simulator::setup(Gui::SimulationParameters* params, Gui* globalParams) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    depthFieldScale = -500000.0f;
+    depthFieldScale = 500000.0f;
     std::vector<float> initialDepth(width * height, 0.5f);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, initialDepth.data());
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -30,8 +30,38 @@ void Simulator::setup(Gui::SimulationParameters* params, Gui* globalParams) {
 
 void Simulator::initializeParticles(int amount) {
     particles.resize(amount);
+
+    // Get current window dimensions
+    float windowWidth = ofGetWidth();
+    float windowHeight = ofGetHeight();
+
+    // If video rectangle is not set up yet (first initialization),
+    // calculate default bounds that maintain aspect ratio of source image
+    float minX, maxX, minY, maxY;
+
+    if (videoRect.width <= 0 || videoRect.height <= 0) {
+        // Calculate default video rectangle similar to RenderApp
+        float scaledWidth = windowHeight * sourceWidth / sourceHeight;
+        float xOffset = (scaledWidth - windowWidth) / -2;
+
+        minX = xOffset;
+        maxX = xOffset + scaledWidth;
+        minY = 0;
+        maxY = windowHeight;
+    }
+    else {
+        // Use existing video rectangle bounds
+        minX = videoRect.x;
+        maxX = videoRect.x + videoRect.width;
+        minY = videoRect.y;
+        maxY = videoRect.y + videoRect.height;
+    }
+
     for (auto& particle : particles) {
-        particle.position = glm::vec2(ofRandom(1, width), ofRandom(1, height));
+        particle.position = glm::vec2(
+            ofRandom(minX, maxX),
+            ofRandom(minY, maxY)
+        );
         particle.velocity = glm::vec2(ofRandom(-100.0f, 100.0f), ofRandom(-100.0f, 100.0f));
         particle.mass = 5.0f;
         particle.radius = parameters->radius;
@@ -88,6 +118,7 @@ void Simulator::update() {
 void Simulator::updateParticlesOnGPU() {
     glUseProgram(computeShaderProgram);
 
+    // Basic uniforms
     glUniform1f(glGetUniformLocation(computeShaderProgram, "deltaTime"), 0.01f);
     glUniform2f(glGetUniformLocation(computeShaderProgram, "worldSize"), width, height);
     glUniform1f(glGetUniformLocation(computeShaderProgram, "targetTemperature"), targetTemperature);
@@ -95,10 +126,17 @@ void Simulator::updateParticlesOnGPU() {
     glUniform1i(glGetUniformLocation(computeShaderProgram, "applyThermostat"), applyThermostat ? 1 : 0);
     glUniform1f(glGetUniformLocation(computeShaderProgram, "depthFieldScale"), hasDepthField ? depthFieldScale : 0.0f);
 
+    // Video scaling uniforms
+    glUniform2f(glGetUniformLocation(computeShaderProgram, "videoOffset"), videoRect.x, videoRect.y);
+    glUniform2f(glGetUniformLocation(computeShaderProgram, "videoScale"), videoScaleX, videoScaleY);
+    glUniform2f(glGetUniformLocation(computeShaderProgram, "sourceSize"), sourceWidth, sourceHeight);
+
+    // Bind depth field texture
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, depthFieldTexture);
     glUniform1i(glGetUniformLocation(computeShaderProgram, "depthField"), 0);
 
+    // Bind particle buffer and dispatch compute shader
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssboParticles);
     glDispatchCompute((particles.size() + 255) / 256, 1, 1);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);

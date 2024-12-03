@@ -17,6 +17,9 @@ layout(binding = 0) uniform sampler2D depthField;
 
 uniform float deltaTime;
 uniform vec2 worldSize;
+uniform vec2 videoOffset;
+uniform vec2 videoScale;
+uniform vec2 sourceSize;
 uniform float targetTemperature;
 uniform float coupling;
 uniform bool applyThermostat;
@@ -28,19 +31,23 @@ void main() {
 
     Particle p = particles[index];
 
+    // Transform position to texture coordinates
+    vec2 adjustedPos = (p.position - videoOffset) / videoScale;
+    vec2 texCoord = adjustedPos / sourceSize;
+    texCoord = clamp(texCoord, vec2(0.0), vec2(1.0));
+
     // Sample depth field
-    vec2 texCoord = clamp(p.position / worldSize, vec2(0.0), vec2(1.0));
     float depth = texture(depthField, texCoord).r;
 
     // Calculate gradient with correct force direction
-    vec2 texelSize = 1.0 / worldSize;
+    vec2 texelSize = 1.0 / sourceSize;
     float dx = (texture(depthField, clamp(texCoord + vec2(texelSize.x, 0), vec2(0), vec2(1))).r -
         texture(depthField, clamp(texCoord - vec2(texelSize.x, 0), vec2(0), vec2(1))).r) * 0.5;
     float dy = (texture(depthField, clamp(texCoord + vec2(0, texelSize.y), vec2(0), vec2(1))).r -
         texture(depthField, clamp(texCoord - vec2(0, texelSize.y), vec2(0), vec2(1))).r) * 0.5;
 
-    // Force points downhill (towards darker regions)
-    vec2 depthForce = depthFieldScale * vec2(dx, dy);
+    // Scale the force according to video scale
+    vec2 depthForce = -depthFieldScale * vec2(dx, dy) * videoScale;
 
     // Combined force and acceleration
     vec2 acceleration = depthForce / p.mass;
@@ -60,14 +67,17 @@ void main() {
     // Update position
     p.position += p.velocity * deltaTime;
 
-    // Boundary conditions
-    if (p.position.x < 0.0 || p.position.x > worldSize.x) {
-        p.velocity.x *= -0.9;  // Added damping on collision
-        p.position.x = clamp(p.position.x, 0.0, worldSize.x);
+    // Boundary conditions using video rectangle bounds
+    vec2 minBound = videoOffset;
+    vec2 maxBound = videoOffset + sourceSize * videoScale;
+
+    if (p.position.x < minBound.x || p.position.x > maxBound.x) {
+        p.velocity.x *= -0.9;  // Damping on collision
+        p.position.x = clamp(p.position.x, minBound.x, maxBound.x);
     }
-    if (p.position.y < 0.0 || p.position.y > worldSize.y) {
-        p.velocity.y *= -0.9;  // Added damping on collision
-        p.position.y = clamp(p.position.y, 0.0, worldSize.y);
+    if (p.position.y < minBound.y || p.position.y > maxBound.y) {
+        p.velocity.y *= -0.9;  // Damping on collision
+        p.position.y = clamp(p.position.y, minBound.y, maxBound.y);
     }
 
     particles[index] = p;

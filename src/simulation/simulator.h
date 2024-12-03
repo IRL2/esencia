@@ -18,6 +18,12 @@ public:
     void updateWorldSize(int _width, int _height);
     void recieveFrame(ofxCvGrayscaleImage frame);
     std::vector<Particle>& getParticles();
+    void updateVideoRect(const ofRectangle& rect) {
+        videoRect = rect;
+        videoScaleX = videoRect.width / sourceWidth;
+        videoScaleY = videoRect.height / sourceHeight;
+    }
+
 
 private:
     void initializeParticles(int amount);
@@ -44,10 +50,16 @@ private:
     bool applyThermostat = true;
     float targetTemperature = 2000.0;
     float coupling = 0.5;
-    float depthFieldScale = -500000.0f;
+    float depthFieldScale = 500000.0f;
     bool hasDepthField = false;
 
     ofxCvGrayscaleImage currentDepthField;
     Gui::SimulationParameters* parameters;
     Gui* globalParameters;
+
+    ofRectangle videoRect;
+    float videoScaleX = 1.0f;
+    float videoScaleY = 1.0f;
+    int sourceWidth = 640;  // camera resolution width
+    int sourceHeight = 576; // camera resolution height
 };
