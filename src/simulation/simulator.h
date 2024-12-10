@@ -52,6 +52,9 @@ private:
     float coupling = 0.5;
     float depthFieldScale = 500000.0f;
     bool hasDepthField = false;
+    const int MAX_PLACEMENT_ATTEMPTS = 100;
+    const float INITIAL_VELOCITY_RANGE = 100.0f;  // +/- range for random velocity
+    const float DEFAULT_MASS = 5.0f;
 
     ofxCvGrayscaleImage currentDepthField;
     Gui::SimulationParameters* parameters;

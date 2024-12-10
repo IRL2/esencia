@@ -30,6 +30,25 @@ void main() {
     if (index >= particles.length()) return;
 
     Particle p = particles[index];
+    vec2 totalCollisionForce = vec2(0.0);
+
+    // Collision detection and response
+    for (uint i = 0; i < particles.length(); i++) {
+        if (i == index) continue;
+
+        Particle other = particles[i];
+        vec2 diff = p.position - other.position;
+        float dist = length(diff);
+        float minDist = p.radius + other.radius;
+
+        if (dist < minDist && dist > 0.0001) {
+            // Calculate repulsion force
+            float overlap = minDist - dist;
+            vec2 normal = diff / dist;
+            vec2 repulsionForce = normal * overlap * 1000.0; // Adjust strength as needed
+            totalCollisionForce += repulsionForce;
+        }
+    }
 
     // Transform position to texture coordinates
     vec2 adjustedPos = (p.position - videoOffset) / videoScale;
@@ -39,23 +58,23 @@ void main() {
     // Sample depth field
     float depth = texture(depthField, texCoord).r;
 
-    // Calculate gradient with correct force direction
+    // Calculate gradient
     vec2 texelSize = 1.0 / sourceSize;
     float dx = (texture(depthField, clamp(texCoord + vec2(texelSize.x, 0), vec2(0), vec2(1))).r -
         texture(depthField, clamp(texCoord - vec2(texelSize.x, 0), vec2(0), vec2(1))).r) * 0.5;
     float dy = (texture(depthField, clamp(texCoord + vec2(0, texelSize.y), vec2(0), vec2(1))).r -
         texture(depthField, clamp(texCoord - vec2(0, texelSize.y), vec2(0), vec2(1))).r) * 0.5;
 
-    // Scale the force according to video scale
     vec2 depthForce = -depthFieldScale * vec2(dx, dy) * videoScale;
 
-    // Combined force and acceleration
-    vec2 acceleration = depthForce / p.mass;
+    // Combined forces
+    vec2 totalForce = depthForce + totalCollisionForce;
+    vec2 acceleration = totalForce / p.mass;
 
-    // Update velocity with damping for stability
+    // Update velocity with damping
     p.velocity = p.velocity * 0.99 + acceleration * deltaTime;
 
-    // Apply thermostat if enabled
+    // Apply thermostat
     if (applyThermostat) {
         float kineticEnergy = 0.5 * p.mass * dot(p.velocity, p.velocity);
         float currentTemperature = kineticEnergy / 3.0;
@@ -67,16 +86,16 @@ void main() {
     // Update position
     p.position += p.velocity * deltaTime;
 
-    // Boundary conditions using video rectangle bounds
+    // Boundary conditions
     vec2 minBound = videoOffset;
     vec2 maxBound = videoOffset + sourceSize * videoScale;
 
     if (p.position.x < minBound.x || p.position.x > maxBound.x) {
-        p.velocity.x *= -0.9;  // Damping on collision
+        p.velocity.x *= -0.9;
         p.position.x = clamp(p.position.x, minBound.x, maxBound.x);
     }
     if (p.position.y < minBound.y || p.position.y > maxBound.y) {
-        p.velocity.y *= -0.9;  // Damping on collision
+        p.velocity.y *= -0.9;
         p.position.y = clamp(p.position.y, minBound.y, maxBound.y);
     }
 

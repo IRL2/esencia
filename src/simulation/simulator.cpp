@@ -28,45 +28,77 @@ void Simulator::setup(Gui::SimulationParameters* params, Gui* globalParams) {
     globalParameters->renderParameters.windowSize.addListener(this, &Simulator::onRenderwindowResize);
 }
 
+// In simulator.cpp, replace the current initializeParticles method:
+
 void Simulator::initializeParticles(int amount) {
     particles.resize(amount);
 
-    // Get current window dimensions
-    float windowWidth = ofGetWidth();
-    float windowHeight = ofGetHeight();
+    // Calculate max attempts to prevent infinite loops
+    const int maxAttempts = 100;
+    int successfulPlacements = 0;
 
-    // If video rectangle is not set up yet (first initialization),
-    // calculate default bounds that maintain aspect ratio of source image
+    // Get current window dimensions and bounds
     float minX, maxX, minY, maxY;
 
     if (videoRect.width <= 0 || videoRect.height <= 0) {
-        // Calculate default video rectangle similar to RenderApp
-        float scaledWidth = windowHeight * sourceWidth / sourceHeight;
-        float xOffset = (scaledWidth - windowWidth) / -2;
+        float scaledWidth = ofGetHeight() * sourceWidth / sourceHeight;
+        float xOffset = (scaledWidth - ofGetWidth()) / -2;
 
         minX = xOffset;
         maxX = xOffset + scaledWidth;
         minY = 0;
-        maxY = windowHeight;
+        maxY = ofGetHeight();
     }
     else {
-        // Use existing video rectangle bounds
         minX = videoRect.x;
         maxX = videoRect.x + videoRect.width;
         minY = videoRect.y;
         maxY = videoRect.y + videoRect.height;
     }
 
-    for (auto& particle : particles) {
-        particle.position = glm::vec2(
-            ofRandom(minX, maxX),
-            ofRandom(minY, maxY)
-        );
-        particle.velocity = glm::vec2(ofRandom(-100.0f, 100.0f), ofRandom(-100.0f, 100.0f));
-        particle.mass = 5.0f;
+    // First pass: Initialize particles with attempted overlap prevention
+    for (int i = 0; i < amount; i++) {
+        Particle& particle = particles[i];
         particle.radius = parameters->radius;
+        particle.mass = 5.0f;
+
+        bool validPosition = false;
+        int attempts = 0;
+
+        while (!validPosition && attempts < maxAttempts) {
+            // Generate random position
+            particle.position = glm::vec2(
+                ofRandom(minX, maxX),
+                ofRandom(minY, maxY)
+            );
+
+            // Check overlap with previously placed particles
+            validPosition = true;
+            for (int j = 0; j < i; j++) {
+                float minDist = particle.radius + particles[j].radius;
+                if (glm::distance(particle.position, particles[j].position) < minDist) {
+                    validPosition = false;
+                    break;
+                }
+            }
+            attempts++;
+        }
+
+        // Initialize velocity regardless of position success
+        particle.velocity = glm::vec2(ofRandom(-100.0f, 100.0f), ofRandom(-100.0f, 100.0f));
+
+        if (validPosition) {
+            successfulPlacements++;
+        }
     }
 
+    // Log placement statistics
+    ofLogNotice("Simulator::initializeParticles")
+        << "Placed " << successfulPlacements
+        << " particles out of " << amount
+        << " requested without overlap";
+
+    // Create and initialize the SSBO
     glGenBuffers(1, &ssboParticles);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboParticles);
     glBufferData(GL_SHADER_STORAGE_BUFFER, particles.size() * sizeof(Particle), particles.data(), GL_DYNAMIC_COPY);
