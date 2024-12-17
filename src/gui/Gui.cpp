@@ -2,7 +2,7 @@
 
 
 
-void Gui::setup()
+void GuiApp::setup()
 {
     ofBackground(0);
     fbo.allocate(ofGetWindowWidth(), ofGetWindowHeight());
@@ -29,14 +29,14 @@ void Gui::setup()
 // #endif
 }
 
-void Gui::update() 
+void GuiApp::update() 
 {
     // gaussian blur needs to be an odd value
     if (cameraParameters.gaussianBlur % 2 == 0) { cameraParameters.gaussianBlur = cameraParameters.gaussianBlur + 1; }
 }
 
 
-void Gui::draw()
+void GuiApp::draw()
 {
     fbo.begin();
         ofBackgroundGradient(ofColor::darkSlateGray, ofColor::lightGoldenRodYellow, OF_GRADIENT_LINEAR);
@@ -88,7 +88,7 @@ float reversedInverseExponentialFunction(float y) {
 
 
 
-void Gui::configureParticlesPanel(int x, int y, int w, int h)
+void GuiApp::configureParticlesPanel(int x, int y, int w, int h)
 {
     particlesPanel = gui.addPanel("particles");
 	
@@ -107,7 +107,7 @@ void Gui::configureParticlesPanel(int x, int y, int w, int h)
 
 
 /// SIMULATION
-void Gui::configureSimulationPanel(int x, int y, int w, int h)
+void GuiApp::configureSimulationPanel(int x, int y, int w, int h)
 {
     simulationPanel = gui.addPanel("simulation");
 
@@ -125,7 +125,7 @@ void Gui::configureSimulationPanel(int x, int y, int w, int h)
 }
 
 
-void Gui::configureRenderPanel(int x, int y, int w, int h)
+void GuiApp::configureRenderPanel(int x, int y, int w, int h)
 {
     renderPanel = gui.addPanel("render");
     renderPanel->add(renderParameters.color.set("particle color", ofColor(77, 130, 200)))->minimize();
@@ -151,7 +151,7 @@ void Gui::configureRenderPanel(int x, int y, int w, int h)
 }
 
 
-void Gui::configureVideoinitialPanel(int x, int y, int w, int h)
+void GuiApp::configureVideoinitialPanel(int x, int y, int w, int h)
 {
     videoOriginPanel = gui.addPanel("video origin");
     videoOriginPanel->setPosition(x*30, y*30);
@@ -186,7 +186,7 @@ void Gui::configureVideoinitialPanel(int x, int y, int w, int h)
 }
 
 
-void Gui::configureVideoprocessingPanel(int x, int y, int w, int h)
+void GuiApp::configureVideoprocessingPanel(int x, int y, int w, int h)
 {
     videoProcessPanel = gui.addPanel("video processing");
     videoProcessPanel->setPosition(x*30, y*30);
@@ -221,14 +221,14 @@ void Gui::configureVideoprocessingPanel(int x, int y, int w, int h)
 }
 
 
-void Gui::configureSystemstatsPanel(int x, int y, int w, int h)
+void GuiApp::configureSystemstatsPanel(int x, int y, int w, int h)
 {
     ofxGuiPanel *statsPanel = gui.addPanel("performance");
     ofxGuiContainer *p = statsPanel->addContainer("", ofJson({{"direction", "horizontal"}}));
     p->addFpsPlotter(ofJson({{"width", 200}}));
     p->add(simulationParameters.limitedFps.set("30fps", true), ofJson({{"type", "radio"}}));
 
-    simulationParameters.limitedFps.addListener(this, &Gui::limiteFps);
+    simulationParameters.limitedFps.addListener(this, &GuiApp::limiteFps);
 
     statsPanel->loadTheme("support/gui-styles.json", true);
 
@@ -237,7 +237,7 @@ void Gui::configureSystemstatsPanel(int x, int y, int w, int h)
     // statsPanel->setDraggable(true);
 }
 
-void Gui::limiteFps(bool &v)
+void GuiApp::limiteFps(bool &v)
 {
     if (v){
         ofSetFrameRate(30);
@@ -246,14 +246,14 @@ void Gui::limiteFps(bool &v)
     }
 }
 
-void Gui::configurePresetsPanel(int x, int y, int w, int h) {
+void GuiApp::configurePresetsPanel(int x, int y, int w, int h) {
 
 }
 
 
 
 
-void Gui::drawLineBetween(ofxGuiPanel &a, ofxGuiPanel &b)
+void GuiApp::drawLineBetween(ofxGuiPanel &a, ofxGuiPanel &b)
 {
     const int BEZIER_DISTANCE_X = 40;
     const int BEZIER_RESOLUTION = 10;
@@ -282,7 +282,7 @@ void Gui::drawLineBetween(ofxGuiPanel &a, ofxGuiPanel &b)
 }
 
 
-void Gui::keyReleased(int key)
+void GuiApp::keyReleased(int key)
 {
     
 }
@@ -292,7 +292,7 @@ void Gui::keyReleased(int key)
 /// </summary>
 /// <param name="_width"></param>
 /// <param name="_height"></param>
-void Gui::windowResized(int _width, int _height) {
+void GuiApp::windowResized(int _width, int _height) {
     fbo.allocate(_width, _height);
 }
 

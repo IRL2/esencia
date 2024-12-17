@@ -20,7 +20,7 @@ public:
     void windowResized(int w, int h);
 
 
-    Gui gui;
+    GuiApp gui;
     Camera camera;
     Simulator simulator;
 };

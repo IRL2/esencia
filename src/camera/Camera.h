@@ -16,7 +16,7 @@ class Camera
     };
 
     public:
-        void setup(Gui::CameraParameters* params);
+        void setup(GuiApp::CameraParameters* params);
         void update();
         void draw();
         void exit();
@@ -38,8 +38,8 @@ class Camera
 
         // parameters points to the mainApp's GUI. linked in main.cpp
 
-        Gui globalParameters;
-        Gui::CameraParameters* parameters;
+        GuiApp globalParameters;
+        GuiApp::CameraParameters* parameters;
 
         ofMesh mPointCloudMesh;
 
@@ -53,7 +53,7 @@ class Camera
         ofxCvGrayscaleImage segment;  // final segmented image
 
         //void linkGui();
-        //void linkGuiParams(Gui::CameraParameters* params);
+        //void linkGuiParams(GuiApp::CameraParameters* params);
         void onGUIStartBackgroundReference(bool& value);
         void onGUIChangeSource(bool& _);
         void changeSource(VideoSources newSource);

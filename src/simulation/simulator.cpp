@@ -5,7 +5,7 @@
 // </summary>
 // <param name="params">pointer from the gui structure</param>
 
-void Simulator::setup(Gui::SimulationParameters* params, Gui* globalParams) {
+void Simulator::setup(GuiApp::SimulationParameters* params, GuiApp* globalParams) {
     parameters = params;
     globalParameters = globalParams;
     parameters->ammount.addListener(this, &Simulator::onGUIChangeAmmount);

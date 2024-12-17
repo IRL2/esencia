@@ -13,7 +13,7 @@ const float PARTICLES_MIN = 1.0;
 const float PARTICLES_MAX = 200.0;
 
 
-class Gui
+class GuiApp
 {
 public:
     void setup();

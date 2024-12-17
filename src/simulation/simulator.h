@@ -21,7 +21,7 @@ class Simulator
 {
 public:
 	// lifecycle
-	void setup(Gui::SimulationParameters* params, Gui* globalParams);
+	void setup(GuiApp::SimulationParameters* params, GuiApp* globalParams);
 	void update();
 
 	// listeners
@@ -53,8 +53,8 @@ public:
     int height = 600;
 
 	// parameters
-	Gui::SimulationParameters* parameters;
-	Gui* globalParameters;
+	GuiApp::SimulationParameters* parameters;
+	GuiApp* globalParameters;
     bool applyThermostat = true;
     float targetTemperature = 25000.0;
     float coupling = 0.5;
