@@ -69,6 +69,8 @@ void ofApp::keyReleased(int key)
         break;
 
     }
+
+    gui.keyReleased(key);
 }
 
 

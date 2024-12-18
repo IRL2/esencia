@@ -270,8 +270,8 @@ void GuiApp::drawLineBetween(ofxGuiPanel &a, ofxGuiPanel &b)
     int dy = b.getPosition().y;
 
     ofNoFill();
-    ofCircle(ox - CIRCLE_RADIUS_2, oy - 2, CIRCLE_RADIUS);
-    ofCircle(dx + CIRCLE_RADIUS_2, dy + 2, CIRCLE_RADIUS);
+    ofDrawCircle(ox - CIRCLE_RADIUS_2, oy - 2, CIRCLE_RADIUS);
+    ofDrawCircle(dx + CIRCLE_RADIUS_2, dy + 2, CIRCLE_RADIUS);
 
     ofPolyline l;
     l.addVertex(ox, oy);
@@ -284,6 +284,14 @@ void GuiApp::drawLineBetween(ofxGuiPanel &a, ofxGuiPanel &b)
 
 void GuiApp::keyReleased(int key)
 {
+    //simulationParameters.ammount.enableEvents();
+    //std::cout << "rad listeners" << simulationParameters.radius.getNumListeners() << std::endl;
+    //std::cout << "amm listeners" << simulationParameters.ammount.getNumListeners() << std::endl;
+    if (key == OF_KEY_DOWN) {
+        simulationParameters.ammount.set(ofRandom(150)); // demonstrate that changing the parameter value, it will update the gui accordingly.. except for the circular slider x_x
+        simulationParameters.radius.set(ofRandom(30)); // demonstrate that changing the parameter value, it will update the gui accordingly.. except for the circular slider x_x
+    }
+}
     
 }
 
