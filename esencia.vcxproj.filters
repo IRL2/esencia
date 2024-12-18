@@ -136,6 +136,9 @@
     <ClCompile Include="..\..\..\addons\ofxOrbbec\src\ofxOrbbecCamera.cpp">
       <Filter>addons\ofxOrbbec\src</Filter>
     </ClCompile>
+    <ClCompile Include="src\gui\panels\ParticlesPanel.cpp">
+      <Filter>src\gui\panels</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -476,6 +479,9 @@
     </Filter>
     <Filter Include="src\render\shaders">
       <UniqueIdentifier>{acbaa4cb-9a87-44df-8484-096a8f0cf20c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\gui\panels">
+      <UniqueIdentifier>{2656c9e7-9eb5-4055-8c11-ef444ec0e02a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -2440,6 +2446,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\addons\ofxOrbbec\libs\orbbec\include\libobsensor\ObSensor.hpp">
       <Filter>addons\ofxOrbbec\libs\orbbec\include\libobsensor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gui\EsenciaPanel.h">
+      <Filter>src\gui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
