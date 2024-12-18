@@ -3,19 +3,7 @@
 #include "ofMain.h"
 #include "../gui/Gui.h"
 #include "ofxOpenCv.h" // TODO: research on using a different datastructure to pass the frame segment and avoid loading opencv here
-
-struct Particle {
-    glm::vec2 position;
-    glm::vec2 velocity;
-    float mass = 5.0;
-    float kineticEnergy;
-    float radius;
-    std::vector<float> minimumDistance;
-    std::vector<float> LJenergyTermA;
-    std::vector<float> LJenergyTermB;
-    std::vector<float> LJgradientTermA;
-    std::vector<float> LJgradientTermB;
-};
+#include "particles.h"
 
 class Simulator
 {
@@ -36,18 +24,19 @@ public:
 
 	void recieveFrame(ofxCvGrayscaleImage frame);
 
-	// properties
-	vector<Particle> particles;
+    ParticleSystem particles;
+
+    // sim properties
     float epsilon = 5.0f;
     float timeStep = 0.01;
+
+    // sim functions
     void calculateEnergyTerms();
     glm::vec2 computeForce(Particle &particle);
     void calculateTotalKineticEnergy(Particle &particle);
     void updateParticle(Particle &particle, float deltaTime);
     void checkWallCollisions(Particle &particle);
-    
 
-//    void initializeParticles(int ammount);
 	// environment
     int width = 700;
     int height = 600;
@@ -60,8 +49,7 @@ public:
     float coupling = 0.5;
 
 private:
-	void initializeParticles(int ammount);
-	void initializeParticles(float ammount);
+	void initializeParticles(int amount);
     
     
 };

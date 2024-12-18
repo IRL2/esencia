@@ -92,7 +92,7 @@
     </ClCompile>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -110,6 +110,7 @@
     <ClCompile Include="src\camera\Camera.cpp" />
     <ClCompile Include="src\gui\Gui.cpp" />
     <ClCompile Include="src\render\RenderApp.cpp" />
+    <ClCompile Include="src\simulation\particles.cpp" />
     <ClCompile Include="src\simulation\simulator.cpp" />
     <ClCompile Include="..\..\..\addons\ofxGuiExtended\src\containers\ofxGuiContainer.cpp" />
     <ClCompile Include="..\..\..\addons\ofxGuiExtended\src\containers\ofxGuiGroup.cpp" />
@@ -155,6 +156,7 @@
     <ClInclude Include="src\camera\Camera.h" />
     <ClInclude Include="src\gui\Gui.h" />
     <ClInclude Include="src\render\RenderApp.h" />
+    <ClInclude Include="src\simulation\particles.h" />
     <ClInclude Include="src\simulation\simulator.h" />
     <ClInclude Include="..\..\..\addons\ofxGuiExtended\src\containers\ofxGuiContainer.h" />
     <ClInclude Include="..\..\..\addons\ofxGuiExtended\src\containers\ofxGuiGroup.h" />

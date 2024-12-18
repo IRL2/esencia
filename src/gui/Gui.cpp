@@ -93,10 +93,10 @@ void GuiApp::configureParticlesPanel(int x, int y, int w, int h)
     particlesPanel = gui.addPanel("particles");
 	
     // this one uses exponential sliders
-    ofxGuiFloatFunctionSlider* functionAmmount = particlesPanel->add<ofxGuiFloatFunctionSlider>(simulationParameters.ammount.set("ammount", 120, PARTICLES_MIN, PARTICLES_MAX) , ofJson({{"type", "circular"}, {"width", 180}, {"height", 130}, {"precision", 0}}) );
+    ofxGuiFloatFunctionSlider* functionAmmount = particlesPanel->add<ofxGuiFloatFunctionSlider>(simulationParameters.amount.set("amount", 120, PARTICLES_MIN, PARTICLES_MAX) , ofJson({{"type", "circular"}, {"width", 180}, {"height", 130}, {"precision", 0}}) );
     functionAmmount->setFunctions(inverseExponentialFunction, reversedInverseExponentialFunction);
 
-    particlesPanel->add(simulationParameters.radius.set("scale", 10, 1, 30), ofJson({{"height", 50}, {"precision", 0}}));
+    particlesPanel->add(simulationParameters.radius.set("scale", 3, 1, 30), ofJson({{"height", 50}, {"precision", 0}}));
 
     particlesPanel->setBackgroundColor(ofColor(200, 20, 20, 100));
     particlesPanel->loadTheme("support/gui-styles.json", true);
@@ -260,19 +260,20 @@ void GuiApp::drawLineBetween(ofxGuiPanel &a, ofxGuiPanel &b)
     const int CIRCLE_RADIUS = 4;
     const int CIRCLE_RADIUS_2 = 1;
 
-    ofSetLineWidth(10); // actually not working, not supported by opengl 3.2+
-    ofSetColor(ofColor::paleGoldenRod);
-    ofSetColor(ofColor::antiqueWhite);
-
     int ox = a.getPosition().x + a.getWidth();
     int oy = a.getPosition().y + a.getHeight();
     int dx = b.getPosition().x;
     int dy = b.getPosition().y;
 
-    ofNoFill();
+    ofSetLineWidth(10); // actually not working, not supported by opengl 3.2+
+    ofSetColor(ofColor::paleGoldenRod);
+    ofFill();
     ofDrawCircle(ox - CIRCLE_RADIUS_2, oy - 2, CIRCLE_RADIUS);
-    ofDrawCircle(dx + CIRCLE_RADIUS_2, dy + 2, CIRCLE_RADIUS);
+    ofNoFill();
+    ofCircle(ox - CIRCLE_RADIUS_2, oy - 2, CIRCLE_RADIUS);
+    ofCircle(dx + CIRCLE_RADIUS_2, dy + 2, CIRCLE_RADIUS);
 
+    ofSetColor(ofColor::antiqueWhite);
     ofPolyline l;
     l.addVertex(ox, oy);
     l.bezierTo( ox + BEZIER_DISTANCE_X, oy,
@@ -288,7 +289,7 @@ void GuiApp::keyReleased(int key)
     //std::cout << "rad listeners" << simulationParameters.radius.getNumListeners() << std::endl;
     //std::cout << "amm listeners" << simulationParameters.ammount.getNumListeners() << std::endl;
     if (key == OF_KEY_DOWN) {
-        simulationParameters.ammount.set(ofRandom(150)); // demonstrate that changing the parameter value, it will update the gui accordingly.. except for the circular slider x_x
+        simulationParameters.amount.set(ofRandom(150)); // demonstrate that changing the parameter value, it will update the gui accordingly.. except for the circular slider x_x
         simulationParameters.radius.set(ofRandom(30)); // demonstrate that changing the parameter value, it will update the gui accordingly.. except for the circular slider x_x
     }
 }

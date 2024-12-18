@@ -136,8 +136,11 @@
     <ClCompile Include="..\..\..\addons\ofxOrbbec\src\ofxOrbbecCamera.cpp">
       <Filter>addons\ofxOrbbec\src</Filter>
     </ClCompile>
+    <ClCompile Include="src\simulation\particles.cpp">
+      <Filter>src\simulation</Filter>
+    </ClCompile>
     <ClCompile Include="src\gui\panels\ParticlesPanel.cpp">
-      <Filter>src\gui\panels</Filter>
+      <Filter>src\gui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -479,9 +482,6 @@
     </Filter>
     <Filter Include="src\render\shaders">
       <UniqueIdentifier>{acbaa4cb-9a87-44df-8484-096a8f0cf20c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\gui\panels">
-      <UniqueIdentifier>{2656c9e7-9eb5-4055-8c11-ef444ec0e02a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -2449,6 +2449,9 @@
     </ClInclude>
     <ClInclude Include="src\gui\EsenciaPanel.h">
       <Filter>src\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\simulation\particles.h">
+      <Filter>src\simulation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
