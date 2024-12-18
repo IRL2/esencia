@@ -2,7 +2,7 @@
 
 #include "ofMain.h"
 #include "ofxOrbbecCamera.h"
-#include "../gui/Gui.h"
+#include "../gui/GuiApp.h"
 #include "ofxOpenCv.h"
 
 
@@ -16,7 +16,7 @@ class Camera
     };
 
     public:
-        void setup(GuiApp::CameraParameters* params);
+        void setup(CameraParameters* params);
         void update();
         void draw();
         void exit();
@@ -39,7 +39,7 @@ class Camera
         // parameters points to the mainApp's GUI. linked in main.cpp
 
         GuiApp globalParameters;
-        GuiApp::CameraParameters* parameters;
+        CameraParameters* parameters;
 
         ofMesh mPointCloudMesh;
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
-#include "../gui/Gui.h"
+#include "../gui/GuiApp.h"
 #include "ofxOpenCv.h" // TODO: research on using a different datastructure to pass the frame segment and avoid loading opencv here
 #include "particles.h"
 
@@ -9,7 +9,7 @@ class Simulator
 {
 public:
 	// lifecycle
-	void setup(GuiApp::SimulationParameters* params, GuiApp* globalParams);
+	void setup(SimulationParameters* params, GuiApp* globalParams);
 	void update();
 
 	// listeners
@@ -42,7 +42,7 @@ public:
     int height = 600;
 
 	// parameters
-	GuiApp::SimulationParameters* parameters;
+	SimulationParameters* parameters;
 	GuiApp* globalParameters;
     bool applyThermostat = true;
     float targetTemperature = 25000.0;

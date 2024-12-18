@@ -1,4 +1,4 @@
-#include "Gui.h"
+#include "GuiApp.h"
 
 
 
@@ -13,7 +13,8 @@ void GuiApp::setup()
     cameraParameters.previewSegment.allocate(1, 1, OF_IMAGE_GRAYSCALE);
     cameraParameters.previewBackground.allocate(1, 1, OF_IMAGE_GRAYSCALE);
 
-    configureParticlesPanel(1, 1, 8, 0);
+    particlesPanel.setup(gui, "particles", ofRectangle(1, 1, 8, 0), &simulationParameters);
+    //configureParticlesPanel(1, 1, 8, 0);
     configureVideoinitialPanel(1, 9, 8, 0);
     configureVideoprocessingPanel(13, 8, 8, 0);
     configureSimulationPanel(25, 3, 7, 0);
@@ -41,9 +42,10 @@ void GuiApp::draw()
     fbo.begin();
         ofBackgroundGradient(ofColor::darkSlateGray, ofColor::lightGoldenRodYellow, OF_GRADIENT_LINEAR);
 
+        //TO-DO: esenciaPanels need to expose coordinates
         drawLineBetween(*videoOriginPanel, *videoProcessPanel);
         drawLineBetween(*videoProcessPanel, *simulationPanel);
-        drawLineBetween(*particlesPanel, *simulationPanel);
+        //drawLineBetween(*particlesPanel, *simulationPanel);
         drawLineBetween(*simulationPanel, *renderPanel);
     fbo.end();
     fbo.draw(0,0);
@@ -88,22 +90,26 @@ float reversedInverseExponentialFunction(float y) {
 
 
 
-void GuiApp::configureParticlesPanel(int x, int y, int w, int h)
-{
-    particlesPanel = gui.addPanel("particles");
-	
-    // this one uses exponential sliders
-    ofxGuiFloatFunctionSlider* functionAmmount = particlesPanel->add<ofxGuiFloatFunctionSlider>(simulationParameters.amount.set("amount", 120, PARTICLES_MIN, PARTICLES_MAX) , ofJson({{"type", "circular"}, {"width", 180}, {"height", 130}, {"precision", 0}}) );
-    functionAmmount->setFunctions(inverseExponentialFunction, reversedInverseExponentialFunction);
-
-    particlesPanel->add(simulationParameters.radius.set("scale", 3, 1, 30), ofJson({{"height", 50}, {"precision", 0}}));
-
-    particlesPanel->setBackgroundColor(ofColor(200, 20, 20, 100));
-    particlesPanel->loadTheme("support/gui-styles.json", true);
-
-    particlesPanel->setPosition(x*30, y*30);
-    particlesPanel->setWidth(w*30);
-}
+//void GuiApp::configureParticlesPanel(int x, int y, int w, int h)
+//{
+//    particlesPanel = gui.addPanel("particles");
+//	
+//    // this one uses exponential sliders
+//    //ofxGuiFloatFunctionSlider* functionAmmount = particlesPanel->add<ofxGuiFloatFunctionSlider>(simulationParameters.amount.set("amount", 120, PARTICLES_MIN, PARTICLES_MAX) , ofJson({{"type", "circular"}, {"width", 180}, {"height", 130}, {"precision", 0}}) );
+//    //functionAmmount->setFunctions(inverseExponentialFunction, reversedInverseExponentialFunction);
+//
+//    // switching back to regular slider, since it does not refresh the visuals when updating the parameter directly (that is crucial for the state and interpolation control)
+//    particlesPanel->add(simulationParameters.amount.set("ammount", 120, PARTICLES_MIN, PARTICLES_MAX), ofJson({ {"type", "circular"}, {"width", 180}, {"height", 180}, {"precision", 0} }));
+//
+//
+//    particlesPanel->add(simulationParameters.radius.set("scale", 3, 1, 30), ofJson({{"height", 50}, {"precision", 0}}));
+//
+//    particlesPanel->setBackgroundColor(ofColor(200, 20, 20, 100));
+//    particlesPanel->loadTheme("support/gui-styles.json", true);
+//
+//    particlesPanel->setPosition(x*30, y*30);
+//    particlesPanel->setWidth(w*30);
+//}
 
 
 /// SIMULATION
@@ -265,13 +271,15 @@ void GuiApp::drawLineBetween(ofxGuiPanel &a, ofxGuiPanel &b)
     int dx = b.getPosition().x;
     int dy = b.getPosition().y;
 
+    ofPushMatrix();
+
     ofSetLineWidth(10); // actually not working, not supported by opengl 3.2+
     ofSetColor(ofColor::paleGoldenRod);
     ofFill();
     ofDrawCircle(ox - CIRCLE_RADIUS_2, oy - 2, CIRCLE_RADIUS);
     ofNoFill();
-    ofCircle(ox - CIRCLE_RADIUS_2, oy - 2, CIRCLE_RADIUS);
-    ofCircle(dx + CIRCLE_RADIUS_2, dy + 2, CIRCLE_RADIUS);
+    //ofDrawCircle(ox - CIRCLE_RADIUS_2, oy - 2, CIRCLE_RADIUS);
+    ofDrawCircle(dx + CIRCLE_RADIUS_2, dy + 2, CIRCLE_RADIUS);
 
     ofSetColor(ofColor::antiqueWhite);
     ofPolyline l;
@@ -280,6 +288,8 @@ void GuiApp::drawLineBetween(ofxGuiPanel &a, ofxGuiPanel &b)
         dx - BEZIER_DISTANCE_X, dy,
         dx, dy, BEZIER_RESOLUTION);
     l.draw();
+
+    ofPopMatrix();
 }
 
 

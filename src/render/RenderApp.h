@@ -2,7 +2,7 @@
 
 #include "ofMain.h"
 #include "../ofApp.h"
-#include "../gui/Gui.h"
+#include "../gui/GuiApp.h"
 #include "ofEvents.h"
 #include "particles.h"
 
@@ -22,7 +22,7 @@ class RenderApp : public ofBaseApp
 
         // PARAMETERS
         // (parameters points to the mainApp's GUI. linked in main.cpp)
-        GuiApp::RenderParameters * parameters;
+        RenderParameters * parameters;
         GuiApp* globalParameters;
         
         // This points directly to the simulator particles (through mainapp->simulator.particles in main.cpp)

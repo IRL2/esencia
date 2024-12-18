@@ -5,7 +5,7 @@
 /// assign params pointer and listeners to value changes
 /// </summary>
 /// <param name="params">pointer from the gui structure</param>
-void Camera::setup(GuiApp::CameraParameters* params) {
+void Camera::setup(CameraParameters* params) {
 
     // link parameters and listeners
     parameters = params;

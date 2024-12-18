@@ -10,7 +10,7 @@
     <ClCompile Include="src\camera\Camera.cpp">
       <Filter>src\camera</Filter>
     </ClCompile>
-    <ClCompile Include="src\gui\Gui.cpp">
+    <ClCompile Include="src\gui\GuiApp.cpp">
       <Filter>src\gui</Filter>
     </ClCompile>
     <ClCompile Include="src\main.cpp">
@@ -139,8 +139,8 @@
     <ClCompile Include="src\simulation\particles.cpp">
       <Filter>src\simulation</Filter>
     </ClCompile>
-    <ClCompile Include="src\gui\panels\ParticlesPanel.cpp">
-      <Filter>src\gui</Filter>
+    <ClCompile Include="src\gui\panels\ParticlesPanel.h">
+      <Filter>src\gui\panels</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -483,6 +483,12 @@
     <Filter Include="src\render\shaders">
       <UniqueIdentifier>{acbaa4cb-9a87-44df-8484-096a8f0cf20c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\gui\panels">
+      <UniqueIdentifier>{b4c4d738-c594-4d72-8d87-29aa71aac6f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\gui\parameters">
+      <UniqueIdentifier>{8dbeb59a-d287-4063-afde-763c0acf51bd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ofApp.h">
@@ -491,7 +497,7 @@
     <ClInclude Include="src\camera\Camera.h">
       <Filter>src\camera</Filter>
     </ClInclude>
-    <ClInclude Include="src\gui\Gui.h">
+    <ClInclude Include="src\gui\GuiApp.h">
       <Filter>src\gui</Filter>
     </ClInclude>
     <ClInclude Include="src\ofApp.h">
@@ -2447,11 +2453,23 @@
     <ClInclude Include="..\..\..\addons\ofxOrbbec\libs\orbbec\include\libobsensor\ObSensor.hpp">
       <Filter>addons\ofxOrbbec\libs\orbbec\include\libobsensor</Filter>
     </ClInclude>
-    <ClInclude Include="src\gui\EsenciaPanel.h">
-      <Filter>src\gui</Filter>
-    </ClInclude>
     <ClInclude Include="src\simulation\particles.h">
       <Filter>src\simulation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gui\parameters\ParametersBase.h">
+      <Filter>src\gui\parameters</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gui\parameters\RenderParameters.h">
+      <Filter>src\gui\parameters</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gui\parameters\SimulationParameters.h">
+      <Filter>src\gui\parameters</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gui\parameters\CameraParameters.h">
+      <Filter>src\gui\parameters</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gui\EsenciaPanelBase.h">
+      <Filter>src\gui\panels</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2463,6 +2481,9 @@
     </None>
     <None Include="bin\data\shaders\shaderBlur.vert">
       <Filter>src\render\shaders</Filter>
+    </None>
+    <None Include="bin\data\support\gui-styles.json">
+      <Filter>src\gui\panels</Filter>
     </None>
   </ItemGroup>
 </Project>

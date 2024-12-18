@@ -104,11 +104,11 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\gui\panels\ParticlesPanel.cpp" />
+    <ClCompile Include="src\gui\panels\ParticlesPanel.h" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
     <ClCompile Include="src\camera\Camera.cpp" />
-    <ClCompile Include="src\gui\Gui.cpp" />
+    <ClCompile Include="src\gui\GuiApp.cpp" />
     <ClCompile Include="src\render\RenderApp.cpp" />
     <ClCompile Include="src\simulation\particles.cpp" />
     <ClCompile Include="src\simulation\simulator.cpp" />
@@ -151,10 +151,14 @@
     <ClCompile Include="..\..\..\addons\ofxOrbbec\src\ofxOrbbecCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\gui\EsenciaPanel.h" />
+    <ClInclude Include="src\gui\EsenciaPanelBase.h" />
+    <ClInclude Include="src\gui\parameters\CameraParameters.h" />
+    <ClInclude Include="src\gui\parameters\ParametersBase.h" />
+    <ClInclude Include="src\gui\parameters\RenderParameters.h" />
+    <ClInclude Include="src\gui\parameters\SimulationParameters.h" />
     <ClInclude Include="src\ofApp.h" />
     <ClInclude Include="src\camera\Camera.h" />
-    <ClInclude Include="src\gui\Gui.h" />
+    <ClInclude Include="src\gui\GuiApp.h" />
     <ClInclude Include="src\render\RenderApp.h" />
     <ClInclude Include="src\simulation\particles.h" />
     <ClInclude Include="src\simulation\simulator.h" />
@@ -821,6 +825,7 @@
   <ItemGroup>
     <None Include="bin\data\shaders\shaderBlur.frag" />
     <None Include="bin\data\shaders\shaderBlur.vert" />
+    <None Include="bin\data\support\gui-styles.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ProjectExtensions>

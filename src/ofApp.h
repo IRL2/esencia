@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
-#include "gui/Gui.h"
+#include "gui/GuiApp.h"
 #include "camera/Camera.h"
 #include "simulation/simulator.h"
 
