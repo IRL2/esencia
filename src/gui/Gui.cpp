@@ -293,7 +293,6 @@ void GuiApp::keyReleased(int key)
     }
 }
     
-}
 
 /// <summary>
 /// on window resized event
