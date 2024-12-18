@@ -292,7 +292,7 @@ void GuiApp::keyReleased(int key)
         simulationParameters.radius.set(ofRandom(30)); // demonstrate that changing the parameter value, it will update the gui accordingly.. except for the circular slider x_x
     }
 }
-    
+
 
 /// <summary>
 /// on window resized event
