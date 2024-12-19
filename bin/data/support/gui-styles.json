@@ -1,9 +1,9 @@
 {
-  "video": {
+  "video origin": {
     "base": {
-      "background-color": "#1E1EC8",
+      "background-color": "rgba(30, 30, 200, 100)",
       "border-radius": 4,
-      "text-color": "#ffffefaa"
+      "text-color": "#ffffef"
     },
 
     "slider": {
@@ -13,27 +13,35 @@
     "toggle": {
       "type": "radio"
     }
-
   },
+  "video processing": {
+    "base": {
+      "background-color": "rgba(30, 30, 200, 100)"
+    }
+  },
+
   "simulation": {
     "base": {
-      "background-color": "#6414B4",
+      "background-color": "rgba(180, 180, 180, 100)",
       "border-radius": 4,
-      "text-color": "#ffffefaa"
+      "text-color": "#ffffef"
     }
   },
+
   "particles": {
     "base": {
-      "background-color": "#6414B4",
+      "background-color": "rgba(200, 20, 20, 100)",
       "border-radius": 4,
-      "text-color": "#ffffefaa"
+      "text-color": "#ffffefaa",
+      "header-background-color": "rgba(255,255,0,255)"
     }
   },
+
   "render": {
     "base": {
-      "background-color": "#641464",
+      "background-color": "rgba(100, 20, 100, 100)",
       "border-radius": 4,
-      "text-color": "#ffffefaa"
+      "text-color": "#ffffef"
     }
   }
 }

@@ -2471,6 +2471,21 @@
     <ClInclude Include="src\gui\EsenciaPanelBase.h">
       <Filter>src\gui\panels</Filter>
     </ClInclude>
+    <ClInclude Include="src\gui\panels\RenderPanel.h">
+      <Filter>src\gui\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gui\panels\SimulationPanel.h">
+      <Filter>src\gui\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gui\panels\SystemstatsPanel.h">
+      <Filter>src\gui\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gui\panels\VideoOriginPanel.h">
+      <Filter>src\gui\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gui\panels\VideoProcessingPanel.h">
+      <Filter>src\gui\panels</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="icon.rc" />

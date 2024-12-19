@@ -40,7 +40,7 @@ void RenderApp::draw()
     fbo.begin();
         // solid background or trail
         if (parameters->useFaketrails) {
-            ofSetColor(0, 0, 0, (int)(parameters->fakeTrialsVisibility * 255));
+            ofSetColor(0, 0, 0, (int)((1-parameters->fakeTrialsVisibility) * 255));
             ofDrawRectangle(0,0,ofGetWidth(), ofGetHeight());
         }
         else {

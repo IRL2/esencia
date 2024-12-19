@@ -10,6 +10,11 @@
 
 
 #include "panels/ParticlesPanel.h"
+#include "panels/SystemstatsPanel.h"
+#include "panels/SimulationPanel.h"
+#include "panels/RenderPanel.h"
+#include "panels/VideoOriginPanel.h"
+#include "panels/VideoProcessingPanel.h"
 
 
 //#define DEBUG_IMAGES true
@@ -101,42 +106,47 @@ public:
 
         //ofxGuiPanel* particlesPanel;
         ParticlesPanel particlesPanel;
+        SystemstatsPanel systemstatsPanel;
+        SimulationPanel simulationPanel;
+        VideoProcessingPanel videoProcessingPanel;
+        VideoOriginPanel videoOriginPanel;
+        RenderPanel renderPanel;
 
-        ofxGuiPanel* simulationPanel;
-        ofxGuiPanel* renderPanel;
-        ofxGuiPanel* statsPanel;
-        ofxGuiPanel* videoOriginPanel;
-        ofxGuiPanel* videoProcessPanel;
+        //ofxGuiPanel* simulationPanel;
+        //ofxGuiPanel* renderPanel;
+        //ofxGuiPanel* statsPanel;
+        //ofxGuiPanel* videoOriginPanel;
+        //ofxGuiPanel* videoProcessPanel;
 
 
         // actually sub groups
-        ofxGuiPanel* cameraSourcePreview;
-        ofxGuiPanel* cameraSourcePanel;
-        ofxGuiPanel* cameraClippingPanel;
-        ofxGuiPanel* cameraProcessingPanel;
-        ofxGuiPanel* cameraPolygonsPanel;
-        ofxGuiPanel* cameraBackgroundPanel;
+        //ofxGuiPanel* cameraSourcePreview;
+        //ofxGuiPanel* cameraSourcePanel;
+        //ofxGuiPanel* cameraClippingPanel;
+        //ofxGuiPanel* cameraProcessingPanel;
+        //ofxGuiPanel* cameraPolygonsPanel;
+        //ofxGuiPanel* cameraBackgroundPanel;
 
-        ofxGuiPanel cameraGroup;
+        //ofxGuiPanel cameraGroup;
 
-        void configureParticlesPanel(int x, int y, int w, int h);
-        void configureSimulationPanel(int x, int y, int w, int h);
-        void configureVideoinitialPanel(int x, int y, int w, int h);
-        void configureVideoprocessingPanel(int x, int y, int w, int h);
-        void configureRenderPanel(int x, int y, int w, int h);
-        void configureSystemstatsPanel(int x, int y, int w, int h);
-        void configurePresetsPanel(int x, int y, int w, int h);
+        //void configureParticlesPanel(int x, int y, int w, int h);
+        //void configureSimulationPanel(int x, int y, int w, int h);
+        //void configureVideoinitialPanel(int x, int y, int w, int h);
+        //void configureVideoprocessingPanel(int x, int y, int w, int h);
+        //void configureRenderPanel(int x, int y, int w, int h);
+        //void configureSystemstatsPanel(int x, int y, int w, int h);
+        //void configurePresetsPanel(int x, int y, int w, int h);
         
-        void drawLineBetween(ofxGuiPanel &a, ofxGuiPanel &b);
+        void drawLineBetween(EsenciaPanelBase &a, EsenciaPanelBase&b);
 
         // for the extra layers behind the GUI (lines, background, etc)
         ofFbo fbo;
 
         // to store the preview videos from the camera, they will be displayed inside gui controls
-        ofImage cameraSource, cameraSegment, cameraBackground;
+        //ofImage cameraSource, cameraSegment, cameraBackground;
 
         // listener
-        void limiteFps(bool &v);
+        //void limiteFps(bool &v);
 };
 
 
