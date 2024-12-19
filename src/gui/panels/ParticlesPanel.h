@@ -37,7 +37,7 @@ public:
 			RADIUS_INITIAL, RADIUS_MIN, RADIUS_MAX),
 			ofJson({{"height", RADIUS_HEIGHT}, {"precision", 0}}) );
 
-		configVisuals(PANEL_RECT);
+		configVisuals(PANEL_RECT, ofColor(200, 20, 20, 100));
 	}
 
 };

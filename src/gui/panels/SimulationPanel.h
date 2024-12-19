@@ -21,6 +21,7 @@ class SimulationPanel : public EsenciaPanelBase {
 	const float SLIDERS_HEIGHT = 160;
 
 	const ofRectangle PANEL_RECT = ofRectangle(25, 3, 8, 0);
+	const ofColor &BG_COLOR = ofColor(180, 180, 180, 100);
 
 
 public:
@@ -41,7 +42,7 @@ public:
 			THERMOSTAT_INIT, THERMOSTAT_MIN, THERMOSTAT_MAX),
 			ofJson({ {"width", SLIDERS_WIDTH}, {"height", SLIDERS_HEIGHT}, {"precision", 3} }));
 
-		configVisuals(PANEL_RECT);
+		configVisuals(PANEL_RECT, BG_COLOR);
 	}
 
 };

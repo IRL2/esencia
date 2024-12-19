@@ -12,9 +12,9 @@ public:
 
     //virtual void setup(ofxGui& gui, ParametersBase params, std::string title);
 
-    void configVisuals(ofRectangle rect) {
-        //panel->setBackgroundColor(color);
+    void configVisuals(ofRectangle rect, ofColor color) {
         panel->loadTheme("support/gui-styles.json", true);
+        panel->setBackgroundColor(color);
 
         panel->setPosition(rect.x * 30, rect.y * 30);
         panel->setWidth(rect.width * 30);

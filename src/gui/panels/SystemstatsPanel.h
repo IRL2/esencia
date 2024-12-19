@@ -9,9 +9,11 @@ class SystemstatsPanel : public EsenciaPanelBase {
 	
 	const bool LIMIT_FPS = { true };
 
-	const ofRectangle PANEL_RECT = ofRectangle(12, 1, 8, 0);
-
 	const int WIDTH = 200;
+
+	const ofRectangle PANEL_RECT = ofRectangle(12, 1, 8, 0);
+	const ofColor BG_COLOR = ofColor(100, 100, 100, 100);
+
 
 public:
 	void setup(ofxGui &gui, SimulationParameters params) {
@@ -27,7 +29,7 @@ public:
 
 		params.lowFps.addListener(this, &SystemstatsPanel::limitFps); // TODO:: listeners back to the guiapp x_x
 
-		configVisuals(PANEL_RECT);
+		configVisuals(PANEL_RECT, BG_COLOR);
 
 	}
 

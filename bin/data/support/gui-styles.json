@@ -1,47 +1,12 @@
 {
-  "video origin": {
+  "default": {
     "base": {
-      "background-color": "rgba(30, 30, 200, 100)",
       "border-radius": 4,
       "text-color": "#ffffef"
-    },
-
-    "slider": {
-      "precision": 2
     },
 
     "toggle": {
       "type": "radio"
-    }
-  },
-  "video processing": {
-    "base": {
-      "background-color": "rgba(30, 30, 200, 100)"
-    }
-  },
-
-  "simulation": {
-    "base": {
-      "background-color": "rgba(180, 180, 180, 100)",
-      "border-radius": 4,
-      "text-color": "#ffffef"
-    }
-  },
-
-  "particles": {
-    "base": {
-      "background-color": "rgba(200, 20, 20, 100)",
-      "border-radius": 4,
-      "text-color": "#ffffefaa",
-      "header-background-color": "rgba(255,255,0,255)"
-    }
-  },
-
-  "render": {
-    "base": {
-      "background-color": "rgba(100, 20, 100, 100)",
-      "border-radius": 4,
-      "text-color": "#ffffef"
     }
   }
 }

@@ -8,12 +8,13 @@ class VideoOriginPanel : public EsenciaPanelBase {
     const bool SOURCE_ORBBEC = { false };
     const bool SOURCE_FILE = { false };
 
-    const float CLIP_NEAR_INITIAL = 20;
-    const float CLIP_NEAR_MIN = 0;
-    const float CLIP_NEAR_MAX = 255;
-    const float CLIP_FAR_INITIAL = 170;
+    const int CLIP_NEAR_INITIAL = 20;
+    const int CLIP_NEAR_MIN = 0;
+    const int CLIP_NEAR_MAX = 255;
+    const int CLIP_FAR_INITIAL = 170;
 
     const ofRectangle PANEL_RECT = ofRectangle(1, 11, 8, 0);
+    const ofColor BG_COLOR = ofColor(30, 30, 200, 100);
 
 public:
 	void setup(ofxGui &gui, CameraParameters &params) {
@@ -33,16 +34,24 @@ public:
         // DEPTH CLIPPING
         ofxGuiGroup* cameraClippingPanel = panel->addGroup("depth clipping");
         
-        params.clipNear.set("visibility range", 
+        params.clipNear.set("v", 
             CLIP_NEAR_INITIAL, CLIP_NEAR_MIN, CLIP_NEAR_MAX);
         
-        params.clipFar.set("", CLIP_FAR_INITIAL, CLIP_NEAR_MIN, CLIP_NEAR_MAX);
-        
-        cameraClippingPanel->add<ofxGuiIntRangeSlider>(params.clipNear, params.clipFar,
-            ofJson({ {"precision", 2}, {"direction", "horizontal"}, {"width", 8*30 } }));
+        //params.clipFar.set("f", 
+        //    CLIP_FAR_INITIAL, CLIP_NEAR_MIN, CLIP_NEAR_MAX);
+        params.clipFar.set(CLIP_FAR_INITIAL);
+
+        cameraClippingPanel->add<ofxGuiIntRangeSlider>(params.clipNear, params.clipFar);
+
+        //cameraClippingPanel->add(params.clipNear);
+        //cameraClippingPanel->add(params.clipFar);
+
+
+        //cameraClippingPanel->add<ofxGuiIntRangeSlider>(params.clipNear, params.clipFar,
+        //    ofJson({ {"precision", 2}, {"direction", "horizontal"}, {"width", 8*30 } }));
 
         //cameraClippingPanel->setWidth(8 * 30);
-        cameraClippingPanel->minimize();
+        //cameraClippingPanel->minimize();
 
         // BACKGROUND
         ofxGuiGroup* cameraBackgroundPanel = panel->addGroup("background");
@@ -55,7 +64,7 @@ public:
         //cameraBackgroundPanel->setWidth(w * 30);
         cameraBackgroundPanel->minimize();
 
-        configVisuals(PANEL_RECT);
+        configVisuals(PANEL_RECT, BG_COLOR);
     }
 
 };

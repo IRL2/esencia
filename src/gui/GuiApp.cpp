@@ -13,6 +13,7 @@ void GuiApp::setup()
     cameraParameters.previewSegment.allocate(1, 1, OF_IMAGE_GRAYSCALE);
     cameraParameters.previewBackground.allocate(1, 1, OF_IMAGE_GRAYSCALE);
 
+    // the panels
     particlesPanel.setup(gui, simulationParameters);
     systemstatsPanel.setup(gui, simulationParameters);
     simulationPanel.setup(gui, simulationParameters);
@@ -41,6 +42,7 @@ void GuiApp::draw()
     fbo.begin();
         ofBackgroundGradient(ofColor::darkSlateGray, ofColor::lightGoldenRodYellow, OF_GRADIENT_LINEAR);
 
+        // draw lines
         drawLineBetween(videoOriginPanel, videoProcessingPanel);
         drawLineBetween(videoProcessingPanel, simulationPanel);
         drawLineBetween(particlesPanel, simulationPanel);
@@ -88,172 +90,6 @@ float reversedInverseExponentialFunction(float y) {
 
 
 
-//void GuiApp::configureParticlesPanel(int x, int y, int w, int h)
-//{
-//    particlesPanel = gui.addPanel("particles");
-//	
-//    // this one uses exponential sliders
-//    //ofxGuiFloatFunctionSlider* functionAmmount = particlesPanel->add<ofxGuiFloatFunctionSlider>(simulationParameters.amount.set("amount", 120, PARTICLES_MIN, PARTICLES_MAX) , ofJson({{"type", "circular"}, {"width", 180}, {"height", 130}, {"precision", 0}}) );
-//    //functionAmmount->setFunctions(inverseExponentialFunction, reversedInverseExponentialFunction);
-//
-//    // switching back to regular slider, since it does not refresh the visuals when updating the parameter directly (that is crucial for the state and interpolation control)
-//    particlesPanel->add(simulationParameters.amount.set("ammount", 120, PARTICLES_MIN, PARTICLES_MAX), ofJson({ {"type", "circular"}, {"width", 180}, {"height", 180}, {"precision", 0} }));
-//
-//
-//    particlesPanel->add(simulationParameters.radius.set("scale", 3, 1, 30), ofJson({{"height", 50}, {"precision", 0}}));
-//
-//    particlesPanel->setBackgroundColor(ofColor(200, 20, 20, 100));
-//    particlesPanel->loadTheme("support/gui-styles.json", true);
-//
-//    particlesPanel->setPosition(x*30, y*30);
-//    particlesPanel->setWidth(w*30);
-//}
-
-
-/// SIMULATION
-//void GuiApp::configureSimulationPanel(int x, int y, int w, int h)
-//{
-//    simulationPanel = gui.addPanel("simulation");
-//
-//    simulationPanel->add(simulationParameters.applyThermostat.set("apply thermostat", true));
-//
-//    ofxGuiContainer *p = simulationPanel->addContainer("" , ofJson({{"direction", "horizontal"}}) );
-//    p->add(simulationParameters.targetTemperature.set("\nequilibrium\ntemperature", 25000.0, 1000.0, 100000.0) , ofJson({{"width", 100}, {"height", 150}, {"precision", 0}}));
-//    p->add(simulationParameters.coupling.set("Berendsen\nthermostat\ncoupling", 0.5, 0.1, 1.0), ofJson({{"width", 100}, {"height", 150}, {"precision", 3}}));
-//
-//    simulationPanel->setBackgroundColor(ofColor(180, 180, 180, 100));
-//    simulationPanel->loadTheme("support/gui-styles.json", true);
-//
-//    simulationPanel->setPosition(x*30, y*30);
-//    simulationPanel->setWidth(w*30);
-//}
-
-
-//void GuiApp::configureRenderPanel(int x, int y, int w, int h)
-//{
-//    renderPanel = gui.addPanel("render");
-//    renderPanel->add(renderParameters.color.set("particle color", ofColor(77, 130, 200)))->minimize();
-//    renderPanel->add(renderParameters.useShaders.set("use shaders", false));
-//
-//    // video
-//    ofxGuiGroup *vp = renderPanel->addGroup("video");
-//    vp->add(renderParameters.showVideoPreview.set("visible", false));
-//    vp->add(renderParameters.videopreviewVisibility.set("overlay", 0.3, 0.0, 1.0));
-//    vp->add(renderParameters.videoColor.set("color", ofColor::white))->minimize();
-//
-//    // trails
-//    ofxGuiGroup *ofTrialsPanel = renderPanel->addGroup("trails");
-//    ofTrialsPanel->add(renderParameters.useFaketrails.set("enable", false));
-//    ofTrialsPanel->add(renderParameters.fakeTrialsVisibility.set("overlay", 0.05, 0.0, 0.3));
-//
-//    // TODO: add particle size factor
-//    renderPanel->setBackgroundColor(ofColor(100, 20, 100, 100));
-//    renderPanel->loadTheme("support/gui-styles.json", true);
-//
-//    renderPanel->setPosition(x*30, y*30);
-//    renderPanel->setWidth(w*30);
-//}
-
-
-//void GuiApp::configureVideoinitialPanel(int x, int y, int w, int h)
-//{
-//    videoOriginPanel = gui.addPanel("video origin");
-//    videoOriginPanel->setPosition(x*30, y*30);
-//    videoOriginPanel->setWidth(w*30);
-//    videoOriginPanel->loadTheme("support/gui-styles.json", true);
-//    videoOriginPanel->setBackgroundColor(ofColor(30, 30, 200, 100));
-//
-//    // SOURCES
-//    ofxGuiGroup *cameraSourcePanel = videoOriginPanel->addGroup("sources");
-//    cameraSourcePanel->add<ofxGuiGraphics>("source", &cameraParameters.previewSource.getTexture() , ofJson({{"height", 200}}));
-//    cameraSourcePanel->add(cameraParameters._sourceOrbbec.set("orbbec camera", false));
-//    cameraSourcePanel->add(cameraParameters._sourceVideofile.set("video file", false));
-//    cameraSourcePanel->setWidth(w*30);
-//    cameraSourcePanel->minimize();
-//    
-//    // DEPTH CLIPPING
-//    ofxGuiGroup *cameraClippingPanel = videoOriginPanel->addGroup("depth clipping");
-//    cameraParameters.clipNear.set("visibility range", 20, 0, 255);
-//    cameraParameters.clipFar.set(170);
-//    cameraClippingPanel->add<ofxGuiIntRangeSlider>(cameraParameters.clipNear, cameraParameters.clipFar);
-//    cameraClippingPanel->setWidth(w*30);
-//    cameraClippingPanel->minimize();
-//    // TODO: use a single range slider
-//
-//    // BACKGROUND
-//    ofxGuiGroup *cameraBackgroundPanel = videoOriginPanel->addGroup("background");
-//    cameraBackgroundPanel->add<ofxGuiGraphics>("reference", &cameraParameters.previewBackground.getTexture() , ofJson({{"height", 200}}));
-//    cameraBackgroundPanel->add<ofxGuiButton>(cameraParameters.startBackgroundReference.set("grab background frame", false), ofJson({{"type", "fullsize"}, {"text-align", "center"}}));
-//
-//    cameraBackgroundPanel->setWidth(w*30);
-//    cameraBackgroundPanel->minimize();
-//}
-
-
-//void GuiApp::configureVideoprocessingPanel(int x, int y, int w, int h)
-//{
-//    videoProcessPanel = gui.addPanel("video processing");
-//    videoProcessPanel->setPosition(x*30, y*30);
-//    videoProcessPanel->setWidth(w*30);
-//
-//    videoProcessPanel->loadTheme("support/gui-styles.json", true);
-//    videoProcessPanel->setBackgroundColor(ofColor(30, 30, 200, 100));
-//    videoProcessPanel->setAttribute("border-width", 10);
-//
-//
-//    ofxGuiGroup *cameraSourcePreview = videoProcessPanel->addGroup("preview");
-//    cameraSourcePreview->setWidth(w*30);
-//    cameraSourcePreview->add<ofxGuiGraphics>("segment", &cameraParameters.previewSegment.getTexture() , ofJson({{"height", 200}}));
-//
-//    // PROCESSING
-//    ofxGuiGroup *cameraProcessingPanel = videoProcessPanel->addGroup("processing");
-//    cameraProcessingPanel->add(cameraParameters.gaussianBlur.set("final gaussian blur", 0, 0, 130));
-//    cameraProcessingPanel->add(cameraParameters.floodfillHoles.set("floodfill holes", false));
-//    cameraProcessingPanel->add(cameraParameters.useMask.set("preserve depth", false));
-//    cameraProcessingPanel->setWidth(w*30);
-//
-//    // POLYGONS
-//    ofxGuiGroup *cameraPolygonsPanel = videoProcessPanel->addGroup("polygons");
-//    cameraPolygonsPanel->add(cameraParameters.blobMinArea.set("min size blob", 0.05f, 0.0f, 0.3f));
-//    cameraPolygonsPanel->add(cameraParameters.blobMaxArea.set("max size blob", 0.8f, 0.5f, 1.0f));
-//    cameraPolygonsPanel->add(cameraParameters.nConsidered.set("maximum blobs", 8, 0, 64));
-//    cameraPolygonsPanel->add(cameraParameters.showPolygons.set("show polygons", false));
-//    cameraPolygonsPanel->add(cameraParameters.fillHolesOnPolygons.set("find holes on polygon", true));
-//    cameraPolygonsPanel->add(cameraParameters.polygonTolerance.set("polygon approximation", 1, 0, 5));
-//    cameraPolygonsPanel->setWidth(w*30);
-//    cameraPolygonsPanel->minimize();
-//}
-
-
-//void GuiApp::configureSystemstatsPanel(int x, int y, int w, int h)
-//{
-//    ofxGuiPanel *statsPanel = gui.addPanel("performance");
-//    ofxGuiContainer *p = statsPanel->addContainer("", ofJson({{"direction", "horizontal"}}));
-//    p->addFpsPlotter(ofJson({{"width", 200}}));
-//    p->add(simulationParameters.limitedFps.set("30fps", true), ofJson({{"type", "radio"}}));
-//
-//    simulationParameters.limitedFps.addListener(this, &GuiApp::limiteFps);
-//
-//    statsPanel->loadTheme("support/gui-styles.json", true);
-//
-//    statsPanel->setPosition(x*30, y*30);
-//    statsPanel->setWidth(w*30);
-//    // statsPanel->setDraggable(true);
-//}
-
-//void GuiApp::limiteFps(bool &v)
-//{
-//    if (v){
-//        ofSetFrameRate(30);
-//    } else {
-//        ofSetFrameRate(60);
-//    }
-//}
-
-//void GuiApp::configurePresetsPanel(int x, int y, int w, int h) {
-//
-//}
-
 
 
 
@@ -261,8 +97,9 @@ void GuiApp::drawLineBetween(EsenciaPanelBase &a, EsenciaPanelBase&b)
 {
     const int BEZIER_DISTANCE_X = 40;
     const int BEZIER_RESOLUTION = 10;
-    const int CIRCLE_RADIUS = 4;
-    const int CIRCLE_RADIUS_2 = 1;
+    const int CIRCLE_RADIUS = 5;
+    const int CIRCLE_RADIUS_2 = 3;
+    const int TRIANGLE_SIZE = 8;
 
     int ox = a.panel->getPosition().x + a.panel->getWidth();
     int oy = a.panel->getPosition().y + a.panel->getHeight();
@@ -271,13 +108,24 @@ void GuiApp::drawLineBetween(EsenciaPanelBase &a, EsenciaPanelBase&b)
 
     ofPushMatrix();
 
-    ofSetLineWidth(10); // actually not working, not supported by opengl 3.2+
-    ofSetColor(ofColor::paleGoldenRod);
+    //ofSetLineWidth(10); // actually not working, not supported by opengl 3.2+
+
+    ofSetColor(ofColor::paleGoldenRod, 200);
     ofFill();
-    ofDrawCircle(ox - CIRCLE_RADIUS_2, oy - 2, CIRCLE_RADIUS);
-    ofNoFill();
-    //ofDrawCircle(ox - CIRCLE_RADIUS_2, oy - 2, CIRCLE_RADIUS);
-    ofDrawCircle(dx + CIRCLE_RADIUS_2, dy + 2, CIRCLE_RADIUS);
+    ofDrawCircle(ox + CIRCLE_RADIUS_2, oy - CIRCLE_RADIUS, CIRCLE_RADIUS);
+
+    //ofDrawTriangle( ox + TRIANGLE_SIZE, oy,
+    //                ox, oy - TRIANGLE_SIZE,
+    //                ox, oy + TRIANGLE_SIZE);
+
+    //ofNoFill();
+    ofSetColor(ofColor::paleTurquoise, 200);
+    ofDrawCircle(dx - CIRCLE_RADIUS_2, dy + CIRCLE_RADIUS, CIRCLE_RADIUS);
+
+    //ofDrawTriangle( dx, dy,
+    //                dx - TRIANGLE_SIZE, dy - TRIANGLE_SIZE,
+    //                dx - TRIANGLE_SIZE, dy + TRIANGLE_SIZE);
+
 
     ofSetColor(ofColor::antiqueWhite);
     ofPolyline l;
