@@ -49,4 +49,6 @@ public:
     size_t size();
 
     void updateRadiuses(float newRadius);
+
+	void randomizePoolPositions();
 };

@@ -84,3 +84,13 @@ void ParticleSystem::updateRadiuses(float newRadiuses) {
     }
 }
 
+/// <summary>
+// Randomize the positions for the pool particles when screen is resized
+// so, they are ready to fill the new screen size, not always at their initial positions
+/// </summary>
+void ParticleSystem::randomizePoolPositions() {
+	for (auto& p : pool) {
+		p.position.x = ofRandom(1, ofGetWidth() - 2);
+		p.position.y = ofRandom(1, ofGetHeight() - 2);
+	}
+}

@@ -159,6 +159,7 @@ void Simulator::onGUIChangeRadius(int& value) {
 
 void Simulator::onRenderwindowResize(glm::vec2& worldSize) {
     updateWorldSize(worldSize.x, worldSize.y);
+    particles.randomizePoolPositions();
 }
 
 void Simulator::updateWorldSize(int _width, int _height) {
