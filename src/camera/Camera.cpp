@@ -671,3 +671,16 @@ void Camera::saveMeshFrame() {
 #pragma endregion
 
 
+
+
+void Camera::keyReleased(ofKeyEventArgs& e) {
+    if (e.hasModifier(OF_KEY_CONTROL)) {
+        switch (e.keycode) {
+        case 'B':
+            startBackgroundReferenceSampling();
+            break;
+        default:
+            break;
+        }
+    }
+}

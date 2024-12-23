@@ -88,17 +88,14 @@ void RenderApp::draw()
 
 }
 
-//--------------------------------------------------------------
-void RenderApp::keyPressed(int key){
-
-}
 
 //--------------------------------------------------------------
-void RenderApp::keyReleased(int key)
+void RenderApp::keyReleased(ofKeyEventArgs& e)
 {
+    int key = e.keycode;
     switch(key)
     {
-        case 'f':
+        case 'F':
         {
             ofToggleFullscreen();
             fbo.allocate(ofGetWidth(), ofGetHeight());

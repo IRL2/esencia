@@ -32,7 +32,7 @@ public:
     void update();
     void draw();
 
-    void keyReleased(int key);
+    void keyReleased(ofKeyEventArgs& e);
     void windowResized(int w, int h);
 
     ofxGui gui;

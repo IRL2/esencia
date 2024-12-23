@@ -14,8 +14,7 @@ class RenderApp : public ofBaseApp
         void draw();
 
         // EVENTS
-        void keyPressed(int key);
-        void keyReleased(int key);
+        void keyReleased(ofKeyEventArgs& e);
         void mouseMoved(int x, int y );
         void windowResized(int w, int h);
 

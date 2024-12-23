@@ -193,3 +193,8 @@ void Simulator::onCouplingChanged(float &value) {
 //    std::printf("%f\n", coupling);
 }
 #pragma endregion
+
+
+void Simulator::keyReleased(ofKeyEventArgs& e) {
+    //
+}

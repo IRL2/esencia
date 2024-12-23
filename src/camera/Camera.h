@@ -21,6 +21,8 @@ class Camera
         void draw();
         void exit();
 
+        void keyReleased(ofKeyEventArgs& e);
+
         void stopCurrentSource();
 
         void processCameraFrame(ofxCvGrayscaleImage cameraFrame, ofxCvGrayscaleImage backgroundReference);

@@ -12,6 +12,8 @@ public:
 	void setup(SimulationParameters* params, GuiApp* globalParams);
 	void update();
 
+	void keyReleased(ofKeyEventArgs& e);
+
 	// listeners
 	void updateWorldSize(int _width, int _height);
     void onRenderwindowResize(glm::vec2& worldSize);

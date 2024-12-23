@@ -42,35 +42,10 @@ void ofApp::exit() {
 }
 
 
-void ofApp::keyReleased(int key)
-{
-    switch (key)
-    {
-
-    case 'm':
-        //camera.saveMeshFrame();
-        break;
-
-    case 'p':
-        //camera.savePixelsFrame();
-        break;
-
-    case 's':
-        //camera.startBackgroundReferenceSampling();
-        break;
-    case 'd':
-        //camera.clearBackgroundReference();
-        break;
-    case '1':
-        camera.startBackgroundReferenceSampling();
-        break;
-
-    default:
-        break;
-
-    }
-
-    gui.keyReleased(key);
+void ofApp::keyReleased(ofKeyEventArgs& e) {
+    gui.keyReleased(e);
+    camera.keyReleased(e);
+	simulator.keyReleased(e);
 }
 
 

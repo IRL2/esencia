@@ -16,7 +16,7 @@ public:
 
     void exit() override;
 
-    void keyReleased(int key);
+    void keyReleased(ofKeyEventArgs& e);
     void windowResized(int w, int h);
 
 
