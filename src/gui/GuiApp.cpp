@@ -8,6 +8,8 @@ void GuiApp::setup()
     fbo.allocate(ofGetWindowWidth(), ofGetWindowHeight());
     ofEnableSmoothing();
 
+    gui.setupFlexBoxLayout();
+
     // a "pre"-allocation of the preview ofImages to allow control linking, but actual allocation is done by the Camera::setFrameSizes
     cameraParameters.previewSource.allocate(1, 1, OF_IMAGE_GRAYSCALE);
     cameraParameters.previewSegment.allocate(1, 1, OF_IMAGE_GRAYSCALE);
@@ -20,20 +22,23 @@ void GuiApp::setup()
     videoOriginPanel.setup(gui, cameraParameters);
     videoProcessingPanel.setup(gui, cameraParameters);
     renderPanel.setup(gui, renderParameters);
+	presetsPanel.setup(gui, presetsParameters, simulationParameters, cameraParameters, renderParameters);
 
-//     cameraGroup.add(ofParameter<string>().set("DEBUG"));
-// #ifdef DEBUG_IMAGES
-//     camera.add(cameraParameters.saveDebugImages.set("save debug images", false));
-// #endif
-// #ifdef RECORD_TESTING_VIDEO
-//     camera.add(cameraParameters.recordTestingVideo.set("record testing video", false));
-// #endif
+    #ifdef DEBUG_IMAGES
+        cameraGroup.add(ofParameter<string>().set("DEBUG"));
+        camera.add(cameraParameters.saveDebugImages.set("save debug images", false));
+    #endif
+    #ifdef RECORD_TESTING_VIDEO
+        camera.add(cameraParameters.recordTestingVideo.set("record testing video", false));
+    #endif
 }
 
 void GuiApp::update() 
 {
     // gaussian blur needs to be an odd value
     if (cameraParameters.gaussianBlur % 2 == 0) { cameraParameters.gaussianBlur = cameraParameters.gaussianBlur + 1; }
+
+    presetsPanel.update();
 }
 
 
@@ -53,25 +58,25 @@ void GuiApp::draw()
 
 
 // functions for the functionSlider (aka inverse expo slider)
-float linear(float x) {
+static float linear(float x) {
 	return x*10;
 }
 
-float reverseLinear(float y) {
+static float reverseLinear(float y) {
 	return y/10;
 }
 
-float exponentialFunction(float x) {
+static float exponentialFunction(float x) {
 	return pow(10, x);
 }
 
-float reversedExponentialFunction(float y) {
+static float reversedExponentialFunction(float y) {
 	return log10(y);
 }
 
 const int R = 100;
 const float E = exp(1);
-float inverseExponentialFunction(float x) {
+static float inverseExponentialFunction(float x) {
     float a = log( (R*E) +1);
     float b = PARTICLES_MAX / a;
     float c = log((E*x*R) +1);
@@ -79,7 +84,7 @@ float inverseExponentialFunction(float x) {
     return d;
 }
 
-float reversedInverseExponentialFunction(float y) {
+static float reversedInverseExponentialFunction(float y) {
     float a = y / PARTICLES_MAX;
     float b = log((R*E) +1);
     float c = 1 / E;

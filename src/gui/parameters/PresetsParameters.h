@@ -2,18 +2,19 @@
 #include "ParametersBase.h"
 
 
-struct SimulationParameters : public ParametersBase {
-    ofParameter<float> amount;
-    ofParameter<int> radius;
-    ofParameter<float> targetTemperature;
-    ofParameter<float> coupling;
-    ofParameter<bool> applyThermostat;
-    ofParameter<glm::vec2> worldSize;
-    ofParameter<bool> lowFps;
+struct PresetsParameters : public ParametersBase {
+
+	// declare parameters for 16 buttons to select the state
+    ofParameter<bool> states[16];
+
+    // declare parameters for action buttons: save, clear, copyTo
+	ofParameter<bool> save;
+	ofParameter<bool> clear;
+	ofParameter<bool> copyTo;
 
     ofParameterGroup parameters;
 
-    SimulationParameters() {
+    PresetsParameters() {
         //parameters.setName("Simulation Parameters");
         //parameters.add(amount.set("Ammount", 10));
         //parameters.add(radius.set("Radius", 1));

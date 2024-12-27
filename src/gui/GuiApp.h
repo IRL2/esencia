@@ -7,6 +7,7 @@
 #include "parameters/SimulationParameters.h"
 #include "parameters/RenderParameters.h"
 #include "parameters/CameraParameters.h"
+#include "parameters/PresetsParameters.h"
 
 
 #include "panels/ParticlesPanel.h"
@@ -15,6 +16,7 @@
 #include "panels/RenderPanel.h"
 #include "panels/VideoOriginPanel.h"
 #include "panels/VideoProcessingPanel.h"
+#include "panels/PresetsPanel.h"
 
 
 //#define DEBUG_IMAGES true
@@ -46,6 +48,8 @@ public:
 
     CameraParameters cameraParameters;
 
+    PresetsParameters presetsParameters;
+
 private:
     ParticlesPanel particlesPanel;
         
@@ -58,6 +62,8 @@ private:
     VideoOriginPanel videoOriginPanel;
         
     RenderPanel renderPanel;
+
+    PresetsPanel presetsPanel;
      
 
     void drawLineBetween(EsenciaPanelBase &a, EsenciaPanelBase&b);
