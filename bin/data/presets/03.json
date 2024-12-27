@@ -1,0 +1,38 @@
+{
+    "camera": {
+        "_sourceOrbbec": false,
+        "_sourceVideofile": true,
+        "_sourceWebcam": false,
+        "blobMaxArea": 8.0,
+        "blobMinArea": 0.05000000074505806,
+        "clipFar": 170,
+        "clipNear": 20,
+        "enableClipping": true,
+        "fillHolesOnPolygons": false,
+        "floodfillHoles": false,
+        "gaussianBlur": 1,
+        "nConsidered": 8,
+        "polygonTolerance": 1.0,
+        "recordTestingVideo": false,
+        "saveDebugImages": false,
+        "showPolygons": false,
+        "startBackgroundReference": false,
+        "useMask": false
+    },
+    "render": {
+        "fakeTrialsVisibility": 0.7763392925262451,
+        "showVideoPreview": true,
+        "size": 3,
+        "useFaketrails": true,
+        "useShaders": true,
+        "videopreviewVisibility": 0.30000001192092896
+    },
+    "simulation": {
+        "amount": 53.11666488647461,
+        "applyThermostat": true,
+        "coupling": 0.5,
+        "lowFps": true,
+        "radius": 9,
+        "targetTemperature": 25000.0
+    }
+}

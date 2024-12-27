@@ -1,0 +1,14 @@
+{
+  "simulation": {
+    "amount": 10,
+    "radius": 10
+  },
+  "render": {
+    "useShaders": true,
+    "useFaketrails": true,
+    "otro" : false
+  },
+  "camera": {
+    "gaussianBlur": 1
+  }
+}

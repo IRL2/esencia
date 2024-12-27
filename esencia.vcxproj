@@ -829,7 +829,10 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="bin\data\presets\00.json" />
     <None Include="bin\data\presets\01.json" />
+    <None Include="bin\data\presets\02.json" />
+    <None Include="bin\data\presets\03.json" />
     <None Include="bin\data\shaders\shaderBlur.frag" />
     <None Include="bin\data\shaders\shaderBlur.vert" />
     <None Include="bin\data\support\gui-styles.json" />

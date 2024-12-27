@@ -2509,5 +2509,14 @@
     <None Include="bin\data\presets\01.json">
       <Filter>src\gui\presets</Filter>
     </None>
+    <None Include="bin\data\presets\00.json">
+      <Filter>src\gui\presets</Filter>
+    </None>
+    <None Include="bin\data\presets\02.json">
+      <Filter>src\gui\presets</Filter>
+    </None>
+    <None Include="bin\data\presets\03.json">
+      <Filter>src\gui\presets</Filter>
+    </None>
   </ItemGroup>
 </Project>
