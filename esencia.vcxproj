@@ -161,6 +161,7 @@
     <ClInclude Include="src\gui\panels\VideoProcessingPanel.h" />
     <ClInclude Include="src\gui\parameters\EsenciaParameters.h" />
     <ClInclude Include="src\gui\parameters\ParametersBase.h" />
+    <ClInclude Include="src\gui\PresetsManager.h" />
     <ClInclude Include="src\ofApp.h" />
     <ClInclude Include="src\camera\Camera.h" />
     <ClInclude Include="src\gui\GuiApp.h" />
@@ -828,6 +829,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="bin\data\presets\01.json" />
     <None Include="bin\data\shaders\shaderBlur.frag" />
     <None Include="bin\data\shaders\shaderBlur.vert" />
     <None Include="bin\data\support\gui-styles.json" />

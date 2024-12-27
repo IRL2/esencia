@@ -15,6 +15,8 @@
 #include "panels/VideoProcessingPanel.h"
 #include "panels/PresetsPanel.h"
 
+#include "PresetsManager.h"
+
 
 //#define DEBUG_IMAGES true
 //#define RECORD_TESTING_VIDEO true
@@ -66,6 +68,10 @@ private:
     void drawLineBetween(EsenciaPanelBase &a, EsenciaPanelBase&b);
 
     ofFbo fbo;  // for the extra layers behind the GUI (lines, background, etc)
+
+    // for the presets and their needed parameter refs
+    std::vector<ParametersBase*> allParameters;
+    PresetManager presetManager;
 };
 
 

@@ -489,6 +489,9 @@
     <Filter Include="src\gui\parameters">
       <UniqueIdentifier>{8dbeb59a-d287-4063-afde-763c0acf51bd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\gui\presets">
+      <UniqueIdentifier>{c0da4979-fc64-4b09-a693-b2c89cf9ca3a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ofApp.h">
@@ -2486,6 +2489,9 @@
     <ClInclude Include="src\gui\parameters\EsenciaParameters.h">
       <Filter>src\gui\parameters</Filter>
     </ClInclude>
+    <ClInclude Include="src\gui\PresetsManager.h">
+      <Filter>src\gui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="icon.rc" />
@@ -2499,6 +2505,9 @@
     </None>
     <None Include="bin\data\support\gui-styles.json">
       <Filter>src\gui\panels</Filter>
+    </None>
+    <None Include="bin\data\presets\01.json">
+      <Filter>src\gui\presets</Filter>
     </None>
   </ItemGroup>
 </Project>

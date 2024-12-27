@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EsenciaPanelBase.h"
+#include "PresetsManager.h"
 
 class PresetsPanel : public EsenciaPanelBase {
 
@@ -31,17 +32,26 @@ class PresetsPanel : public EsenciaPanelBase {
 	ofxGuiButton *copytoButton;
 	ofxGuiGroup* presetToggles;
 
+	PresetManager presetManager;
+	std::vector<ParametersBase*> allParameters;
 
 
 public:
 		ofParameter<string> curPreset;
+		int activePreset = 0;
+		int prevPreset = 0;
 
-	void setup(ofxGui& gui, PresetsParameters& preParams, SimulationParameters& simParams, CameraParameters& camParams, RenderParameters& renParams) {
+	void setup(ofxGui& gui, PresetsParameters& preParams, SimulationParameters& simParams, CameraParameters& camParams, RenderParameters& renParams, PresetManager& presetMan) {
 		// store references to all parameters to apply the presets data
 		simulationParams = simParams;
 		cameraParams = camParams;
 		renderParams = renParams;
 		presetParams = preParams;
+		presetManager = presetMan;
+		allParameters = { &simulationParams, &cameraParams, &renderParams };
+		// TO-DO: 
+		// refactor, get only the map
+
 
 		// create the panel
 		// the panel has 2 groups: the toggle buttons, the actions buttons
@@ -60,7 +70,7 @@ public:
 
 		for (int i = 0; i < 16; i++) {
 			statesButtons[i] = presetToggles->add<ofxGuiToggle>(presetParams.states[i].set(ofToString(i + 1), false),
-				ofJson({ {"width", 30}, {"height", 30}, {"border-width", 1}, {"type", "fullsize"}, {"text-align", "center"} , {"backgrround-color", "#FFFFF33"} }));
+				ofJson({ {"width", 30}, {"height", 30}, {"border-width", 1}, {"type", "fullsize"}, {"text-align", "center"} , {"background-color", "#FFFFF33"} }));
 		}
 
 		presetToggles->setExclusiveToggles(true);
@@ -111,10 +121,10 @@ public:
 			}
 			if (index > 16) { index = 15; }
 
-			presetToggles->setActiveToggle(index);
+			setActivePreset(index);
 		}
 		else if (key == '0') {
-			presetToggles->setActiveToggle(9);
+			setActivePreset(9);
 		}
 
 		else if (key == 'S') {
@@ -130,8 +140,25 @@ public:
 	
 	}
 
+	void setActivePreset(int i) {
+		presetToggles->setActiveToggle(i);
+
+		i = (i > 15 ? 16 : i+1);
+
+		if (activePreset != i) {
+			prevPreset = activePreset;
+			activePreset = i;
+
+			ofLog() << "Selecting preset slot " << i;
+		}
+		
+		curPreset.set( std::to_string(i) );
+
+		presetManager.applyPreset(i, allParameters);
+	}
 
 	void presetButtonListener(bool& v) {
+		
 		//curPreset.set(presetToggles->getActiveToggleIndex().toString());
 		//ofLog() << "active preset: " << presetToggles->getActiveToggleIndex();
 		return;
@@ -139,10 +166,12 @@ public:
 
 
 	void savePreset() {
-		ofLog() << "save pressed";
+		ofLog() << "save pressed" ;
+		presetManager.savePreset(activePreset, allParameters);
 	}
 	void saveButtonListener(bool& v) {
 		savePreset();
+
 	}
 
 
@@ -162,6 +191,11 @@ public:
 
 
 	void update() {
-		curPreset.set(presetToggles->getActiveToggleIndex().toString());
+
+		//if (prevPreset != activePreset) {
+		//	ofLog() << "active preset: " << activePreset;
+
+		//	prevPreset = activePreset;
+		//}
 	}
 };
