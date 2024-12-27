@@ -2,6 +2,7 @@
 
 #include "ofxGuiExtended.h"
 
+
 class ParametersBase {
 public:
     virtual ~ParametersBase() = default;

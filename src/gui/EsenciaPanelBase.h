@@ -2,6 +2,8 @@
 
 #include "ofxGuiExtended.h"
 #include "parameters/ParametersBase.h"
+#include "parameters/EsenciaParameters.h"
+
 
 class EsenciaPanelBase {
 public:

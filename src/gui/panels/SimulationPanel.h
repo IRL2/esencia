@@ -1,7 +1,6 @@
 #pragma once
 
 #include "EsenciaPanelBase.h"
-#include "parameters/SimulationParameters.h"
 
 class SimulationPanel : public EsenciaPanelBase {
 
@@ -17,7 +16,7 @@ class SimulationPanel : public EsenciaPanelBase {
 	const float THERMOSTAT_MIN  = 0.1;
 	const float THERMOSTAT_MAX  = 1.0;
 
-	const float SLIDERS_WIDTH  = 105;
+	const float SLIDERS_WIDTH = 80;
 	const float SLIDERS_HEIGHT = 160;
 
 	const ofRectangle PANEL_RECT = ofRectangle(25, 3, 8, 0);
@@ -32,15 +31,17 @@ public:
 			APPLY_THERMOSTAT));
 
 		ofxGuiContainer* p = panel->addContainer("", 
-			ofJson({ {"direction", "horizontal"} }));
+			ofJson({ {"direction", "vertical"} }));
 
 		p->add(params.targetTemperature.set("\nequilibrium\ntemperature", 
 			TEMPERATURE_INIT, TEMPERATURE_MIN, TEMPERATURE_MAX),
-			ofJson({ {"width", SLIDERS_WIDTH}, {"height", SLIDERS_HEIGHT}, {"precision", 0} }));
+			ofJson({ {"width", "50%"}, {"height", SLIDERS_HEIGHT}, {"precision", 0} }));
 
 		p->add(params.coupling.set("Berendsen\nthermostat\ncoupling", 
 			THERMOSTAT_INIT, THERMOSTAT_MIN, THERMOSTAT_MAX),
-			ofJson({ {"width", SLIDERS_WIDTH}, {"height", SLIDERS_HEIGHT}, {"precision", 3} }));
+			ofJson({ {"width", "50%"}, {"height", SLIDERS_HEIGHT}, {"precision", 3}}));
+
+		p->addSpacer(30, 100);
 
 		configVisuals(PANEL_RECT, BG_COLOR);
 	}

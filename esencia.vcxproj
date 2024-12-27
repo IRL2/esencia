@@ -152,15 +152,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\gui\EsenciaPanelBase.h" />
+    <ClInclude Include="src\gui\panels\PresetsPanel.h" />
     <ClInclude Include="src\gui\panels\RenderPanel.h" />
     <ClInclude Include="src\gui\panels\SimulationPanel.h" />
     <ClInclude Include="src\gui\panels\SystemstatsPanel.h" />
+    <ClInclude Include="src\gui\panels\TimelinePanel.h" />
     <ClInclude Include="src\gui\panels\VideoOriginPanel.h" />
     <ClInclude Include="src\gui\panels\VideoProcessingPanel.h" />
-    <ClInclude Include="src\gui\parameters\CameraParameters.h" />
+    <ClInclude Include="src\gui\parameters\EsenciaParameters.h" />
     <ClInclude Include="src\gui\parameters\ParametersBase.h" />
-    <ClInclude Include="src\gui\parameters\RenderParameters.h" />
-    <ClInclude Include="src\gui\parameters\SimulationParameters.h" />
     <ClInclude Include="src\ofApp.h" />
     <ClInclude Include="src\camera\Camera.h" />
     <ClInclude Include="src\gui\GuiApp.h" />

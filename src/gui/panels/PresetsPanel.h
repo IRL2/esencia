@@ -1,10 +1,6 @@
 #pragma once
 
 #include "EsenciaPanelBase.h"
-#include "parameters/PresetsParameters.h"
-#include <parameters/RenderParameters.h>
-#include <parameters/CameraParameters.h>
-#include <parameters/SimulationParameters.h>
 
 class PresetsPanel : public EsenciaPanelBase {
 

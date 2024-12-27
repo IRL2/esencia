@@ -2459,15 +2459,6 @@
     <ClInclude Include="src\gui\parameters\ParametersBase.h">
       <Filter>src\gui\parameters</Filter>
     </ClInclude>
-    <ClInclude Include="src\gui\parameters\RenderParameters.h">
-      <Filter>src\gui\parameters</Filter>
-    </ClInclude>
-    <ClInclude Include="src\gui\parameters\SimulationParameters.h">
-      <Filter>src\gui\parameters</Filter>
-    </ClInclude>
-    <ClInclude Include="src\gui\parameters\CameraParameters.h">
-      <Filter>src\gui\parameters</Filter>
-    </ClInclude>
     <ClInclude Include="src\gui\EsenciaPanelBase.h">
       <Filter>src\gui\panels</Filter>
     </ClInclude>
@@ -2485,6 +2476,15 @@
     </ClInclude>
     <ClInclude Include="src\gui\panels\VideoProcessingPanel.h">
       <Filter>src\gui\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gui\panels\PresetsPanel.h">
+      <Filter>src\gui\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gui\panels\TimelinePanel.h">
+      <Filter>src\gui\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gui\parameters\EsenciaParameters.h">
+      <Filter>src\gui\parameters</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

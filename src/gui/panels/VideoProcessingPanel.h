@@ -1,7 +1,6 @@
 #pragma once
 
 #include "EsenciaPanelBase.h"
-#include "parameters/SimulationParameters.h"
 
 class VideoProcessingPanel : public EsenciaPanelBase {
 
