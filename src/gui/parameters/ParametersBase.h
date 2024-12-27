@@ -4,9 +4,11 @@
 
 
 class ParametersBase {
+    
 public:
+    std::unordered_map<std::string, ofAbstractParameter*> parameterMap;
+
     virtual ~ParametersBase() = default;
 
-    // Optionally provide a method to retrieve the parameter group
-    virtual ofParameterGroup& getParameters() = 0;
+	virtual void initializeParameterMap() = 0;
 };

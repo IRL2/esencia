@@ -16,8 +16,8 @@ class SimulationPanel : public EsenciaPanelBase {
 	const float THERMOSTAT_MIN  = 0.1;
 	const float THERMOSTAT_MAX  = 1.0;
 
-	const float SLIDERS_WIDTH = 80;
-	const float SLIDERS_HEIGHT = 160;
+	const float SLIDERS_WIDTH = 10;
+	const float SLIDERS_HEIGHT = 70;
 
 	const ofRectangle PANEL_RECT = ofRectangle(25, 3, 8, 0);
 	const ofColor &BG_COLOR = ofColor(180, 180, 180, 100);
@@ -30,10 +30,13 @@ public:
 		panel->add(params.applyThermostat.set("apply thermostat", 
 			APPLY_THERMOSTAT));
 
-		ofxGuiContainer* p = panel->addContainer("", 
-			ofJson({ {"direction", "vertical"} }));
+		ofxGuiContainer* p = panel->addContainer("" 
+#ifndef DEBUG
+			,ofJson({ {"direction", "vertical"} }) // do not work on debug mode 
+#endif
+		);
 
-		p->add(params.targetTemperature.set("\nequilibrium\ntemperature", 
+		p->add(params.targetTemperature.set("equilibrium\ntemperature", 
 			TEMPERATURE_INIT, TEMPERATURE_MIN, TEMPERATURE_MAX),
 			ofJson({ {"width", "50%"}, {"height", SLIDERS_HEIGHT}, {"precision", 0} }));
 
@@ -41,7 +44,7 @@ public:
 			THERMOSTAT_INIT, THERMOSTAT_MIN, THERMOSTAT_MAX),
 			ofJson({ {"width", "50%"}, {"height", SLIDERS_HEIGHT}, {"precision", 3}}));
 
-		p->addSpacer(30, 100);
+		//p->addSpacer(30, 100);
 
 		configVisuals(PANEL_RECT, BG_COLOR);
 	}

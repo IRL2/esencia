@@ -5,7 +5,9 @@
 
 
 
-
+/// <summary>
+/// The CameraParameters struct contains all the parameters that are used to configure the camera.
+/// </summary>
 class CameraParameters : public ParametersBase {
 public:
     ofParameter<bool> enableClipping = true;
@@ -35,13 +37,33 @@ public:
     ofImage previewSource;
     ofImage previewBackground;
 
-    ofParameterGroup parameters;
+    ofParameter<string> groupName = "camera";
 
     CameraParameters() {
+        initializeParameterMap();
     }
 
-    ofParameterGroup& getParameters() override {
-        return parameters;
+    void initializeParameterMap() {
+        parameterMap["camera"] = &groupName;
+
+        parameterMap["enableClipping"] = &enableClipping;
+        parameterMap["clipFar"] = &clipFar;
+        parameterMap["clipNear"] = &clipNear;
+        parameterMap["blobMinArea"] = &blobMinArea;
+        parameterMap["blobMaxArea"] = &blobMaxArea;
+        parameterMap["gaussianBlur"] = &gaussianBlur;
+        parameterMap["nConsidered"] = &nConsidered;
+        parameterMap["fillHolesOnPolygons"] = &fillHolesOnPolygons;
+        parameterMap["floodfillHoles"] = &floodfillHoles;
+        parameterMap["polygonTolerance"] = &polygonTolerance;
+        parameterMap["showPolygons"] = &showPolygons;
+        parameterMap["startBackgroundReference"] = &startBackgroundReference;
+        parameterMap["saveDebugImages"] = &saveDebugImages;
+        parameterMap["recordTestingVideo"] = &recordTestingVideo;
+        parameterMap["useMask"] = &useMask;
+        parameterMap["_sourceOrbbec"] = &_sourceOrbbec;
+        parameterMap["_sourceVideofile"] = &_sourceVideofile;
+        parameterMap["_sourceWebcam"] = &_sourceWebcam;
     }
 
 };
@@ -52,9 +74,13 @@ public:
 
 
 
-
+/// <summary>
+/// The PresetsParameters struct contains all the parameters that are used to configure the presets.
+/// </summary>
 struct PresetsParameters : public ParametersBase {
 
+    // the following ites are only gui holders
+    // 
     // declare parameters for 16 buttons to select the state
     ofParameter<bool> states[16];
 
@@ -63,17 +89,42 @@ struct PresetsParameters : public ParametersBase {
     ofParameter<bool> clear;
     ofParameter<bool> copyTo;
 
-    ofParameterGroup parameters;
+    ofParameterGroup parameters; // a copy of all the parameters for acting the presets.. maybe
+
+    // the following are the actual parameter info
+    ofParameter<int> activePreset = { 0 };
+    ofParameter<int> nextPreset = { 0 };
+    ofParameter<float> transitionDuration = { 0.0 };
+    ofParameter<bool> isTransitioning = { false };
+
 
     PresetsParameters() {
+        initializeParameterMap();
     }
 
-    ofParameterGroup& getParameters() override {
-        return parameters;
+    void initializeParameterMap() {
+		parameterMap["presets"] = nullptr;
+
+        for (int i = 0; i < 16; i++) {
+            parameterMap["states[" + ofToString(i) + "]"] = &states[i];
+        }
+        parameterMap["save"] = &save;
+        parameterMap["clear"] = &clear;
+        parameterMap["copyTo"] = &copyTo;
+        parameterMap["activePreset"] = &activePreset;
+        parameterMap["nextPreset"] = &nextPreset;
+        parameterMap["transitionDuration"] = &transitionDuration;
+        parameterMap["isTransitioning"] = &isTransitioning;
     }
 };
 
 
+
+
+
+/// <summary>
+/// The RenderParameters struct contains all the parameters that are used to configure the rendering.
+/// </summary>
 struct RenderParameters : public ParametersBase {
     ofParameter<int> size = 3;
     ofParameter<ofColor> color;
@@ -85,21 +136,32 @@ struct RenderParameters : public ParametersBase {
     ofParameter<float> videopreviewVisibility = 0.0;
     ofParameter<ofColor> videoColor;
 
-    ofParameterGroup parameters;
-
     RenderParameters() {
+		initializeParameterMap();
     }
 
-    ofParameterGroup& getParameters() override {
-        return parameters;
-    }
+	void initializeParameterMap() {
+        parameterMap["render"] = nullptr;
+
+		parameterMap["size"] = &size;
+		parameterMap["color"] = &color;
+		parameterMap["windowSize"] = &windowSize;
+		parameterMap["useShaders"] = &useShaders;
+		parameterMap["useFaketrails"] = &useFaketrails;
+		parameterMap["showVideoPreview"] = &showVideoPreview;
+		parameterMap["fakeTrialsVisibility"] = &fakeTrialsVisibility;
+		parameterMap["videopreviewVisibility"] = &videopreviewVisibility;
+		parameterMap["videoColor"] = &videoColor;
+	}
 };
 
 
 
 
 
-
+/// <summary>
+/// The SimulationParameters struct contains all the parameters that are used to configure the simulation.
+/// </summary>
 struct SimulationParameters : public ParametersBase {
     ofParameter<float> amount;
     ofParameter<int> radius;
@@ -109,14 +171,23 @@ struct SimulationParameters : public ParametersBase {
     ofParameter<glm::vec2> worldSize;
     ofParameter<bool> lowFps;
 
-    ofParameterGroup parameters;
+    ofParameter<string> groupName = "simulation";
 
     SimulationParameters() {
+		initializeParameterMap();
     }
 
-    ofParameterGroup& getParameters() override {
-        return parameters;
-    }
+	void initializeParameterMap() {
+        parameterMap["simulation"] = &groupName;
+
+		parameterMap["amount"] = &amount;
+		parameterMap["radius"] = &radius;
+		parameterMap["targetTemperature"] = &targetTemperature;
+		parameterMap["coupling"] = &coupling;
+		parameterMap["applyThermostat"] = &applyThermostat;
+		parameterMap["worldSize"] = &worldSize;
+		parameterMap["lowFps"] = &lowFps;
+	}
 };
 
 

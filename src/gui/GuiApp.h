@@ -4,10 +4,7 @@
 #include "ofxGuiExtended.h"
 #include "ofxOpenCv.h"
 
-#include "parameters/SimulationParameters.h"
-#include "parameters/RenderParameters.h"
-#include "parameters/CameraParameters.h"
-#include "parameters/PresetsParameters.h"
+#include "parameters/EsenciaParameters.h"
 
 
 #include "panels/ParticlesPanel.h"
