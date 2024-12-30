@@ -1,3 +1,4 @@
+ofxEasing
 ofxGuiExtended
 ofxOpenCv
 ofxOrbbec

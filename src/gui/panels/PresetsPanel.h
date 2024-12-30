@@ -100,13 +100,13 @@ public:
 		configVisuals(PANEL_RECT, BG_COLOR);
 	}
 
-	void onSelectToggle(int& i) {
+	//void onSelectToggle(int& i) {
 
-	}
+	//}
 
-	void mouseRel(ofMouseEventArgs& m) {
-		ofLog() << "mouse released";
-	}
+	//void mouseRel(ofMouseEventArgs& m) {
+	//	ofLog() << "mouse released";
+	//}
 
 	void keyReleased(ofKeyEventArgs& e) {
 		int key = e.keycode;
@@ -114,17 +114,17 @@ public:
 		// assign preset from the keyboard
 		// SHIFT + n = 10 + n
 		if (key >= '1' && key <= '9') {
-			int index = key - '1';
+			int index = key - '1' + 1; // convert to int by removing the ascii offset
 			
 			if (e.hasModifier(OF_KEY_SHIFT)) { 
 				index += 10;
 			}
-			if (index > 16) { index = 15; }
+			//if (index > 16) { index = 16; } // this is clamp by the setActivePreset
 
 			setActivePreset(index);
 		}
 		else if (key == '0') {
-			setActivePreset(9);
+			setActivePreset(10);
 		}
 
 		else if (key == 'S') {
@@ -140,10 +140,13 @@ public:
 	
 	}
 
+	/// <summary>
+	/// Set the active preset ID (1-based)
+	/// It will transform the index to 0-based to match the toggle index in the gui group
+	/// </summary>
+	/// <param name="i">consider 1 as the first preset</param>
 	void setActivePreset(int i) {
-		presetToggles->setActiveToggle(i);
-
-		i = (i > 15 ? 16 : i+1);
+		i = clamp(i, 1, 16);
 
 		if (activePreset != i) {
 			prevPreset = activePreset;
@@ -155,34 +158,47 @@ public:
 		curPreset.set( std::to_string(i) );
 
 		presetManager.applyPreset(i, allParameters);
+
+		//i = clamp(i-1, 0, 15); // clamp between 0 and 15 for the 16 presets
+		i--;
+		presetToggles->setActiveToggle(i);
 	}
 
-	void presetButtonListener(bool& v) {
-		
-		//curPreset.set(presetToggles->getActiveToggleIndex().toString());
-		//ofLog() << "active preset: " << presetToggles->getActiveToggleIndex();
-		return;
-	}
+
+
+
+
 
 
 	void savePreset() {
 		ofLog() << "save pressed" ;
 		presetManager.savePreset(activePreset, allParameters);
 	}
-	void saveButtonListener(bool& v) {
-		savePreset();
-
-	}
 
 
-
-	void clearButtonListener(bool& v) {
-		ofLog() << "clear pressed";
-	}
 	void clearPreset() {
 		ofLog() << "clearing presets";
 	}
 
+
+	// button listeners
+	///////////////////////////////////
+	void presetButtonListener(bool& v) {
+		if (v == true) {
+			ofLog() << "preset button pressed, active: " << presetToggles->getActiveToggleIndex();
+		}
+		//curPreset.set(presetToggles->getActiveToggleIndex().toString());
+		//ofLog() << "active preset: " << presetToggles->getActiveToggleIndex();
+		return;
+	}
+
+	void saveButtonListener(bool& v) {
+		savePreset();
+	}
+	
+	void clearButtonListener(bool& v) {
+		ofLog() << "clear pressed";
+	}
 
 	void copytoButtonListener(bool& v) {
 		ofLog() << "copyTo pressed";
@@ -190,12 +206,14 @@ public:
 
 
 
+	// update
+	///////////////////////////////////
 	void update() {
+		if (activePreset != presetToggles->getActiveToggleIndex() + 1) {
+			ofLog() << "applying active preset: " << presetToggles->getActiveToggleIndex();
+			setActivePreset(presetToggles->getActiveToggleIndex() + 1);
+		}
 
-		//if (prevPreset != activePreset) {
-		//	ofLog() << "active preset: " << activePreset;
-
-		//	prevPreset = activePreset;
-		//}
+		presetManager.updateParameters(allParameters);
 	}
 };

@@ -152,19 +152,20 @@ void GuiApp::keyReleased(ofKeyEventArgs& e) {
     //simulationParameters.ammount.enableEvents();
     //std::cout << "rad listeners" << simulationParameters.radius.getNumListeners() << std::endl;
     //std::cout << "amm listeners" << simulationParameters.ammount.getNumListeners() << std::endl;
-    if (e.keycode == OF_KEY_DOWN) {
-        simulationParameters.amount.set(ofRandom(150)); // demonstrate that changing the parameter value, it will update the gui accordingly.. except for the circular slider x_x
-        simulationParameters.radius.set(ofRandom(30)); // demonstrate that changing the parameter value, it will update the gui accordingly.. except for the circular slider x_x
-    }
+
+    //if (e.keycode == OF_KEY_DOWN) {
+    //    simulationParameters.amount.set(ofRandom(150)); // demonstrate that changing the parameter value, it will update the gui accordingly.. except for the circular slider x_x
+    //    simulationParameters.radius.set(ofRandom(30)); // demonstrate that changing the parameter value, it will update the gui accordingly.. except for the circular slider x_x
+    //}
 
     presetsPanel.keyReleased(e);
 
-    if (e.keycode == 'A') {
-        presetManager.applyPreset(1, allParameters);
-        //applyJsonToParameters("data\\presets\\01.json", allParameters);
-    }
+ //   if (e.keycode == 'A') {
+ //       presetManager.applyPreset(1, allParameters);
+ //       //applyJsonToParameters("data\\presets\\01.json", allParameters);
+ //   }
 
-	presetsPanel.curPreset.set("1");
+	//presetsPanel.curPreset.set("1");
 }
 
 
