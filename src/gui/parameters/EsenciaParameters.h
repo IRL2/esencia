@@ -37,14 +37,13 @@ public:
     ofImage previewSource;
     ofImage previewBackground;
 
-    ofParameter<string> groupName = "camera";
 
     CameraParameters() {
         initializeParameterMap();
     }
 
     void initializeParameterMap() {
-        parameterMap["camera"] = &groupName;
+        parameterMap["camera"] = nullptr;
 
         parameterMap["enableClipping"] = &enableClipping;
         parameterMap["clipFar"] = &clipFar;
@@ -171,14 +170,12 @@ struct SimulationParameters : public ParametersBase {
     ofParameter<glm::vec2> worldSize;
     ofParameter<bool> lowFps;
 
-    ofParameter<string> groupName = "simulation";
-
     SimulationParameters() {
 		initializeParameterMap();
     }
 
 	void initializeParameterMap() {
-        parameterMap["simulation"] = &groupName;
+        parameterMap["simulation"] = nullptr;
 
 		parameterMap["amount"] = &amount;
 		parameterMap["radius"] = &radius;

@@ -41,6 +41,8 @@ public:
 		int activePreset = 0;
 		int prevPreset = 0;
 
+
+
 	void setup(ofxGui& gui, PresetsParameters& preParams, SimulationParameters& simParams, CameraParameters& camParams, RenderParameters& renParams, PresetManager& presetMan) {
 		// store references to all parameters to apply the presets data
 		simulationParams = simParams;
@@ -48,18 +50,15 @@ public:
 		renderParams = renParams;
 		presetParams = preParams;
 		presetManager = presetMan;
-		allParameters = { &simulationParams, &cameraParams, &renderParams };
-		// TO-DO: 
-		// refactor, get only the map
+		allParameters = { &simulationParams, &renderParams };
 
-
-		// create the panel
-		// the panel has 2 groups: the toggle buttons, the actions buttons
+		// create the panel with 2 groups: the toggle buttons, the actions buttons
 		panel = gui.addPanel("presets");
 
-		panel->add<ofxGuiLabel>(curPreset.set("presets",">"), ofJson({{"type", "label"}}));
+		//panel->add<ofxGuiLabel>(curPreset.set("presets",">"), ofJson({{"type", "label"}}));
 
 		// the preset toggles (the group)
+		///////////////////////////////////
 		presetToggles = panel->addGroup("presetToggles", ofJson({
 			{"flex-direction", "row"},
 			{"padding", 10},
@@ -70,16 +69,16 @@ public:
 
 		for (int i = 0; i < 16; i++) {
 			statesButtons[i] = presetToggles->add<ofxGuiToggle>(presetParams.states[i].set(ofToString(i + 1), false),
-				ofJson({ {"width", 30}, {"height", 30}, {"border-width", 1}, {"type", "fullsize"}, {"text-align", "center"} , {"background-color", "#FFFFF33"} }));
+				ofJson({ {"width", 30}, {"height", 30}, {"border-width", 1}, {"type", "fullsize"}, {"text-align", "center"} }));
 		}
 
 		presetToggles->setExclusiveToggles(true);
 		presetToggles->setActiveToggle(0);
-		//presetParams.states[0].addListener(this, &PresetsPanel::presetButtonListener);
-
+		//presetParams.states[0].addListener(this, &PresetsPanel::presetButtonListener); // not using listener for the toggles, bc it triggers n-times toggles
 
 
 		// action buttons
+		///////////////////////////////////
 		ofxGuiGroup* actions = panel->addGroup("actions");
 		actions->setShowHeader(false);
 
@@ -87,8 +86,8 @@ public:
 			ofJson({ {"type", "fullsize"} }));
 		clearButton = actions->add<ofxGuiButton>(presetParams.clear.set("clear", false),
 			ofJson({ {"type", "fullsize"} }));
-		copytoButton = actions->add<ofxGuiButton>(presetParams.copyTo.set("copyTo", false),
-			ofJson({ {"type", "fullsize"} }));
+		//copytoButton = actions->add<ofxGuiButton>(presetParams.copyTo.set("copyTo", false),
+		//	ofJson({ {"type", "fullsize"} }));
 
 		presetParams.save.enableEvents();
 		presetParams.save.addListener(this, &PresetsPanel::saveButtonListener);
@@ -100,13 +99,8 @@ public:
 		configVisuals(PANEL_RECT, BG_COLOR);
 	}
 
-	//void onSelectToggle(int& i) {
 
-	//}
 
-	//void mouseRel(ofMouseEventArgs& m) {
-	//	ofLog() << "mouse released";
-	//}
 
 	void keyReleased(ofKeyEventArgs& e) {
 		int key = e.keycode;
@@ -119,9 +113,14 @@ public:
 			if (e.hasModifier(OF_KEY_SHIFT)) { 
 				index += 10;
 			}
-			//if (index > 16) { index = 16; } // this is clamp by the setActivePreset
 
 			setActivePreset(index);
+			//if (presetParams.copyTo.get() == true) {
+			//	presetManager.clonePresetTo(activePreset, index, allParameters);
+			//	presetParams.copyTo.set(false);
+			//}
+			//else {
+			//}
 		}
 		else if (key == '0') {
 			setActivePreset(10);
@@ -130,15 +129,15 @@ public:
 		else if (key == 'S') {
 			savePreset();
 		}
-		else if (key == 'L') {
+		else if (key == 'D') {
 			clearPreset();
 		}
-		else if (key == ' ') {
-			ofLog() << "> active preset: " << presetToggles->getActiveToggleIndex();
-			curPreset.set(presetToggles->getActiveToggleIndex().toString());
+		else if (key == 'C') {
+			armCopytoPreset();
 		}
-	
 	}
+
+
 
 	/// <summary>
 	/// Set the active preset ID (1-based)
@@ -152,14 +151,13 @@ public:
 			prevPreset = activePreset;
 			activePreset = i;
 
-			ofLog() << "Selecting preset slot " << i;
+			ofLog() << "PresetsPanel::setActivePreset:: Selecting preset slot " << i;
 		}
 		
 		curPreset.set( std::to_string(i) );
 
-		presetManager.applyPreset(i, allParameters);
+		presetManager.applyPreset(i, allParameters, 1.0);
 
-		//i = clamp(i-1, 0, 15); // clamp between 0 and 15 for the 16 presets
 		i--;
 		presetToggles->setActiveToggle(i);
 	}
@@ -171,13 +169,20 @@ public:
 
 
 	void savePreset() {
-		ofLog() << "save pressed" ;
 		presetManager.savePreset(activePreset, allParameters);
+		statesButtons[activePreset]->setAttribute("background-color", "#FF0066"); // TODO: not working
 	}
 
 
 	void clearPreset() {
-		ofLog() << "clearing presets";
+		presetManager.deletePreset(activePreset);
+		//statesButtons[activePreset-1]->loadConfig(ofJson({ {"background-color", "#000000"} }));
+	}
+
+	void armCopytoPreset() {
+		ofLog() << "PresetsPanel::armCopytoPreset:: Arming copy to, from preset " << activePreset;
+		//presetParams.copyTo.set(!presetParams.copyTo);
+		presetParams.copyTo.set(true);
 	}
 
 
@@ -185,7 +190,7 @@ public:
 	///////////////////////////////////
 	void presetButtonListener(bool& v) {
 		if (v == true) {
-			ofLog() << "preset button pressed, active: " << presetToggles->getActiveToggleIndex();
+			ofLog() << "PresetsPanel::presetButtonListener:: Preset button pressed: " << presetToggles->getActiveToggleIndex();
 		}
 		//curPreset.set(presetToggles->getActiveToggleIndex().toString());
 		//ofLog() << "active preset: " << presetToggles->getActiveToggleIndex();
@@ -197,11 +202,11 @@ public:
 	}
 	
 	void clearButtonListener(bool& v) {
-		ofLog() << "clear pressed";
+		clearPreset();
 	}
 
 	void copytoButtonListener(bool& v) {
-		ofLog() << "copyTo pressed";
+		armCopytoPreset();
 	}
 
 
@@ -210,8 +215,8 @@ public:
 	///////////////////////////////////
 	void update() {
 		if (activePreset != presetToggles->getActiveToggleIndex() + 1) {
-			ofLog() << "applying active preset: " << presetToggles->getActiveToggleIndex();
 			setActivePreset(presetToggles->getActiveToggleIndex() + 1);
+			ofLog() << "PresetsPanel::update:: Updating active preset to " << activePreset;
 		}
 
 		presetManager.updateParameters(allParameters);

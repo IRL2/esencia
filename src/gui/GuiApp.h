@@ -70,7 +70,8 @@ private:
     ofFbo fbo;  // for the extra layers behind the GUI (lines, background, etc)
 
     // for the presets and their needed parameter refs
-    std::vector<ParametersBase*> allParameters;
+    //std::vector<ParametersBase*> allParameters;
+
     PresetManager presetManager;
 };
 
