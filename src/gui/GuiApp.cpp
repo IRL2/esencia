@@ -40,10 +40,6 @@ void GuiApp::setup()
 
 void GuiApp::update() 
 {
-    // gaussian blur needs to be an odd value
-    // TODO: use a parameter addListener to monitor this rule
-    if (cameraParameters.gaussianBlur % 2 == 0) { cameraParameters.gaussianBlur = cameraParameters.gaussianBlur + 1; }
-
     presetsPanel.update();
 }
 

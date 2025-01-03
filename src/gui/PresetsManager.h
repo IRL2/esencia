@@ -71,6 +71,8 @@ public:
 	void updateSequenceIndex();
     void onPresetFinished();
     void onTransitionFinished();
+
+	bool isInterpolating() { return !interpolationDataMap.empty(); }
 };
 
 
@@ -295,13 +297,13 @@ void PresetManager::updateParameters() {
                 if (paramTypeName == typeid(ofParameter<int>).name()) {
                     int currentValue = dynamic_cast<ofParameter<int>*>(param)->get();
                     if (t > 1.0f) t = 1.0f;
-                    int interpolatedValue = ofxeasing::map(t, 0.0f, 1.0f, currentValue, targetValue, ofxeasing::linear::easeIn);
+                    int interpolatedValue = ofxeasing::map_clamp(t, 0.0f, 1.0f, currentValue, targetValue, ofxeasing::linear::easeIn);
                     dynamic_cast<ofParameter<int>*>(param)->set(interpolatedValue);
                 }
                 else if (paramTypeName == typeid(ofParameter<float>).name()) {
                     float currentValue = dynamic_cast<ofParameter<float>*>(param)->get();
                     if (t > 1.0f) t = 1.0f;
-                    float interpolatedValue = ofxeasing::map(t, 0.0f, 1.0f, currentValue, targetValue, ofxeasing::linear::easeIn);
+                    float interpolatedValue = ofxeasing::map_clamp(t, 0.0f, 1.0f, currentValue, targetValue, ofxeasing::linear::easeIn);
                     dynamic_cast<ofParameter<float>*>(param)->set(interpolatedValue);
                 }
             }
@@ -349,6 +351,7 @@ void PresetManager::loadSequence(const std::string& seqString) {
 
 void PresetManager::update() {
 	updateParameters();
+    
 }
 
 

@@ -87,12 +87,21 @@ public:
 		clearParam.addListener(this, &PresetsPanel::clearButtonListener);
 		copyToParam.addListener(this, &PresetsPanel::copytoButtonListener);
 
+
+		camParams.gaussianBlur.addListener(this, &PresetsPanel::onGaussianblurUpdate);
+
 		//preParams.transitionDuration.set("trans", 5.0, 0.0, 120.0);
 
 		configVisuals(PANEL_RECT, BG_COLOR);
 	}
 
 
+	// gaussian blur needs to be an odd value
+	void onGaussianblurUpdate(int &value) {
+		if (value % 2 == 0.0) {
+			value = value + 1;
+		}
+	}
 
 
 	void keyReleased(ofKeyEventArgs& e) {
@@ -147,11 +156,8 @@ public:
 			ofLog() << "PresetsPanel::setActivePreset:: Selecting preset slot " << i;
 		}
 		
-		curPreset.set( std::to_string(activePreset) );
-
 		ofLog() << "PresetsPanel::setActivePreset:: Applying preset with duration " << presetParams->transitionDuration.get();
 		presetManager->applyPreset(activePreset, presetParams->transitionDuration.get());
-
 
 		i--;
 		presetToggles->setActiveToggle(i);
