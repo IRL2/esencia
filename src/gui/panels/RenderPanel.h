@@ -26,7 +26,7 @@ class RenderPanel : public EsenciaPanelBase {
 
 
 public:
-	void setup(ofxGui &gui, RenderParameters params) {
+	void setup(ofxGui &gui, RenderParameters &params) {
 		panel = gui.addPanel("render");
 
         panel->add(params.color.set("particle color", 

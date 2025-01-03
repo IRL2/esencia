@@ -15,7 +15,7 @@ class SystemstatsPanel : public EsenciaPanelBase {
 
 
 public:
-	void setup(ofxGui &gui, SimulationParameters params) {
+	void setup(ofxGui &gui, SimulationParameters &params) {
 		panel = gui.addPanel("performance");
 
 		ofxGuiContainer* p = panel->addContainer("", 

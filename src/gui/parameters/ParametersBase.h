@@ -14,4 +14,6 @@ public:
     virtual ~ParametersBase() = default;
 
 	virtual void initializeParameterMap() = 0;
+
+	std::string groupName;
 };

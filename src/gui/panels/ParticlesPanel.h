@@ -17,7 +17,48 @@ class ParticlesPanel : public EsenciaPanelBase {
 	const int CIRCULAR_HEIGHT = 180;
 	const int RADIUS_HEIGHT = 50;
 
+	 //exponential slider consts
+	const int RESOLUTION = 100;
+	const float E = exp(1);
+
+
 	const ofRectangle PANEL_RECT = ofRectangle(1, 1, 8, 0);
+
+
+	// functions for a functionSlider, an inverse expo slider
+	// thanks to angelTC for the (rev)inverse exponential functions
+	float linear(float x) {
+		return x * 10;
+	}
+
+	float reverseLinear(float y) {
+		return y / 10;
+	}
+
+	float exponentialFunction(float x) {
+		return pow(10, x);
+	}
+
+	float reversedExponentialFunction(float y) {
+		return log10(y);
+	}
+
+	float inverseExponentialFunction(float x) {
+		float a = log((RESOLUTION * E) + 1);
+		float b = PARTICLES_MAX / a;
+		float c = log((E * x * RESOLUTION) + 1);
+		float d = b * c;
+		return d;
+	}
+
+	float reversedInverseExponentialFunction(float y) {
+		float a = y / PARTICLES_MAX;
+		float b = log((RESOLUTION * E) + 1);
+		float c = 1 / E;
+		float d = a * b;
+		float e = exp(d - 1) - c;
+		return e / RESOLUTION;
+	}
 
 
 public:

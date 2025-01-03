@@ -5,35 +5,28 @@
 
 class PresetsPanel : public EsenciaPanelBase {
 
-	// default initial values
-	const float PARTICLES_INITIAL = 120;
-	const float PARTICLES_MIN = 1.0;
-	const float PARTICLES_MAX = 200.0;
-
-	const int RADIUS_INITIAL = 3;
-	const int RADIUS_MIN = 1;
-	const int RADIUS_MAX = 30;
-
-	const int CIRCULAR_WIDTH = 180;
-	const int CIRCULAR_HEIGHT = 180;
-	const int RADIUS_HEIGHT = 50;
-
 	const ofRectangle PANEL_RECT = ofRectangle(1, 22, 6, 0);
 	const ofColor& BG_COLOR = ofColor(100, 100, 100, 100);
 
 	SimulationParameters simulationParams;
 	CameraParameters cameraParams; 
 	RenderParameters renderParams;
-	PresetsParameters presetParams;
+	PresetsParameters *presetParams;
 
 	ofxGuiToggle *statesButtons[16];
 	ofxGuiButton *saveButton;
 	ofxGuiButton *clearButton;
 	ofxGuiButton *copytoButton;
-	ofxGuiGroup* presetToggles;
+	ofxGuiGroup *presetToggles;
 
-	PresetManager presetManager;
+	PresetManager *presetManager;
 	std::vector<ParametersBase*> allParameters;
+	
+	// button parameters
+	ofParameter<bool> saveParam;
+	ofParameter<bool> clearParam;
+	ofParameter<bool> copyToParam;
+
 
 
 public:
@@ -43,13 +36,13 @@ public:
 
 
 
-	void setup(ofxGui& gui, PresetsParameters& preParams, SimulationParameters& simParams, CameraParameters& camParams, RenderParameters& renParams, PresetManager& presetMan) {
+	void setup(ofxGui& gui, PresetsParameters *preParams, SimulationParameters& simParams, CameraParameters& camParams, RenderParameters& renParams, PresetManager& presetMan) {
 		// store references to all parameters to apply the presets data
 		simulationParams = simParams;
 		cameraParams = camParams;
 		renderParams = renParams;
 		presetParams = preParams;
-		presetManager = presetMan;
+		presetManager = &presetMan;
 		allParameters = { &simulationParams, &renderParams };
 
 		// create the panel with 2 groups: the toggle buttons, the actions buttons
@@ -68,7 +61,7 @@ public:
 		presetToggles->setShowHeader(false);
 
 		for (int i = 0; i < 16; i++) {
-			statesButtons[i] = presetToggles->add<ofxGuiToggle>(presetParams.states[i].set(ofToString(i + 1), false),
+			statesButtons[i] = presetToggles->add<ofxGuiToggle>(presetParams->states[i].set(ofToString(i + 1), false),
 				ofJson({ {"width", 30}, {"height", 30}, {"border-width", 1}, {"type", "fullsize"}, {"text-align", "center"} }));
 		}
 
@@ -82,19 +75,19 @@ public:
 		ofxGuiGroup* actions = panel->addGroup("actions");
 		actions->setShowHeader(false);
 
-		saveButton = actions->add<ofxGuiButton>(presetParams.save.set("save", false),
+		saveButton = actions->add<ofxGuiButton>(saveParam.set("save", false),
 			ofJson({ {"type", "fullsize"} }));
-		clearButton = actions->add<ofxGuiButton>(presetParams.clear.set("clear", false),
+		clearButton = actions->add<ofxGuiButton>(clearParam.set("clear", false),
 			ofJson({ {"type", "fullsize"} }));
 		//copytoButton = actions->add<ofxGuiButton>(presetParams.copyTo.set("copyTo", false),
 		//	ofJson({ {"type", "fullsize"} }));
 
-		presetParams.save.enableEvents();
-		presetParams.save.addListener(this, &PresetsPanel::saveButtonListener);
-		presetParams.clear.addListener(this, &PresetsPanel::clearButtonListener);
-		presetParams.copyTo.addListener(this, &PresetsPanel::copytoButtonListener);
+		//presetParams.save.enableEvents();
+		saveParam.addListener(this, &PresetsPanel::saveButtonListener);
+		clearParam.addListener(this, &PresetsPanel::clearButtonListener);
+		copyToParam.addListener(this, &PresetsPanel::copytoButtonListener);
 
-
+		//preParams.transitionDuration.set("trans", 5.0, 0.0, 120.0);
 
 		configVisuals(PANEL_RECT, BG_COLOR);
 	}
@@ -154,9 +147,11 @@ public:
 			ofLog() << "PresetsPanel::setActivePreset:: Selecting preset slot " << i;
 		}
 		
-		curPreset.set( std::to_string(i) );
+		curPreset.set( std::to_string(activePreset) );
 
-		presetManager.applyPreset(i, allParameters, 1.0);
+		ofLog() << "PresetsPanel::setActivePreset:: Applying preset with duration " << presetParams->transitionDuration.get();
+		presetManager->applyPreset(activePreset, presetParams->transitionDuration.get());
+
 
 		i--;
 		presetToggles->setActiveToggle(i);
@@ -169,20 +164,20 @@ public:
 
 
 	void savePreset() {
-		presetManager.savePreset(activePreset, allParameters);
+		presetManager->savePreset(activePreset);
 		statesButtons[activePreset]->setAttribute("background-color", "#FF0066"); // TODO: not working
 	}
 
 
 	void clearPreset() {
-		presetManager.deletePreset(activePreset);
+		presetManager->deletePreset(activePreset);
 		//statesButtons[activePreset-1]->loadConfig(ofJson({ {"background-color", "#000000"} }));
 	}
 
 	void armCopytoPreset() {
 		ofLog() << "PresetsPanel::armCopytoPreset:: Arming copy to, from preset " << activePreset;
 		//presetParams.copyTo.set(!presetParams.copyTo);
-		presetParams.copyTo.set(true);
+		copyToParam.set(true);
 	}
 
 
@@ -219,6 +214,7 @@ public:
 			ofLog() << "PresetsPanel::update:: Updating active preset to " << activePreset;
 		}
 
-		presetManager.updateParameters(allParameters);
+		//presetManager.updateParameters(allParameters);
+		presetManager->update();
 	}
 };

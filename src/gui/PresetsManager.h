@@ -26,6 +26,8 @@
 The camera parameters are deliveritelly not stored in the presets,
 this is because the camera is setup once per venue, so it should not be stored in the presets
 
+TODO: Manipulate the map to include parameters on each module
+
 TO-DO: Consider certaint camera parameters to be included in the presets. Maybe use a blacklist
 */
 
@@ -39,21 +41,42 @@ struct InterpolationData {
 
 class PresetManager {
 private:
-    void saveParametersToJson(const std::string& jsonFilePath, const std::vector<ParametersBase*>& parameterGroups);
-    void applyJsonToParameters(const std::string& jsonFilePath, std::vector<ParametersBase*>& parameterGroups, float interpolationDuration);
+    void saveParametersToJson(const std::string& jsonFilePath);
+    void applyJsonToParameters(const std::string& jsonFilePath, float interpolationDuration);
+    
     bool fileExist(const std::string& jsonFilePath);
+
+    std::string sequenceString;
+    std::vector<int> sequence;
+	int sequenceIndex = 0;
+    float sequenceTransitionDuration = 0.0f;
+    float sequencePresetDuration = 0.0f;
 
     std::unordered_map<std::string, InterpolationData> interpolationDataMap;
 
+	std::vector<ParametersBase*>* params; // local reference to the parameters
+
 public:
-    void applyPreset(int id, std::vector<ParametersBase*>& parameterGroups);
-    void applyPreset(int id, std::vector<ParametersBase*>& parameterGroups, float duration);
-    void savePreset(int id, const std::vector<ParametersBase*>& parameterGroups);
-    void updateParameters(std::vector<ParametersBase*>& parameterGroups);
+    void setup(std::vector<ParametersBase*>& parameters);
+    void update();
+
+    void applyPreset(int id, float duration);
+    void savePreset(int id);
     void deletePreset(int id);
-    void clonePresetTo(int from, int to, std::vector<ParametersBase*>& parameterGroups);
+    void clonePresetTo(int from, int to);
+
+    void updateParameters();
+    
+	void loadSequence(const std::string& sequenceString);
+	void updateSequenceIndex();
+    void onPresetFinished();
+    void onTransitionFinished();
 };
 
+
+void PresetManager::setup(std::vector<ParametersBase*>& parameters) {
+	this->params = &parameters;
+}
 
 
 
@@ -61,8 +84,7 @@ public:
 /// Apply the values from a JSON file to the parameters
 /// </summary>
 /// <param name="jsonFilePath">Full path to the json file</param>
-/// <param name="parameterGroups">A vector with references to the destination parameters</param>
-void PresetManager::applyJsonToParameters(const std::string& jsonFilePath, std::vector<ParametersBase*>& parameterGroups, float interpolationDuration) {
+void PresetManager::applyJsonToParameters(const std::string& jsonFilePath, float interpolationDuration) {
     ofLog() << "PresetManager::applyJsonToParameters:: Applying JSON to parameters from " << jsonFilePath;
 
     // Read the JSON file
@@ -82,8 +104,8 @@ void PresetManager::applyJsonToParameters(const std::string& jsonFilePath, std::
     for (auto& [group, v] : j.items()) {  // first level is the parameter group
 
         // Iterate over all parameter groups to find the corresponding 1st level set from the json
-        for (auto& paramGroup : parameterGroups) {
-            if (paramGroup->parameterMap.find(group) != paramGroup->parameterMap.end()) {
+        for (auto& paramGroup : *params) {
+            if (paramGroup->groupName == group) {
 
                 InterpolationData interpolationData;
                 interpolationData.startTime = ofGetElapsedTimef();
@@ -138,36 +160,27 @@ void PresetManager::applyJsonToParameters(const std::string& jsonFilePath, std::
 /// <param name="id"></param>
 /// <param name="parameterGroups"></param>
 /// <param name="duration">interpolation diration</param>
-void PresetManager::applyPreset(int id, std::vector<ParametersBase*>& parameterGroups, float duration) {
+void PresetManager::applyPreset(int id, float duration = 0.0f) {
     std::string idStr = (id < 10 ? "0" : "") + std::to_string(id);
     std::string jsonFilePath = "data\\presets\\" + idStr + ".json";
     if (fileExist(jsonFilePath)) {
-        applyJsonToParameters(jsonFilePath, parameterGroups, duration);
+        applyJsonToParameters(jsonFilePath, duration);
     }
     else {
         ofLog() << "PresetManager::applyPreset:: No json file for preset " << idStr;
     }
 }
 
-/// <summary>
-/// Apply a preset to the parameters immediately
-/// </summary>
-/// <param name="id"></param>
-/// <param name="parameterGroups"></param>
-/// <param name="duration">interpolation diration</param>
-void PresetManager::applyPreset(int id, std::vector<ParametersBase*>& parameterGroups) {
-	applyPreset(id, parameterGroups, 0.0f);
-}
 
 /// <summary>
 /// public method to save the current parameters to a json file
 /// </summary>
 /// <param name="id">The preset ID (1-based)</param>
 /// <param name="parameterGroups">all groups to be saved</param>
-void PresetManager::savePreset(int id, const std::vector<ParametersBase*>& parameterGroups) {
+void PresetManager::savePreset(int id) {
     std::string idStr = (id < 10 ? "0" : "") + std::to_string(id);
     std::string jsonFilePath = "data\\presets\\" + idStr + ".json";
-    saveParametersToJson(jsonFilePath, parameterGroups);
+    saveParametersToJson(jsonFilePath);
 }
 
 
@@ -205,12 +218,12 @@ void PresetManager::deletePreset(int id) {
 /// </summary>
 /// <param name="jsonFilePath"></param>
 /// <param name="parameterGroups"></param>
-void PresetManager::saveParametersToJson(const std::string& jsonFilePath, const std::vector<ParametersBase*>& parameterGroups) {
+void PresetManager::saveParametersToJson(const std::string& jsonFilePath) {
     ofLog() << "PresetManager::saveParametersToJson:: Saving JSON to esencia parameters to " << jsonFilePath;
 
     ofJson j;
 
-    for (const auto& paramGroup : parameterGroups) {
+    for (const auto& paramGroup : *params) {
         ofJson groupJson;
         for (const auto& [key, param] : paramGroup->parameterMap) {
 			if (param != nullptr) { // nullptr means this parameter is the the group name
@@ -235,7 +248,7 @@ void PresetManager::saveParametersToJson(const std::string& jsonFilePath, const 
                 }
             }
         }
-        j[paramGroup->parameterMap.begin()->first] = groupJson; // Assuming the first key is the group name
+        j[paramGroup->groupName] = groupJson; // Assuming the first key is the group name
     }
 
     std::ofstream file(jsonFilePath);
@@ -253,13 +266,23 @@ void PresetManager::saveParametersToJson(const std::string& jsonFilePath, const 
 /// Update the parameters with the interpolation data towards the target values
 /// </summary>
 /// <param name="parameterGroups"></param>
-void PresetManager::updateParameters(std::vector<ParametersBase*>& parameterGroups) {
+void PresetManager::updateParameters() {
+	if (interpolationDataMap.empty()) {
+		return;
+	}
+
     float currentTime = ofGetElapsedTimef();
 
-    for (auto& paramGroup : parameterGroups) {
-        auto it = interpolationDataMap.find(paramGroup->parameterMap.begin()->first);
-        if (it != interpolationDataMap.end()) {
-            InterpolationData& interpolationData = it->second;
+    for (auto& paramGroup : *params) {
+        const std::string& groupName = paramGroup->groupName;
+
+        //auto it = interpolationDataMap.find(paramGroup->parameterMap.begin()->first);
+        //if (it != interpolationDataMap.end()) {
+            //InterpolationData& interpolationData = it->second;
+        if (interpolationDataMap.find(groupName) != interpolationDataMap.end()) {
+            InterpolationData& interpolationData = interpolationDataMap[groupName];
+            float elapsedTime = currentTime - interpolationData.startTime;
+            float t = std::min(elapsedTime / interpolationData.duration, 1.0f);
 
             for (auto& [key, targetValue] : interpolationData.targetValues) {
                 auto param = paramGroup->parameterMap[key];
@@ -271,14 +294,12 @@ void PresetManager::updateParameters(std::vector<ParametersBase*>& parameterGrou
 
                 if (paramTypeName == typeid(ofParameter<int>).name()) {
                     int currentValue = dynamic_cast<ofParameter<int>*>(param)->get();
-                    float t = (currentTime - interpolationData.startTime) / interpolationData.duration;
                     if (t > 1.0f) t = 1.0f;
                     int interpolatedValue = ofxeasing::map(t, 0.0f, 1.0f, currentValue, targetValue, ofxeasing::linear::easeIn);
                     dynamic_cast<ofParameter<int>*>(param)->set(interpolatedValue);
                 }
                 else if (paramTypeName == typeid(ofParameter<float>).name()) {
                     float currentValue = dynamic_cast<ofParameter<float>*>(param)->get();
-                    float t = (currentTime - interpolationData.startTime) / interpolationData.duration;
                     if (t > 1.0f) t = 1.0f;
                     float interpolatedValue = ofxeasing::map(t, 0.0f, 1.0f, currentValue, targetValue, ofxeasing::linear::easeIn);
                     dynamic_cast<ofParameter<float>*>(param)->set(interpolatedValue);
@@ -286,7 +307,7 @@ void PresetManager::updateParameters(std::vector<ParametersBase*>& parameterGrou
             }
 
             if (currentTime - interpolationData.startTime >= interpolationData.duration) {
-                interpolationDataMap.erase(it);
+                interpolationDataMap.erase(groupName);
             }
         }
     }
@@ -296,18 +317,61 @@ void PresetManager::updateParameters(std::vector<ParametersBase*>& parameterGrou
 
 
 
-void PresetManager::clonePresetTo(int from, int to, std::vector<ParametersBase*>&parameterGroups) {
+void PresetManager::clonePresetTo(int from, int to) {
 	std::string fromStr = (from < 10 ? "0" : "") + std::to_string(from);
 	std::string toStr = (to < 10 ? "0" : "") + std::to_string(to);
 	std::string fromJsonFilePath = "data\\presets\\" + fromStr + ".json";
 	std::string toJsonFilePath = "data\\presets\\" + toStr + ".json";
 
 	if (fileExist(fromJsonFilePath)) {
-		saveParametersToJson(toJsonFilePath, parameterGroups);
+		saveParametersToJson(toJsonFilePath);
 	}
 	else {
 		ofLog() << "PresetManager::clonePresetTo:: No json file for preset " << fromStr;
 	}
+}
+
+
+
+void PresetManager::loadSequence(const std::string& seqString) {
+	this->sequenceString = seqString;
+
+	std::vector<std::string> sequenceStrs = ofSplitString(sequenceString, ",");
+	sequence.clear();
+	for (const auto& s : sequenceStrs) {
+		sequence.push_back(std::stoi(s));
+	}
+}
+
+
+
+
+
+void PresetManager::update() {
+	updateParameters();
+}
+
+
+
+
+void PresetManager::updateSequenceIndex() {
+	sequenceIndex++;
+	if (sequenceIndex >= sequence.size()) {
+		sequenceIndex = 0;
+	}
+}
+
+
+void PresetManager::onPresetFinished() {
+    float currentTime = ofGetElapsedTimef();
+
+
+}
+
+
+void PresetManager::onTransitionFinished() {
+    float currentTime = ofGetElapsedTimef();    
+
 }
 
 

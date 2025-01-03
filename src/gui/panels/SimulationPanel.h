@@ -6,7 +6,7 @@ class SimulationPanel : public EsenciaPanelBase {
 
 	// default initial values
 
-	const bool APPLY_THERMOSTAT = { true };
+	const bool APPLY_THERMOSTAT = true ;
 
 	const float TEMPERATURE_INIT = 25000;
 	const float TEMPERATURE_MIN  = 1000;

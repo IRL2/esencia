@@ -24,8 +24,11 @@ public:
     ofParameter<float> polygonTolerance = 2.0f;
     ofParameter<bool> showPolygons = false;
 
+    // TODO: these parameters are used for create buttons on the gui
+    // should be moved to the corresponding panel
     ofParameter<bool> startBackgroundReference = true;
     ofParameter<bool> saveDebugImages = false;
+    
     ofParameter<bool> recordTestingVideo = false;
     ofParameter<bool> useMask = false;
 
@@ -43,7 +46,7 @@ public:
     }
 
     void initializeParameterMap() {
-        parameterMap["camera"] = nullptr;
+        groupName = "camera";
 
         parameterMap["enableClipping"] = &enableClipping;
         parameterMap["clipFar"] = &clipFar;
@@ -56,13 +59,7 @@ public:
         parameterMap["floodfillHoles"] = &floodfillHoles;
         parameterMap["polygonTolerance"] = &polygonTolerance;
         parameterMap["showPolygons"] = &showPolygons;
-        parameterMap["startBackgroundReference"] = &startBackgroundReference;
-        parameterMap["saveDebugImages"] = &saveDebugImages;
-        parameterMap["recordTestingVideo"] = &recordTestingVideo;
         parameterMap["useMask"] = &useMask;
-        parameterMap["_sourceOrbbec"] = &_sourceOrbbec;
-        parameterMap["_sourceVideofile"] = &_sourceVideofile;
-        parameterMap["_sourceWebcam"] = &_sourceWebcam;
     }
 
 };
@@ -84,38 +81,37 @@ struct PresetsParameters : public ParametersBase {
     ofParameter<bool> states[16];
 
     // declare parameters for action buttons: save, clear, copyTo
-    ofParameter<bool> save;
-    ofParameter<bool> clear;
-    ofParameter<bool> copyTo;
 
     ofParameterGroup parameters; // a copy of all the parameters for acting the presets.. maybe
 
     // the following are the actual parameter info
     ofParameter<int> activePreset = { 0 };
     ofParameter<int> nextPreset = { 0 };
+
     ofParameter<float> transitionDuration = { 0.0 };
-    ofParameter<bool> isTransitioning = { false };
+    ofParameter<float> presetDuration = { 0.0 };
+    ofParameter<string> sequence;
+	ofParameter<int> sequenceIndex = { 0 };
 
 
     PresetsParameters() {
         initializeParameterMap();
     }
 
-    void initializeParameterMap() {
-		parameterMap["presets"] = nullptr;
 
-        for (int i = 0; i < 16; i++) {
-            parameterMap["states[" + ofToString(i) + "]"] = &states[i];
-        }
-        parameterMap["save"] = &save;
-        parameterMap["clear"] = &clear;
-        parameterMap["copyTo"] = &copyTo;
-        parameterMap["activePreset"] = &activePreset;
-        parameterMap["nextPreset"] = &nextPreset;
+    void initializeParameterMap() {
+		groupName = "presets";
+
+        parameterMap["sequence"] = &sequence;
         parameterMap["transitionDuration"] = &transitionDuration;
-        parameterMap["isTransitioning"] = &isTransitioning;
+        parameterMap["presetDuration"] = &transitionDuration;
+
+        // TODO: add presetParameters to the parameterMap (on the presetsPanel setup, that is the one who initializes the PresetManager)
+        // TODO: should we move the PresetManager setup to the GuiApp?
     }
 };
+
+
 
 
 
@@ -140,7 +136,7 @@ struct RenderParameters : public ParametersBase {
     }
 
 	void initializeParameterMap() {
-        parameterMap["render"] = nullptr;
+        groupName = "render";
 
 		parameterMap["size"] = &size;
 		parameterMap["color"] = &color;
@@ -175,7 +171,7 @@ struct SimulationParameters : public ParametersBase {
     }
 
 	void initializeParameterMap() {
-        parameterMap["simulation"] = nullptr;
+		groupName = "simulation";
 
 		parameterMap["amount"] = &amount;
 		parameterMap["radius"] = &radius;

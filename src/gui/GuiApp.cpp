@@ -15,6 +15,9 @@ void GuiApp::setup()
     cameraParameters.previewSegment.allocate(1, 1, OF_IMAGE_GRAYSCALE);
     cameraParameters.previewBackground.allocate(1, 1, OF_IMAGE_GRAYSCALE);
 
+    allParameters = { &simulationParameters, &renderParameters, &cameraParameters }; // presets are handled at the presetsPanel
+	presetManager.setup(allParameters);
+
     // the panels
     particlesPanel.setup(gui, simulationParameters);
     systemstatsPanel.setup(gui, simulationParameters);
@@ -22,7 +25,8 @@ void GuiApp::setup()
     videoOriginPanel.setup(gui, cameraParameters);
     videoProcessingPanel.setup(gui, cameraParameters);
     renderPanel.setup(gui, renderParameters);
-    presetsPanel.setup(gui, presetsParameters, simulationParameters, cameraParameters, renderParameters, presetManager);
+	sequencePanel.setup(gui, &presetsParameters, presetManager);
+    presetsPanel.setup(gui, &presetsParameters, simulationParameters, cameraParameters, renderParameters, presetManager);
 
     #ifdef DEBUG_IMAGES
         cameraGroup.add(ofParameter<string>().set("DEBUG"));
@@ -32,12 +36,12 @@ void GuiApp::setup()
         camera.add(cameraParameters.recordTestingVideo.set("record testing video", false));
     #endif
 
-    //allParameters = { &simulationParameters, &renderParameters, &cameraParameters }; // presets are handled at the presetsPanel
 }
 
 void GuiApp::update() 
 {
     // gaussian blur needs to be an odd value
+    // TODO: use a parameter addListener to monitor this rule
     if (cameraParameters.gaussianBlur % 2 == 0) { cameraParameters.gaussianBlur = cameraParameters.gaussianBlur + 1; }
 
     presetsPanel.update();
@@ -54,54 +58,17 @@ void GuiApp::draw()
         drawLineBetween(videoProcessingPanel, simulationPanel);
         drawLineBetween(particlesPanel, simulationPanel);
         drawLineBetween(simulationPanel, renderPanel);
+		drawLineBetween(presetsPanel, sequencePanel);
     fbo.end();
     fbo.draw(0,0);
 }
 
 
 
-// functions for the functionSlider (aka inverse expo slider)
-static float linear(float x) {
-	return x*10;
-}
 
-static float reverseLinear(float y) {
-	return y/10;
-}
-
-static float exponentialFunction(float x) {
-	return pow(10, x);
-}
-
-static float reversedExponentialFunction(float y) {
-	return log10(y);
-}
-
-const int R = 100;
-const float E = exp(1);
-static float inverseExponentialFunction(float x) {
-    float a = log( (R*E) +1);
-    float b = PARTICLES_MAX / a;
-    float c = log((E*x*R) +1);
-    float d = b * c;
-    return d;
-}
-
-static float reversedInverseExponentialFunction(float y) {
-    float a = y / PARTICLES_MAX;
-    float b = log((R*E) +1);
-    float c = 1 / E;
-    float d = a * b;
-    float e = exp(d-1) - c;
-    return e / R;
-}
-
-
-
-
-
-
-
+// TODO: this code should be moved to the EsenciaPanelBase class
+//       should be called as EsenciaPanelBase::drawLineBetween(particlesPanel, simulationPanel);
+// TODO: this code should be cleaned up
 void GuiApp::drawLineBetween(EsenciaPanelBase &a, EsenciaPanelBase&b)
 {
     const int BEZIER_DISTANCE_X = 40;

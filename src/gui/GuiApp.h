@@ -14,6 +14,7 @@
 #include "panels/VideoOriginPanel.h"
 #include "panels/VideoProcessingPanel.h"
 #include "panels/PresetsPanel.h"
+#include "panels/SequencePanel.h"
 
 #include "PresetsManager.h"
 
@@ -21,9 +22,6 @@
 //#define DEBUG_IMAGES true
 //#define RECORD_TESTING_VIDEO true
 
-
-const float PARTICLES_MIN = 1.0;
-const float PARTICLES_MAX = 200.0;
 
 
 class GuiApp
@@ -63,6 +61,8 @@ private:
     RenderPanel renderPanel;
 
     PresetsPanel presetsPanel;
+
+	SequencePanel sequencePanel;
      
 
     void drawLineBetween(EsenciaPanelBase &a, EsenciaPanelBase&b);
@@ -70,9 +70,10 @@ private:
     ofFbo fbo;  // for the extra layers behind the GUI (lines, background, etc)
 
     // for the presets and their needed parameter refs
-    //std::vector<ParametersBase*> allParameters;
+    std::vector<ParametersBase*> allParameters;
 
     PresetManager presetManager;
+
 };
 
 
