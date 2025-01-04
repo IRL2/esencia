@@ -26,7 +26,7 @@ void GuiApp::setup()
     videoProcessingPanel.setup(gui, cameraParameters);
     renderPanel.setup(gui, renderParameters);
 	sequencePanel.setup(gui, &presetsParameters, presetManager);
-    presetsPanel.setup(gui, &presetsParameters, simulationParameters, cameraParameters, renderParameters, presetManager);
+    presetsPanel.setup(gui, &presetsParameters, presetManager, simulationParameters, cameraParameters, renderParameters);
 
     #ifdef DEBUG_IMAGES
         cameraGroup.add(ofParameter<string>().set("DEBUG"));
@@ -47,7 +47,8 @@ void GuiApp::update()
 void GuiApp::draw()
 {
     fbo.begin();
-        ofBackgroundGradient(ofColor::darkSlateGray, ofColor::lightGoldenRodYellow, OF_GRADIENT_LINEAR);
+    //ofBackgroundGradient(ofColor::darkSlateGray, ofColor::lightGoldenRodYellow, OF_GRADIENT_LINEAR);
+    ofBackgroundGradient(ofColor::darkSlateGray, ofColor::darkSalmon, OF_GRADIENT_LINEAR);
 
         // draw lines
         drawLineBetween(videoOriginPanel, videoProcessingPanel);
@@ -83,6 +84,7 @@ void GuiApp::drawLineBetween(EsenciaPanelBase &a, EsenciaPanelBase&b)
 
     //ofSetLineWidth(10); // actually not working, not supported by opengl 3.2+
 
+    // origin glyph
     ofSetColor(ofColor::paleGoldenRod, 200);
     ofFill();
     ofDrawCircle(ox - CIRCLE_RADIUS, oy - CIRCLE_RADIUS_2, CIRCLE_RADIUS);
@@ -92,18 +94,21 @@ void GuiApp::drawLineBetween(EsenciaPanelBase &a, EsenciaPanelBase&b)
     //                ox, oy + TRIANGLE_SIZE);
 
     //ofNoFill();
-    ofSetColor(ofColor::paleTurquoise, 200);
     //ofDrawCircle(dx + CIRCLE_RADIUS, dy + CIRCLE_RADIUS_2, CIRCLE_RADIUS);
 
     //ofDrawTriangle( dx, dy,
     //                dx - TRIANGLE_SIZE, dy - TRIANGLE_SIZE,
     //                dx - TRIANGLE_SIZE, dy + TRIANGLE_SIZE);
 
+    // destination glyph
+    ofSetColor(ofColor::paleTurquoise, 200);
 	ofDrawArrow(ofVec3f(dx - CIRCLE_RADIUS_2, dy + CIRCLE_RADIUS_2), 
         ofVec3f(dx, dy + CIRCLE_RADIUS_2), 
         TRIANGLE_SIZE);
 
-    ofSetColor(ofColor::antiqueWhite);
+    // curved the lines
+    //ofSetColor(ofColor::antiqueWhite);
+    ofSetColor(ofColor::chartreuse);
     ofPolyline l;
     l.addVertex(ox, oy - CIRCLE_RADIUS_2);
     l.bezierTo( ox + BEZIER_DISTANCE_X, oy,

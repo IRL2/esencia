@@ -177,9 +177,9 @@ void Simulator::recieveFrame(ofxCvGrayscaleImage frame) {
 void Simulator::onApplyThermostatChanged(bool &value) {
     applyThermostat = value;
     if (applyThermostat) {
-        std::printf("Thermostat enabled\n");
+        //std::printf("Thermostat enabled\n");
     } else {
-        std::printf("Thermostat disabled\n");
+        //std::printf("Thermostat disabled\n");
     }
 }
 

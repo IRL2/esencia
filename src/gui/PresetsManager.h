@@ -49,12 +49,18 @@ private:
     std::string sequenceString;
     std::vector<int> sequence;
 	int sequenceIndex = 0;
-    float sequenceTransitionDuration = 0.0f;
-    float sequencePresetDuration = 0.0f;
+    float sequenceTransitionDuration = 3.0f;
+    float sequencePresetDuration = 20.0f;
+    float lastUpdateTime = 0.0f;
+    bool isTransitioning = false;
 
     std::unordered_map<std::string, InterpolationData> interpolationDataMap;
 
 	std::vector<ParametersBase*>* params; // local reference to the parameters
+
+    std::vector<int> parseSequence(const std::string& input);
+    std::vector<std::string> splitString(const std::string& str, char delimiter) const;
+
 
 public:
     void setup(std::vector<ParametersBase*>& parameters);
@@ -68,11 +74,15 @@ public:
     void updateParameters();
     
 	void loadSequence(const std::string& sequenceString);
+    void playSequence();
+    void playSequence(float sequenceDuration, float transitionDuration);
 	void updateSequenceIndex();
     void onPresetFinished();
     void onTransitionFinished();
 
 	bool isInterpolating() { return !interpolationDataMap.empty(); }
+
+	bool isPlayingSequence() { return sequence.size() > 0; }
 };
 
 
@@ -325,6 +335,7 @@ void PresetManager::clonePresetTo(int from, int to) {
 	std::string fromJsonFilePath = "data\\presets\\" + fromStr + ".json";
 	std::string toJsonFilePath = "data\\presets\\" + toStr + ".json";
 
+    //TODO: Just duplicate the file
 	if (fileExist(fromJsonFilePath)) {
 		saveParametersToJson(toJsonFilePath);
 	}
@@ -338,20 +349,63 @@ void PresetManager::clonePresetTo(int from, int to) {
 void PresetManager::loadSequence(const std::string& seqString) {
 	this->sequenceString = seqString;
 
-	std::vector<std::string> sequenceStrs = ofSplitString(sequenceString, ",");
-	sequence.clear();
-	for (const auto& s : sequenceStrs) {
-		sequence.push_back(std::stoi(s));
-	}
+    sequence.clear();
+    sequence = parseSequence(seqString);
+	sequenceIndex = 0;
+
+    ofLog() << "PresetManager::loadSequence:: Sequence loaded " << ofToString(sequence);
 }
 
+void PresetManager::playSequence() {
+	playSequence(sequencePresetDuration, sequenceTransitionDuration);
+}
+
+void PresetManager::playSequence(float presetDuration, float transitionDuration) {
+	this->sequencePresetDuration = presetDuration;
+    this->sequenceTransitionDuration = transitionDuration;
+
+    //ofLog() << "PresetManager::playSequence:: Playing sequence " << ofToString(sequence);
+
+	if (sequence.size() == 0) {
+		ofLog() << "PresetManager::playSequence:: No sequence to play";
+		return;
+	}
+
+    ofLog() << "PresetManager::playSequence:: Next step is " << ofToString(sequence[sequenceIndex]);
+	applyPreset(sequence[sequenceIndex], sequenceTransitionDuration);
+}
 
 
 
 
 void PresetManager::update() {
 	updateParameters();
-    
+
+	//ofLog() << "PresetManager::update:: sequence size " << sequence.size()  << " containing " << ofToString(sequence) ;
+
+    //if (sequence.size() > 0) {
+    //    playSequence();
+    //}
+
+    if (isPlayingSequence()) {
+        float currentTime = ofGetElapsedTimef();
+        
+        if (isTransitioning) {
+            if (currentTime - lastUpdateTime >= sequenceTransitionDuration) {
+                isTransitioning = false;
+                lastUpdateTime = currentTime;
+                //onTransitionFinished();
+            }
+        }
+        else {
+            if (currentTime - lastUpdateTime >= sequencePresetDuration) {
+                lastUpdateTime = currentTime;
+                updateSequenceIndex();
+                playSequence();
+                isTransitioning = true;
+            }
+        }
+    }
 }
 
 
@@ -376,5 +430,53 @@ void PresetManager::onTransitionFinished() {
     float currentTime = ofGetElapsedTimef();    
 
 }
+
+
+
+
+/// <summary>
+/// parse the sequence into a vector of integers
+/// </summary>
+/// <param name="input">example: 1, 2, 3 - 6, 2</param>
+
+std::vector<int> PresetManager::parseSequence(const std::string& input) {
+    std::vector<int> s;
+    //sequence.clear(); // Reset the sequence
+
+    std::istringstream stream(input);
+    std::string token;
+
+    while (std::getline(stream, token, ',')) {
+        // Remove spaces
+        token.erase(std::remove(token.begin(), token.end(), ' '), token.end());
+
+        // Handle ranges
+        if (token.find('-') != std::string::npos) {
+            auto rangeParts = splitString(token, '-');
+            if (rangeParts.size() == 2) {
+                int start = std::stoi(rangeParts[0]);
+                int end = std::stoi(rangeParts[1]);
+                for (int i = start; i <= end; ++i) {
+                    s.push_back(i);
+                }
+            }
+        }
+        else {
+            // Handle single numbers
+            s.push_back(std::stoi(token));
+        }
+    }
+    return s;
+}
+std::vector<std::string> PresetManager::splitString(const std::string& str, char delimiter) const {
+    std::vector<std::string> parts;
+    std::istringstream stream(str);
+    std::string part;
+    while (std::getline(stream, part, delimiter)) {
+        parts.push_back(part);
+    }
+    return parts;
+}
+
 
 

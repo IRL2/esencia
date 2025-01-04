@@ -19,7 +19,7 @@ class PresetsPanel : public EsenciaPanelBase {
 	ofxGuiButton *copytoButton;
 	ofxGuiGroup *presetToggles;
 
-	PresetManager *presetManager;
+	PresetManager *presetManager = nullptr;
 	std::vector<ParametersBase*> allParameters;
 	
 	// button parameters
@@ -35,8 +35,9 @@ public:
 		int prevPreset = 0;
 
 
+	// TODO: review if this pointers or references are needed and correct
 
-	void setup(ofxGui& gui, PresetsParameters *preParams, SimulationParameters& simParams, CameraParameters& camParams, RenderParameters& renParams, PresetManager& presetMan) {
+	void setup(ofxGui &gui, PresetsParameters *preParams, PresetManager &presetMan, SimulationParameters &simParams, CameraParameters &camParams, RenderParameters &renParams) {
 		// store references to all parameters to apply the presets data
 		simulationParams = simParams;
 		cameraParams = camParams;
@@ -76,9 +77,9 @@ public:
 		actions->setShowHeader(false);
 
 		saveButton = actions->add<ofxGuiButton>(saveParam.set("save", false),
-			ofJson({ {"type", "fullsize"} }));
+			ofJson({ {"type", "fullsize"}, {"text-align","center"} }));
 		clearButton = actions->add<ofxGuiButton>(clearParam.set("clear", false),
-			ofJson({ {"type", "fullsize"} }));
+			ofJson({ {"type", "fullsize"}, {"text-align","center"} }));
 		//copytoButton = actions->add<ofxGuiButton>(presetParams.copyTo.set("copyTo", false),
 		//	ofJson({ {"type", "fullsize"} }));
 
@@ -156,8 +157,7 @@ public:
 			ofLog() << "PresetsPanel::setActivePreset:: Selecting preset slot " << i;
 		}
 		
-		ofLog() << "PresetsPanel::setActivePreset:: Applying preset with duration " << presetParams->transitionDuration.get();
-		presetManager->applyPreset(activePreset, presetParams->transitionDuration.get());
+		presetManager->applyPreset(activePreset, 2.0 /*presetParams->transitionDuration.get()*/);
 
 		i--;
 		presetToggles->setActiveToggle(i);
@@ -171,7 +171,7 @@ public:
 
 	void savePreset() {
 		presetManager->savePreset(activePreset);
-		statesButtons[activePreset]->setAttribute("background-color", "#FF0066"); // TODO: not working
+		statesButtons[activePreset-1]->setAttribute("background-color", "#FF0066"); // TODO: toggle color change not working
 	}
 
 

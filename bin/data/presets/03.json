@@ -7,11 +7,11 @@
         "enableClipping": true,
         "fillHolesOnPolygons": false,
         "floodfillHoles": false,
-        "gaussianBlur": 105,
+        "gaussianBlur": 1,
         "nConsidered": 8,
         "polygonTolerance": 1.0,
         "showPolygons": false,
-        "useMask": false
+        "useMask": true
     },
     "render": {
         "color": 5058358,
@@ -21,7 +21,7 @@
         "useFaketrails": true,
         "useShaders": true,
         "videoColor": 16723967,
-        "videopreviewVisibility": 0.5803571343421936
+        "videopreviewVisibility": 0.2276785671710968
     },
     "simulation": {
         "amount": 200.0,
