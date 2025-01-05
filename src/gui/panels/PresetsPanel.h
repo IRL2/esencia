@@ -8,6 +8,8 @@ class PresetsPanel : public EsenciaPanelBase {
 	const ofRectangle PANEL_RECT = ofRectangle(1, 22, 6, 0);
 	const ofColor& BG_COLOR = ofColor(100, 100, 100, 100);
 
+	const float DEFAULT_TRANSITION_DURATION = 2.0;
+
 	SimulationParameters simulationParams;
 	CameraParameters cameraParams; 
 	RenderParameters renderParams;
@@ -91,8 +93,6 @@ public:
 
 		camParams.gaussianBlur.addListener(this, &PresetsPanel::onGaussianblurUpdate);
 
-		//preParams.transitionDuration.set("trans", 5.0, 0.0, 120.0);
-
 		configVisuals(PANEL_RECT, BG_COLOR);
 	}
 
@@ -154,10 +154,10 @@ public:
 			prevPreset = activePreset;
 			activePreset = i;
 
-			ofLog() << "PresetsPanel::setActivePreset:: Selecting preset slot " << i;
+			ofLog() << "PresetsPanel::setActivePreset:: Selecting preset: " << i;
 		}
 		
-		presetManager->applyPreset(activePreset, 2.0 /*presetParams->transitionDuration.get()*/);
+		presetManager->applyPreset(activePreset, DEFAULT_TRANSITION_DURATION);
 
 		i--;
 		presetToggles->setActiveToggle(i);
@@ -215,12 +215,18 @@ public:
 	// update
 	///////////////////////////////////
 	void update() {
+		// to sync the activePreset with the gui
 		if (activePreset != presetToggles->getActiveToggleIndex() + 1) {
 			setActivePreset(presetToggles->getActiveToggleIndex() + 1);
-			ofLog() << "PresetsPanel::update:: Updating active preset to " << activePreset;
+			ofLogVerbose("PresetsPanel::update") << "Updating active preset to follow the GUI" << activePreset;
 		}
 
-		//presetManager.updateParameters(allParameters);
 		presetManager->update();
+
+		// to sync the gui with the activePreset
+		if (presetToggles->getActiveToggleIndex() != presetManager->getCurrentPreset()) {
+			presetToggles->setActiveToggle(presetManager->getCurrentPreset() - 1);
+			ofLogVerbose("PresetsPanel::update") << "Updating the preset GUI to follow the active preset from the manager" << activePreset;
+		}
 	}
 };

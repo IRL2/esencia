@@ -76,13 +76,19 @@ public:
 	void loadSequence(const std::string& sequenceString);
     void playSequence();
     void playSequence(float sequenceDuration, float transitionDuration);
-	void updateSequenceIndex();
+    void stopSequence();
+
+    int getCurrentPreset();
+    void updateSequenceIndex();
     void onPresetFinished();
     void onTransitionFinished();
 
 	bool isInterpolating() { return !interpolationDataMap.empty(); }
 
 	bool isPlayingSequence() { return sequence.size() > 0; }
+
+    ofEvent<void> presetFinishedEvent;
+    ofEvent<void> transitionFinishedEvent;
 };
 
 
@@ -217,7 +223,7 @@ void PresetManager::deletePreset(int id) {
 	std::string jsonFilePath = "data\\presets\\" + idStr + ".json";
 	if (fileExist(jsonFilePath)) {
 		std::remove(jsonFilePath.c_str());
-		ofLog() << "PresetManager::deletePreset:: Preset " << idStr << " deleted";
+		ofLog() << "PresetManager::deletePreset" << "Preset " << idStr << " deleted";
 	}
 	//else {
 	//	ofLog() << "PresetManager::deletePreset:: No json file for preset " << idStr;
@@ -361,31 +367,29 @@ void PresetManager::playSequence() {
 }
 
 void PresetManager::playSequence(float presetDuration, float transitionDuration) {
+    ofLogNotice("PresetManager::playSequence") << "Playing sequence index " << sequenceIndex << " the preset " << sequence[sequenceIndex] << " with presetDur " << presetDuration << " and transitionDur " << transitionDuration;
 	this->sequencePresetDuration = presetDuration;
     this->sequenceTransitionDuration = transitionDuration;
-
-    //ofLog() << "PresetManager::playSequence:: Playing sequence " << ofToString(sequence);
 
 	if (sequence.size() == 0) {
 		ofLog() << "PresetManager::playSequence:: No sequence to play";
 		return;
 	}
 
-    ofLog() << "PresetManager::playSequence:: Next step is " << ofToString(sequence[sequenceIndex]);
+    ofLog() << "PresetManager::playSequence:: Playing preset " << ofToString(sequence[sequenceIndex]);
 	applyPreset(sequence[sequenceIndex], sequenceTransitionDuration);
 }
 
 
 
+void PresetManager::stopSequence() {
+    sequence.clear();
+	sequenceIndex = 0;
+}
+
 
 void PresetManager::update() {
 	updateParameters();
-
-	//ofLog() << "PresetManager::update:: sequence size " << sequence.size()  << " containing " << ofToString(sequence) ;
-
-    //if (sequence.size() > 0) {
-    //    playSequence();
-    //}
 
     if (isPlayingSequence()) {
         float currentTime = ofGetElapsedTimef();
@@ -394,15 +398,16 @@ void PresetManager::update() {
             if (currentTime - lastUpdateTime >= sequenceTransitionDuration) {
                 isTransitioning = false;
                 lastUpdateTime = currentTime;
-                //onTransitionFinished();
+                onTransitionFinished();
             }
         }
         else {
             if (currentTime - lastUpdateTime >= sequencePresetDuration) {
                 lastUpdateTime = currentTime;
-                updateSequenceIndex();
                 playSequence();
+                updateSequenceIndex();
                 isTransitioning = true;
+                onPresetFinished();
             }
         }
     }
@@ -420,16 +425,24 @@ void PresetManager::updateSequenceIndex() {
 
 
 void PresetManager::onPresetFinished() {
-    float currentTime = ofGetElapsedTimef();
-
-
+    ofNotifyEvent(presetFinishedEvent, this);
 }
 
 
 void PresetManager::onTransitionFinished() {
-    float currentTime = ofGetElapsedTimef();    
-
+    ofNotifyEvent(transitionFinishedEvent, this);
 }
+
+
+
+int PresetManager::getCurrentPreset() {
+    if (sequence.size() > 0) {
+        return sequence[sequenceIndex];
+    }
+}
+
+
+
 
 
 

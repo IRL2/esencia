@@ -5,7 +5,7 @@
 
 class SequencePanel : public EsenciaPanelBase {
 
-	const ofRectangle PANEL_RECT = ofRectangle(11, 25, 8, 0);
+	const ofRectangle PANEL_RECT = ofRectangle(11, 25, 12, 0);
 	const ofColor &BG_COLOR = ofColor(100, 100, 100, 100);
 
 	PresetManager *presetManager = nullptr;
@@ -46,20 +46,33 @@ public:
 
 
 	void transitionDurationChanged(float& duration) {
-		ofLogNotice("transitionDurationChanged") << duration;
+		//ofLogNotice("transitionDurationChanged") << duration;
 	}
 
+	
+
+	// TODO: Change this to a listener for the button, not the parameter
 	void isPlayingListener(bool &b) {
-		if (b) {
-			ofLog() << "SequencePanel::isPlayingListener(true)";
-			presetManager->loadSequence(presetParams->sequence);
-			presetManager->playSequence(presetParams->presetDuration, presetParams->transitionDuration);
-			isPlaying = true;
+		if (!b) return; // only listen to "click down" button event
+
+		if (!presetManager->isPlayingSequence()) {
+			playBtn();
 		}
 		else {
-			ofLog() << "SequencePanel::isPlayingListener(false)";
-			//presetManager->stopSequence();
+			stopBtn();
 		}
+	}
+
+	void playBtn() {
+		ofLogVerbose("SequencePanel::playBtn") << "Play button pressed";
+		presetManager->loadSequence(presetParams->sequence);
+		presetManager->playSequence(presetParams->presetDuration, presetParams->transitionDuration);
+		isPlaying = true;
+	}
+
+	void stopBtn() {
+		ofLogVerbose("SequencePanel::stopBtn") << "Stop button pressed";
+		presetManager->stopSequence();
 	}
 
 
