@@ -25,14 +25,21 @@ uniform float coupling;
 uniform bool applyThermostat;
 uniform float depthFieldScale;
 
+// Lennard-Jones parameters
+uniform float ljEpsilon;   // Depth of potential well
+uniform float ljSigma;     // Distance where potential is zero
+uniform float ljCutoff;    // Cutoff for interaction distance
+uniform float maxForce;    // Max allowable force magnitude
+
 void main() {
     uint index = gl_GlobalInvocationID.x;
     if (index >= particles.length()) return;
 
     Particle p = particles[index];
     vec2 totalCollisionForce = vec2(0.0);
+    vec2 totalLJForce = vec2(0.0);
 
-    // Collision detection and response
+    // Collision detection, response, and Lennard-Jones potential
     for (uint i = 0; i < particles.length(); i++) {
         if (i == index) continue;
 
@@ -41,12 +48,25 @@ void main() {
         float dist = length(diff);
         float minDist = p.radius + other.radius;
 
+        // Collision response (original)
         if (dist < minDist && dist > 0.0001) {
-            // Calculate repulsion force
             float overlap = minDist - dist;
             vec2 normal = diff / dist;
-            vec2 repulsionForce = normal * overlap * 1000.0; // Adjust strength as needed
+            vec2 repulsionForce = normal * overlap * 10000.0; // Adjust strength as needed
             totalCollisionForce += repulsionForce;
+        }
+
+        // Lennard-Jones potential
+        if (dist < ljCutoff && dist > 0.0001) {
+            float invDist = ljSigma / dist;
+            float invDist6 = pow(invDist, 6.0);
+            float invDist12 = invDist6 * invDist6;
+
+            float ljForceMag = 24.0 * ljEpsilon * (2.0 * invDist12 - invDist6) / dist;
+
+            // Clamp the LJ force
+            ljForceMag = clamp(ljForceMag, -maxForce, maxForce);
+            totalLJForce += normalize(diff) * ljForceMag;
         }
     }
 
@@ -65,10 +85,10 @@ void main() {
     float dy = (texture(depthField, clamp(texCoord + vec2(0, texelSize.y), vec2(0), vec2(1))).r -
         texture(depthField, clamp(texCoord - vec2(0, texelSize.y), vec2(0), vec2(1))).r) * 0.5;
 
-    vec2 depthForce = -depthFieldScale * vec2(dx, dy) * videoScale;
+    vec2 depthForce = depthFieldScale * vec2(dx, dy) * videoScale;
 
-    // Combined forces
-    vec2 totalForce = depthForce + totalCollisionForce;
+    // Combined forces: depth field + collisions + Lennard-Jones
+    vec2 totalForce = depthForce + totalCollisionForce + totalLJForce;
     vec2 acceleration = totalForce / p.mass;
 
     // Update velocity with damping

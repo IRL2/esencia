@@ -38,6 +38,7 @@ private:
     void onApplyThermostatChanged(bool& value);
     void onTemperatureChanged(float& value);
     void onCouplingChanged(float& value);
+    void onSigmaChanged(float& value);
     void applyBerendsenThermostat();
 
     GLuint ssboParticles;
@@ -55,6 +56,10 @@ private:
     const int MAX_PLACEMENT_ATTEMPTS = 100;
     const float INITIAL_VELOCITY_RANGE = 100.0f;  // +/- range for random velocity
     const float DEFAULT_MASS = 5.0f;
+    float ljEpsilon = 5.0f;    // Lennard-Jones well depth
+    float ljSigma = 0.5f;      // Lennard-Jones distance scale
+    float ljCutoff = 30.0f;    // Interaction cutoff
+    float maxForce = 10000.0f;  // Force clamping
 
     ofxCvGrayscaleImage currentDepthField;
     Gui::SimulationParameters* parameters;

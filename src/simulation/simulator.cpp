@@ -15,7 +15,7 @@ void Simulator::setup(Gui::SimulationParameters* params, Gui* globalParams) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    depthFieldScale = 500000.0f;
+    depthFieldScale = -100000.0f;
     std::vector<float> initialDepth(width * height, 0.5f);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, initialDepth.data());
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -25,6 +25,7 @@ void Simulator::setup(Gui::SimulationParameters* params, Gui* globalParams) {
     parameters->applyThermostat.addListener(this, &Simulator::onApplyThermostatChanged);
     parameters->targetTemperature.addListener(this, &Simulator::onTemperatureChanged);
     parameters->coupling.addListener(this, &Simulator::onCouplingChanged);
+    parameters->ljSigma.addListener(this, &Simulator::onSigmaChanged);
     globalParameters->renderParameters.windowSize.addListener(this, &Simulator::onRenderwindowResize);
 }
 
@@ -163,6 +164,11 @@ void Simulator::updateParticlesOnGPU() {
     glUniform2f(glGetUniformLocation(computeShaderProgram, "videoScale"), videoScaleX, videoScaleY);
     glUniform2f(glGetUniformLocation(computeShaderProgram, "sourceSize"), sourceWidth, sourceHeight);
 
+    glUniform1f(glGetUniformLocation(computeShaderProgram, "ljEpsilon"), ljEpsilon);
+    glUniform1f(glGetUniformLocation(computeShaderProgram, "ljSigma"), ljSigma);
+    glUniform1f(glGetUniformLocation(computeShaderProgram, "ljCutoff"), ljCutoff);
+    glUniform1f(glGetUniformLocation(computeShaderProgram, "maxForce"), maxForce);
+
     // Bind depth field texture
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, depthFieldTexture);
@@ -248,6 +254,11 @@ void Simulator::onTemperatureChanged(float& value) {
 void Simulator::onCouplingChanged(float& value) {
     coupling = value;
     printf("%f\n", coupling);
+}
+
+void Simulator::onSigmaChanged(float& value) {
+    ljSigma = value;
+    printf("%f\n", ljSigma);
 }
 
 void Simulator::applyBerendsenThermostat() {

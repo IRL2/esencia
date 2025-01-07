@@ -114,8 +114,9 @@ void Gui::configureSimulationPanel(int x, int y, int w, int h)
     simulationPanel->add(simulationParameters.applyThermostat.set("apply thermostat", true));
 
     ofxGuiContainer *p = simulationPanel->addContainer("" , ofJson({{"direction", "horizontal"}}) );
-    p->add(simulationParameters.targetTemperature.set("\nequilibrium\ntemperature", 25000.0, 1000.0, 100000.0) , ofJson({{"width", 100}, {"height", 150}, {"precision", 0}}));
+    p->add(simulationParameters.targetTemperature.set("\nequilibrium\ntemperature", 25000.0, 0.0, 100000.0) , ofJson({{"width", 100}, {"height", 150}, {"precision", 0}}));
     p->add(simulationParameters.coupling.set("Berendsen\nthermostat\ncoupling", 0.5, 0.1, 1.0), ofJson({{"width", 100}, {"height", 150}, {"precision", 3}}));
+    p->add(simulationParameters.ljSigma.set("sigma", 0.5, 0.1, 100.0), ofJson({ {"width", 100}, {"height", 150}, {"precision", 3} }));
 
     simulationPanel->setBackgroundColor(ofColor(180, 180, 180, 100));
     simulationPanel->loadTheme("support/gui-styles.json", true);

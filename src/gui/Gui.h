@@ -34,6 +34,7 @@ public:
         ofParameter<int> radius = 1;
         ofParameter<float> targetTemperature;
         ofParameter<float> coupling;
+        ofParameter<float> ljSigma;
         ofParameter<bool> applyThermostat;
         ofParameter<glm::vec2> worldSize;
         ofParameter<bool> limitedFps = true;
