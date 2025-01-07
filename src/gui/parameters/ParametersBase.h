@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ofxGuiExtended.h"
+//#include "ofxGuiExtended.h"
 
 
 class ParametersBase {

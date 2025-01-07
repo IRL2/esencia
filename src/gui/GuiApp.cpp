@@ -109,7 +109,7 @@ void GuiApp::drawLineBetween(EsenciaPanelBase &a, EsenciaPanelBase&b)
     // curved the lines
     //ofSetColor(ofColor::antiqueWhite);
     //ofSetColor(ofColor::chartreuse);
-    ofSetColor(ofColor::khaki);
+    ofSetColor(ofColor::khaki, 200);
     ofPolyline l;
     l.addVertex(ox, oy - CIRCLE_RADIUS_2);
     l.bezierTo( ox + BEZIER_DISTANCE_X, oy,

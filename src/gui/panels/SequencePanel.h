@@ -71,15 +71,15 @@ public:
 	}
 
 	void playButtonSetStop() {
-		playButton->setBackgroundColor(ofColor(100, 100, 100, 200));
-		playButton->setTextColor(ofColor(255, 255, 255, 255));
+		playButton->setLabel("playing");
+		//playButton->setTextColor(ofColor::white);
+		playButton->setBackgroundColor(ofColor(ofColor::lightSeaGreen,200));
 		playButton->setNeedsRedraw();
-		playButton->setLabel("stop");
 	}
 	void playButtonSetPlaying() {
-		playButton->setLabel("play");
-		playButton->setTextColor(ofColor(20, 20, 20, 100));
-		playButton->setBackgroundColor(ofColor(200, 200, 200, 10));
+		playButton->setLabel("stopped");
+		//playButton->setTextColor(ofColor(100, 100, 100, 200));
+		playButton->setBackgroundColor(ofColor(ofColor::orangeRed, 200));
 		playButton->setNeedsRedraw();
 	}
 

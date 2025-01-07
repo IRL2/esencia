@@ -9,7 +9,6 @@
 
 /*
 * the json file follows the same structure as the parameters, with the first level being the group name
-
 {
 	"simulation": {
 		"particles": 1000,
@@ -22,13 +21,6 @@
 		...
 	}
 }
-
-The camera parameters are deliveritelly not stored in the presets,
-this is because the camera is setup once per venue, so it should not be stored in the presets
-
-TODO: Manipulate the map to include parameters on each module
-
-TO-DO: Consider certaint camera parameters to be included in the presets. Maybe use a blacklist
 */
 
 
@@ -53,6 +45,7 @@ private:
     float sequencePresetDuration = 20.0f;
     float lastUpdateTime = 0.0f;
 	bool isTransitioning = false;  // flag to know if we are transitioning(interpolating) in the sequence
+	bool isPlaying = false;
 
     std::unordered_map<std::string, InterpolationData> interpolationDataMap;
 
@@ -60,6 +53,7 @@ private:
 
     std::vector<int> parseSequence(std::string& input);
     std::vector<std::string> splitString(const std::string& str, char delimiter) const;
+    std::vector<int> unfoldRanges(std::string& str);
 
     std::string convertIDtoJSonFilename(int id);
 
@@ -73,7 +67,7 @@ public:
     void clonePresetTo(int from, int to);
 
     void updateParameters();
-    
+    void updateSequence();
 	void loadSequence(const std::string& sequenceString);
     void playSequence();
     void playSequence(float sequenceDuration, float transitionDuration);
@@ -86,7 +80,7 @@ public:
 
 	bool isInterpolating() { return !interpolationDataMap.empty(); } // for when parameters are being interpolated
 
-	bool isPlayingSequence() { return sequence.size() > 0; }
+	bool isPlayingSequence() { return isPlaying; }
 
     bool presetExist(int id);
 
@@ -97,6 +91,10 @@ public:
 };
 
 
+/// <summary>
+/// Loads the parameterBase vector
+/// </summary>
+/// <param name="parameters"></param>
 void PresetManager::setup(std::vector<ParametersBase*>& parameters) {
 	this->params = &parameters;
 }
@@ -303,6 +301,8 @@ void PresetManager::saveParametersToJson(const std::string& jsonFilePath) {
 }
 
 
+#pragma region updateParameters
+
 /// <summary>
 /// Update the parameters with the interpolation data towards the target values
 /// </summary>
@@ -354,6 +354,7 @@ void PresetManager::updateParameters() {
     }
 }
 
+#pragma endregion
 
 
 
@@ -401,6 +402,7 @@ void PresetManager::playSequence(float presetDuration, float transitionDuration)
     ofLogNotice("PresetManager::playSequence") << "Playing sequence index " << sequenceIndex << " the preset " << sequence[sequenceIndex] << " with presetDur " << presetDuration << " and transitionDur " << transitionDuration;
 	this->sequencePresetDuration = presetDuration;
     this->sequenceTransitionDuration = transitionDuration;
+    this->isPlaying = true;
 
 	if (sequence.size() == 0) {
 		ofLog() << "PresetManager::playSequence:: No sequence to play";
@@ -412,20 +414,26 @@ void PresetManager::playSequence(float presetDuration, float transitionDuration)
 }
 
 
-
+/// <summary>
+/// Stops the running sequence
+/// </summary>
 void PresetManager::stopSequence() {
-    sequence.clear();
+	ofLog() << "PresetManager::stopSequence:: Stopping sequence";
+	this->isPlaying = false;
 	sequenceIndex = 0;
 }
 
 
-// TODO: Use events
+// TODO: Better use events
 void PresetManager::update() {
 	updateParameters();
+    updateSequence();
+}
 
+void PresetManager::updateSequence() {
     if (isPlayingSequence()) {
         float currentTime = ofGetElapsedTimef();
-        
+
         if (isTransitioning) {
             if (currentTime - lastUpdateTime >= sequenceTransitionDuration) {
                 isTransitioning = false;
@@ -482,6 +490,7 @@ int PresetManager::getCurrentPreset() {
     if (sequence.size() > 0) {
         return sequence[sequenceIndex];
     }
+	return -1;
 }
 
 
@@ -506,26 +515,7 @@ std::vector<int> PresetManager::parseSequence(std::string& input) {
 
         // Handle ranges
         if (token.find('-') != std::string::npos) {
-            std::vector<int> sr;
-
-            auto rangeParts = splitString(token, '-');
-
-            if (rangeParts.size() == 2) {
-                int start = std::stoi(rangeParts[0]);
-                int end = std::stoi(rangeParts[1]);
-
-                // Handle reversed ranges
-				if (start > end) {
-					std::swap(start, end);
-				}
-                for (int i = start; i <= end; ++i) {
-                    sr.push_back(i);
-                }
-                if (std::stoi(rangeParts[0]) > std::stoi(rangeParts[1])) {
-					std::reverse(sr.begin(), sr.end());
-                }
-            }
-
+            std::vector<int> sr = unfoldRanges(token);
             for (auto& i : sr) {
                 s.push_back(i);
             }
@@ -543,8 +533,7 @@ std::vector<int> PresetManager::parseSequence(std::string& input) {
 /// Returns a vector of strings from a string separated by a delimiter
 /// </summary>
 /// <param name="str"></param>
-/// <param name="delimiter"></param>
-/// <returns></returns>
+/// <param name="delimiter">","</param>
 std::vector<std::string> PresetManager::splitString(const std::string& str, char delimiter) const {
     std::vector<std::string> parts;
     std::istringstream stream(str);
@@ -556,6 +545,33 @@ std::vector<std::string> PresetManager::splitString(const std::string& str, char
     return parts;
 }
 
+
+/// <summary>
+/// Convert a "1-5" string into a vector of integers {1, 2, 3, 4, 5}
+/// </summary>
+std::vector<int> PresetManager::unfoldRanges(std::string& str) {
+    std::vector<int> sr;
+
+    auto rangeParts = splitString(str, '-');
+
+    if (rangeParts.size() == 2) {
+        int start = std::stoi(rangeParts[0]);
+        int end = std::stoi(rangeParts[1]);
+
+        // Handle reversed ranges
+        if (start > end) {
+            std::swap(start, end);
+        }
+        for (int i = start; i <= end; ++i) {
+            sr.push_back(i);
+        }
+        if (std::stoi(rangeParts[0]) > std::stoi(rangeParts[1])) {
+            std::reverse(sr.begin(), sr.end());
+        }
+    }
+
+    return sr;
+}
 
 /// <summary>
 /// Removes invalid characters but digits, comma and dashes

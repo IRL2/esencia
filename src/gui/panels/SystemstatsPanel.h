@@ -6,7 +6,11 @@ class SystemstatsPanel : public EsenciaPanelBase {
 
 	// default initial values
 	
-	const bool LIMIT_FPS = { true };
+	bool LIMIT_FPS = { false };
+
+#ifdef DEBUG
+	LIMIT_FPS = { true };
+#endif
 
 	const int WIDTH = 200;
 	const int HEIGHT = 30;

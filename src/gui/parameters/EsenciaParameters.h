@@ -178,8 +178,8 @@ struct SimulationParameters : public ParametersBase {
 		parameterMap["targetTemperature"] = &targetTemperature;
 		parameterMap["coupling"] = &coupling;
 		parameterMap["applyThermostat"] = &applyThermostat;
-		parameterMap["worldSize"] = &worldSize;
-		parameterMap["lowFps"] = &lowFps;
+		//parameterMap["worldSize"] = &worldSize;
+		//parameterMap["lowFps"] = &lowFps;
 	}
 };
 
