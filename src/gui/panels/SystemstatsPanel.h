@@ -9,6 +9,7 @@ class SystemstatsPanel : public EsenciaPanelBase {
 	const bool LIMIT_FPS = { true };
 
 	const int WIDTH = 200;
+	const int HEIGHT = 30;
 
 	const ofRectangle PANEL_RECT = ofRectangle(12, 1, 8, 0);
 	const ofColor BG_COLOR = ofColor(100, 100, 100, 100);
@@ -21,7 +22,7 @@ public:
 		ofxGuiContainer* p = panel->addContainer("", 
 			ofJson({ {"direction", "horizontal"} }));
 
-		p->addFpsPlotter(ofJson({ {"width", WIDTH} }));
+		p->addFpsPlotter(ofJson({ {"width", WIDTH}, {"height", HEIGHT} } ));
 
 		p->add(params.lowFps.set("30fps", LIMIT_FPS),
 			ofJson({ {"type", "radio"} }));

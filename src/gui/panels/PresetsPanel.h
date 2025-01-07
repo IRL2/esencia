@@ -68,6 +68,8 @@ public:
 				ofJson({ {"width", 30}, {"height", 30}, {"border-width", 1}, {"type", "fullsize"}, {"text-align", "center"} }));
 		}
 
+		recolorPresetButtons();
+
 		presetToggles->setExclusiveToggles(true);
 		presetToggles->setActiveToggle(0);
 		//presetParams.states[0].addListener(this, &PresetsPanel::presetButtonListener); // not using listener for the toggles, bc it triggers n-times toggles
@@ -129,17 +131,34 @@ public:
 			setActivePreset(10);
 		}
 
-		else if (key == 'S') {
+		else if (key == 'S' && e.hasModifier(OF_KEY_CONTROL)) {
 			savePreset();
 		}
-		else if (key == 'D') {
+		else if (key == 'C' && e.hasModifier(OF_KEY_CONTROL)) {
 			clearPreset();
 		}
-		else if (key == 'C') {
-			armCopytoPreset();
-		}
+		//else if (key == 'C' && e.hasModifier(MOD_SHIFT)) {
+		//	armCopytoPreset();
+		//}
 	}
 
+
+	/// <summary>
+	/// Updates colors on preset buttons according to the existence of the preset
+	/// </summary>
+	void recolorPresetButtons() {
+		for (int i = 0; i < 16; i++) {
+			if (presetManager->presetExist(i + 1)) {
+				statesButtons[i]->setBackgroundColor(ofColor(100, 100, 100, 200));
+				statesButtons[i]->setTextColor(ofColor(255, 255, 255, 255));
+			}
+			else {
+				statesButtons[i]->setTextColor(ofColor(20, 20, 20, 100));
+				statesButtons[i]->setBackgroundColor(ofColor(200, 200, 200, 10));
+			}
+			statesButtons[i]->setNeedsRedraw();
+		}
+	}
 
 
 	/// <summary>
@@ -161,6 +180,8 @@ public:
 
 		i--;
 		presetToggles->setActiveToggle(i);
+
+		recolorPresetButtons();
 	}
 
 
@@ -171,13 +192,13 @@ public:
 
 	void savePreset() {
 		presetManager->savePreset(activePreset);
-		statesButtons[activePreset-1]->setAttribute("background-color", "#FF0066"); // TODO: toggle color change not working
+		recolorPresetButtons();
 	}
 
 
 	void clearPreset() {
 		presetManager->deletePreset(activePreset);
-		//statesButtons[activePreset-1]->loadConfig(ofJson({ {"background-color", "#000000"} }));
+		recolorPresetButtons();
 	}
 
 	void armCopytoPreset() {
@@ -218,15 +239,17 @@ public:
 		// to sync the activePreset with the gui
 		if (activePreset != presetToggles->getActiveToggleIndex() + 1) {
 			setActivePreset(presetToggles->getActiveToggleIndex() + 1);
-			ofLogVerbose("PresetsPanel::update") << "Updating active preset to follow the GUI" << activePreset;
+			ofLogNotice("PresetsPanel::update") << "Updating active preset to follow the GUI" << activePreset;
 		}
 
 		presetManager->update();
 
 		// to sync the gui with the activePreset
-		if (presetToggles->getActiveToggleIndex() != presetManager->getCurrentPreset()) {
-			presetToggles->setActiveToggle(presetManager->getCurrentPreset() - 1);
-			ofLogVerbose("PresetsPanel::update") << "Updating the preset GUI to follow the active preset from the manager" << activePreset;
+		if (presetManager->isPlayingSequence()) {
+			if (presetToggles->getActiveToggleIndex() + 1 != presetManager->getCurrentPreset()) {
+				presetToggles->setActiveToggle(presetManager->getCurrentPreset() - 1);
+				ofLogNotice("PresetsPanel::update") << "Updating the preset GUI to follow the active preset from the manager" << activePreset;
+			}
 		}
 	}
 };

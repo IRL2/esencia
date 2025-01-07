@@ -28,6 +28,8 @@ public:
 		playButton = panel->add<ofxGuiButton>(isPlaying.set("play", false),
 			ofJson( {{"type", "fullsize"}, {"text-align","center"} }));
 
+		playButton->addListener(this, &SequencePanel::playBtnListener);
+
 		isPlaying.addListener(this, &SequencePanel::isPlayingListener);
 
 		ofxGuiGroup* durations = panel->addGroup("durations (s)", ofJson({
@@ -49,35 +51,60 @@ public:
 		//ofLogNotice("transitionDurationChanged") << duration;
 	}
 
-	
+	void playBtnListener() {
+		ofLogVerbose("SequencePanel::playBtnListener") << "Play button pressed";
+
+	}
 
 	// TODO: Change this to a listener for the button, not the parameter
-	void isPlayingListener(bool &b) {
+	void isPlayingListener(bool& b) {
 		if (!b) return; // only listen to "click down" button event
 
 		if (!presetManager->isPlayingSequence()) {
-			playBtn();
+			playSequence();
+			playButtonSetStop();
 		}
 		else {
-			stopBtn();
+			stopSequence();
+			playButtonSetPlaying();
 		}
 	}
 
-	void playBtn() {
-		ofLogVerbose("SequencePanel::playBtn") << "Play button pressed";
+	void playButtonSetStop() {
+		playButton->setBackgroundColor(ofColor(100, 100, 100, 200));
+		playButton->setTextColor(ofColor(255, 255, 255, 255));
+		playButton->setNeedsRedraw();
+		playButton->setLabel("stop");
+	}
+	void playButtonSetPlaying() {
+		playButton->setLabel("play");
+		playButton->setTextColor(ofColor(20, 20, 20, 100));
+		playButton->setBackgroundColor(ofColor(200, 200, 200, 10));
+		playButton->setNeedsRedraw();
+	}
+
+
+	void playSequence() {
+		ofLogVerbose("SequencePanel::playBtn") << "Playing sequence";
 		presetManager->loadSequence(presetParams->sequence);
 		presetManager->playSequence(presetParams->presetDuration, presetParams->transitionDuration);
+		presetParams->sequence = presetManager->removeInvalidCharacters(presetParams->sequence);
 		isPlaying = true;
 	}
 
-	void stopBtn() {
-		ofLogVerbose("SequencePanel::stopBtn") << "Stop button pressed";
+	void stopSequence() {
+		ofLogVerbose("SequencePanel::stopBtn") << "Stoping sequence";
 		presetManager->stopSequence();
 	}
 
 
 	void keyReleased(ofKeyEventArgs& e) {
 		int key = e.keycode;
+
+		if (key == ' ') {
+			//bool t = true;
+			//isPlayingListener(t);
+		}
 
 		// TODO: add shortcut for call isPlayingListener(true)
 	}

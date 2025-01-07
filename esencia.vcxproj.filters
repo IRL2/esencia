@@ -2499,4 +2499,9 @@
   <ItemGroup>
     <ResourceCompile Include="icon.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="bin\data\support\gui-styles.json">
+      <Filter>src\gui</Filter>
+    </None>
+  </ItemGroup>
 </Project>

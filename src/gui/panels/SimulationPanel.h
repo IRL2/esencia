@@ -44,8 +44,6 @@ public:
 			THERMOSTAT_INIT, THERMOSTAT_MIN, THERMOSTAT_MAX),
 			ofJson({ {"width", "50%"}, {"height", SLIDERS_HEIGHT}, {"precision", 3}}));
 
-		//p->addSpacer(30, 100);
-
 		configVisuals(PANEL_RECT, BG_COLOR);
 	}
 

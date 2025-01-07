@@ -52,15 +52,16 @@ private:
     float sequenceTransitionDuration = 3.0f;
     float sequencePresetDuration = 20.0f;
     float lastUpdateTime = 0.0f;
-    bool isTransitioning = false;
+	bool isTransitioning = false;  // flag to know if we are transitioning(interpolating) in the sequence
 
     std::unordered_map<std::string, InterpolationData> interpolationDataMap;
 
 	std::vector<ParametersBase*>* params; // local reference to the parameters
 
-    std::vector<int> parseSequence(const std::string& input);
+    std::vector<int> parseSequence(std::string& input);
     std::vector<std::string> splitString(const std::string& str, char delimiter) const;
 
+    std::string convertIDtoJSonFilename(int id);
 
 public:
     void setup(std::vector<ParametersBase*>& parameters);
@@ -83,9 +84,13 @@ public:
     void onPresetFinished();
     void onTransitionFinished();
 
-	bool isInterpolating() { return !interpolationDataMap.empty(); }
+	bool isInterpolating() { return !interpolationDataMap.empty(); } // for when parameters are being interpolated
 
 	bool isPlayingSequence() { return sequence.size() > 0; }
+
+    bool presetExist(int id);
+
+    static std::string removeInvalidCharacters(const std::string& input);
 
     ofEvent<void> presetFinishedEvent;
     ofEvent<void> transitionFinishedEvent;
@@ -202,6 +207,13 @@ void PresetManager::savePreset(int id) {
 }
 
 
+std::string PresetManager::convertIDtoJSonFilename(int id) {
+    std::string idStr = (id < 10 ? "0" : "") + std::to_string(id);
+    std::string jsonFilePath = "data\\presets\\" + idStr + ".json";
+	return jsonFilePath;
+}
+
+
 /// <summary
 /// Check if a file exists
 /// </summary>
@@ -212,6 +224,17 @@ bool PresetManager::fileExist(const std::string& jsonFilePath) {
     }
     return true;
 }
+
+/// <summary>
+/// Verify if an associated json file exists for a given preset ID
+/// </summary>
+/// <param name="id"></param>
+/// <returns></returns>
+bool PresetManager::presetExist(int id) {
+    auto file = convertIDtoJSonFilename(id);
+	return fileExist(file);
+}
+
 
 
 /// <summary>
@@ -334,29 +357,37 @@ void PresetManager::updateParameters() {
 
 
 
-
+/// <summary>
+/// Clone a preset to another preset
+/// </summary>
 void PresetManager::clonePresetTo(int from, int to) {
 	std::string fromStr = (from < 10 ? "0" : "") + std::to_string(from);
 	std::string toStr = (to < 10 ? "0" : "") + std::to_string(to);
 	std::string fromJsonFilePath = "data\\presets\\" + fromStr + ".json";
 	std::string toJsonFilePath = "data\\presets\\" + toStr + ".json";
 
-    //TODO: Just duplicate the file
 	if (fileExist(fromJsonFilePath)) {
-		saveParametersToJson(toJsonFilePath);
+		ofLog() << "PresetManager::clonePresetTo:: Cloning preset " << fromStr << " to " << toStr;
+		std::ifstream src(fromJsonFilePath, std::ios::binary);
+		std::ofstream dst(toJsonFilePath, std::ios::binary);
+		dst << src.rdbuf();
+		dst.close();
 	}
 	else {
-		ofLog() << "PresetManager::clonePresetTo:: No json file for preset " << fromStr;
+		ofLog() << "PresetManager::clonePresetTo:: No json file for source preset " << fromStr;
 	}
 }
 
 
-
+/// <summary>
+/// Load the given sequence string into the sequence vector
+/// </summary>
+/// <param name="seqString"></param>
 void PresetManager::loadSequence(const std::string& seqString) {
 	this->sequenceString = seqString;
 
     sequence.clear();
-    sequence = parseSequence(seqString);
+    sequence = parseSequence(this->sequenceString);
 	sequenceIndex = 0;
 
     ofLog() << "PresetManager::loadSequence:: Sequence loaded " << ofToString(sequence);
@@ -388,6 +419,7 @@ void PresetManager::stopSequence() {
 }
 
 
+// TODO: Use events
 void PresetManager::update() {
 	updateParameters();
 
@@ -415,7 +447,9 @@ void PresetManager::update() {
 
 
 
-
+/// <summary>
+/// Move to the next step in the sequence. Restart if the end is reached
+/// </summary>
 void PresetManager::updateSequenceIndex() {
 	sequenceIndex++;
 	if (sequenceIndex >= sequence.size()) {
@@ -424,17 +458,26 @@ void PresetManager::updateSequenceIndex() {
 }
 
 
+/// <summary>
+/// Event to notify that a preset has finished
+/// </summary>
 void PresetManager::onPresetFinished() {
     ofNotifyEvent(presetFinishedEvent, this);
 }
 
 
+/// <summary>
+/// Event to notify that a transition has finished
+/// </summary>
 void PresetManager::onTransitionFinished() {
     ofNotifyEvent(transitionFinishedEvent, this);
 }
 
 
-
+/// <summary>
+/// Returns the current preset item in the sequence
+/// </summary>
+/// <returns></returns>
 int PresetManager::getCurrentPreset() {
     if (sequence.size() > 0) {
         return sequence[sequenceIndex];
@@ -448,48 +491,83 @@ int PresetManager::getCurrentPreset() {
 
 
 /// <summary>
-/// parse the sequence into a vector of integers
+/// Parse an string sequence into a vector of integers
 /// </summary>
 /// <param name="input">example: 1, 2, 3 - 6, 2</param>
-
-std::vector<int> PresetManager::parseSequence(const std::string& input) {
+std::vector<int> PresetManager::parseSequence(std::string& input) {
     std::vector<int> s;
-    //sequence.clear(); // Reset the sequence
+
+    input = removeInvalidCharacters(input);
 
     std::istringstream stream(input);
     std::string token;
 
     while (std::getline(stream, token, ',')) {
-        // Remove spaces
-        token.erase(std::remove(token.begin(), token.end(), ' '), token.end());
 
         // Handle ranges
         if (token.find('-') != std::string::npos) {
+            std::vector<int> sr;
+
             auto rangeParts = splitString(token, '-');
+
             if (rangeParts.size() == 2) {
                 int start = std::stoi(rangeParts[0]);
                 int end = std::stoi(rangeParts[1]);
+
+                // Handle reversed ranges
+				if (start > end) {
+					std::swap(start, end);
+				}
                 for (int i = start; i <= end; ++i) {
-                    s.push_back(i);
+                    sr.push_back(i);
+                }
+                if (std::stoi(rangeParts[0]) > std::stoi(rangeParts[1])) {
+					std::reverse(sr.begin(), sr.end());
                 }
             }
+
+            for (auto& i : sr) {
+                s.push_back(i);
+            }
         }
+
+        // Handle single numbers
         else {
-            // Handle single numbers
             s.push_back(std::stoi(token));
         }
     }
     return s;
 }
+
+/// <summary>
+/// Returns a vector of strings from a string separated by a delimiter
+/// </summary>
+/// <param name="str"></param>
+/// <param name="delimiter"></param>
+/// <returns></returns>
 std::vector<std::string> PresetManager::splitString(const std::string& str, char delimiter) const {
     std::vector<std::string> parts;
     std::istringstream stream(str);
     std::string part;
+
     while (std::getline(stream, part, delimiter)) {
         parts.push_back(part);
     }
     return parts;
 }
 
+
+/// <summary>
+/// Removes invalid characters but digits, comma and dashes
+/// </summary>
+/// <param name="input"></param>
+/// <returns></returns>
+std::string PresetManager::removeInvalidCharacters(const std::string& input) {
+    std::string result;
+    std::copy_if(input.begin(), input.end(), std::back_inserter(result), [](char c) {
+        return std::isdigit(c) || c == ',' || c == '-';
+        });
+    return result;
+}
 
 

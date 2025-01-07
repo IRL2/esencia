@@ -108,7 +108,8 @@ void GuiApp::drawLineBetween(EsenciaPanelBase &a, EsenciaPanelBase&b)
 
     // curved the lines
     //ofSetColor(ofColor::antiqueWhite);
-    ofSetColor(ofColor::chartreuse);
+    //ofSetColor(ofColor::chartreuse);
+    ofSetColor(ofColor::khaki);
     ofPolyline l;
     l.addVertex(ox, oy - CIRCLE_RADIUS_2);
     l.bezierTo( ox + BEZIER_DISTANCE_X, oy,
@@ -124,6 +125,7 @@ void GuiApp::drawLineBetween(EsenciaPanelBase &a, EsenciaPanelBase&b)
 
 void GuiApp::keyReleased(ofKeyEventArgs& e) {
     presetsPanel.keyReleased(e);
+    sequencePanel.keyReleased(e);
 }
 
 
