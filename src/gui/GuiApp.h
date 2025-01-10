@@ -5,6 +5,7 @@
 #include "ofxOpenCv.h"
 
 #include "ofxPresetsParametersBase.h"
+#include "EsenciaParameters.h"
 
 #include "panels/ParticlesPanel.h"
 #include "panels/SystemstatsPanel.h"
@@ -14,6 +15,7 @@
 #include "panels/VideoProcessingPanel.h"
 #include "panels/PresetsPanel.h"
 #include "panels/SequencePanel.h"
+
 
 #include "ofxPresets.h"
 

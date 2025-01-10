@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ofxGuiExtended.h"
-
+#include "EsenciaParameters.h"
 
 class EsenciaPanelBase {
 public:
