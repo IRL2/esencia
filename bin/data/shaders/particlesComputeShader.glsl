@@ -27,50 +27,47 @@ uniform float depthFieldScale;
 
 // Lennard-Jones parameters
 uniform float ljEpsilon;   // Depth of potential well
-uniform float ljSigma;     // Distance where potential is zero
 uniform float ljCutoff;    // Cutoff for interaction distance
 uniform float maxForce;    // Max allowable force magnitude
+uniform float sigma;       // Currently unused, kept for potential scaling
 
 void main() {
     uint index = gl_GlobalInvocationID.x;
     if (index >= particles.length()) return;
 
     Particle p = particles[index];
-    vec2 totalCollisionForce = vec2(0.0);
     vec2 totalLJForce = vec2(0.0);
 
-    // Collision detection, response, and Lennard-Jones potential
+    // Interaction loop
     for (uint i = 0; i < particles.length(); i++) {
         if (i == index) continue;
 
         Particle other = particles[i];
         vec2 diff = p.position - other.position;
         float dist = length(diff);
-        float minDist = p.radius + other.radius;
-
-        // Collision response (original)
-        if (dist < minDist && dist > 0.0001) {
-            float overlap = minDist - dist;
-            vec2 normal = diff / dist;
-            vec2 repulsionForce = normal * overlap * 10000.0; // Adjust strength as needed
-            totalCollisionForce += repulsionForce;
-        }
+        float minDist = p.radius + other.radius; // Minimum interaction distance
 
         // Lennard-Jones potential
-        if (dist < ljCutoff && dist > 0.0001) {
-            float invDist = ljSigma / dist;
+        if (dist > 0.0 && dist < ljCutoff) {
+            // Standard LJ
+            float invDist = minDist / dist;  
             float invDist6 = pow(invDist, 6.0);
             float invDist12 = invDist6 * invDist6;
-
             float ljForceMag = 24.0 * ljEpsilon * (2.0 * invDist12 - invDist6) / dist;
 
-            // Clamp the LJ force
+            // Optionally clamp
             ljForceMag = clamp(ljForceMag, -maxForce, maxForce);
-            totalLJForce += normalize(diff) * ljForceMag;
+
+            // Direction from other -> p
+            vec2 dir = normalize(diff); // diff = p - other
+            totalLJForce += dir * ljForceMag;
         }
     }
 
-    // Transform position to texture coordinates
+    // Apply Lennard-Jones forces to acceleration
+    vec2 acceleration = totalLJForce / p.mass;
+
+    // Add additional forces like depth-based gradient
     vec2 adjustedPos = (p.position - videoOffset) / videoScale;
     vec2 texCoord = adjustedPos / sourceSize;
     texCoord = clamp(texCoord, vec2(0.0), vec2(1.0));
@@ -78,7 +75,7 @@ void main() {
     // Sample depth field
     float depth = texture(depthField, texCoord).r;
 
-    // Calculate gradient
+    // Calculate depth gradient
     vec2 texelSize = 1.0 / sourceSize;
     float dx = (texture(depthField, clamp(texCoord + vec2(texelSize.x, 0), vec2(0), vec2(1))).r -
         texture(depthField, clamp(texCoord - vec2(texelSize.x, 0), vec2(0), vec2(1))).r) * 0.5;
@@ -87,9 +84,9 @@ void main() {
 
     vec2 depthForce = depthFieldScale * vec2(dx, dy) * videoScale;
 
-    // Combined forces: depth field + collisions + Lennard-Jones
-    vec2 totalForce = depthForce + totalCollisionForce + totalLJForce;
-    vec2 acceleration = totalForce / p.mass;
+    // Combine all forces
+    vec2 totalForce = depthForce + totalLJForce;
+    acceleration += totalForce / p.mass;
 
     // Update velocity with damping
     p.velocity = p.velocity * 0.99 + acceleration * deltaTime;

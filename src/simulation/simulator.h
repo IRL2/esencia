@@ -51,14 +51,14 @@ private:
     bool applyThermostat = true;
     float targetTemperature = 2000.0;
     float coupling = 0.5;
-    float depthFieldScale = 500000.0f;
+    float depthFieldScale = -100000.0f;
     bool hasDepthField = false;
     const int MAX_PLACEMENT_ATTEMPTS = 100;
     const float INITIAL_VELOCITY_RANGE = 100.0f;  // +/- range for random velocity
     const float DEFAULT_MASS = 5.0f;
-    float ljEpsilon = 5.0f;    // Lennard-Jones well depth
+    float ljEpsilon = 10.0f;    // Lennard-Jones well depth
     float ljSigma = 0.5f;      // Lennard-Jones distance scale
-    float ljCutoff = 30.0f;    // Interaction cutoff
+    float ljCutoff = 150.0f;    // Interaction cutoff
     float maxForce = 10000.0f;  // Force clamping
 
     ofxCvGrayscaleImage currentDepthField;
