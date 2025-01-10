@@ -22,7 +22,7 @@ class VideoProcessingPanel : public EsenciaPanelBase {
     const float MAXIMUM_BLOBS_MIN = 0;
     const float MAXIMUM_BLOBS_MAX = 64;
 
-    const float GAUSSIAN_BLUR_INITIAL = 0;
+    const float GAUSSIAN_BLUR_INITIAL = 1;
     const float GAUSSIAN_BLUR_MIN = 0;
     const float GAUSSIAN_BLUR_MAX = 130;
 
@@ -49,6 +49,9 @@ public:
         
         cameraProcessingPanel->add(params.gaussianBlur.set("final gaussian blur", 
             GAUSSIAN_BLUR_INITIAL, GAUSSIAN_BLUR_MIN, GAUSSIAN_BLUR_MAX));
+
+        params.gaussianBlur.addListener(this, &VideoProcessingPanel::onGaussianblurUpdate);
+
 
         cameraProcessingPanel->add(params.floodfillHoles.set("floodfill holes", 
             FLOODFILL_HOLES));
@@ -85,6 +88,14 @@ public:
         cameraPolygonsPanel->minimize();
 
         configVisuals(PANEL_RECT, BG_COLOR);
+    }
+
+
+    // gaussian blur needs to be an odd value
+    void onGaussianblurUpdate(int& value) {
+        if (value % 2 == 0.0) {
+            value = value + 1;
+        }
     }
 
 };

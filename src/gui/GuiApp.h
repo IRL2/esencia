@@ -4,8 +4,7 @@
 #include "ofxGuiExtended.h"
 #include "ofxOpenCv.h"
 
-#include "parameters/EsenciaParameters.h"
-
+#include "ofxPresetsParametersBase.h"
 
 #include "panels/ParticlesPanel.h"
 #include "panels/SystemstatsPanel.h"
@@ -16,7 +15,7 @@
 #include "panels/PresetsPanel.h"
 #include "panels/SequencePanel.h"
 
-#include "PresetsManager.h"
+#include "ofxPresets.h"
 
 
 //#define DEBUG_IMAGES true
@@ -70,9 +69,10 @@ private:
     ofFbo fbo;  // for the extra layers behind the GUI (lines, background, etc)
 
     // for the presets and their needed parameter refs
-    std::vector<ParametersBase*> allParameters;
+    std::vector<ofxPresetsParametersBase*> allParameters;
 
-    PresetManager presetManager;
+    ofxPresets presetManager;
+
 
 };
 

@@ -25,9 +25,8 @@
     },
     "simulation": {
         "amount": 120.0,
-        "applyThermostat": true,
+        "applyThermostat": false,
         "coupling": 0.5,
-        "lowFps": true,
         "radius": 3,
         "targetTemperature": 25000.0
     }

@@ -31,6 +31,8 @@ public:
 		p->add(params.lowFps.set("30fps", LIMIT_FPS),
 			ofJson({ {"type", "radio"} }));
 
+		limitFps(LIMIT_FPS);
+
 		params.lowFps.addListener(this, &SystemstatsPanel::limitFps); // TODO:: listeners back to the guiapp x_x
 
 		configVisuals(PANEL_RECT, BG_COLOR);

@@ -1,18 +1,11 @@
 #pragma once
 
 #include "ofxGuiExtended.h"
-#include "parameters/ParametersBase.h"
-#include "parameters/EsenciaParameters.h"
 
 
 class EsenciaPanelBase {
 public:
 	ofxGuiPanel* panel;
-	//ofxGui& gui;
-
-	//std::vector<ParametersBase*> parametersList;
-
-    //virtual void setup(ofxGui& gui, ParametersBase params, std::string title);
 
     void configVisuals(ofRectangle rect, ofColor color) {
         panel->loadTheme("support/gui-styles.json", true);
@@ -22,13 +15,6 @@ public:
         panel->setWidth(rect.width * 30);
         //panel->setHeight(rect.height * 30);
     }
-
-    //void 
-
- //   virtual void configureParameters(ParametersBase* params) {
- //        parametersList.push_back(params);
- //        printParameters();
-	//}
 
  //   void printParameters() {
  //       for (auto* params : parametersList) {

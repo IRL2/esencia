@@ -1,14 +1,14 @@
 #pragma once
 
 #include "EsenciaPanelBase.h"
-#include "PresetsManager.h"
+#include "ofxPresets.h"
 
 class PresetsPanel : public EsenciaPanelBase {
 
-	const ofRectangle PANEL_RECT = ofRectangle(1, 22, 6, 0);
+	const ofRectangle PANEL_RECT = ofRectangle(1, 21, 6, 0);
 	const ofColor& BG_COLOR = ofColor(100, 100, 100, 100);
 
-	const float DEFAULT_TRANSITION_DURATION = 2.0;
+	const float DEFAULT_TRANSITION_DURATION = 0.5;
 
 	SimulationParameters simulationParams;
 	CameraParameters cameraParams; 
@@ -21,8 +21,8 @@ class PresetsPanel : public EsenciaPanelBase {
 	ofxGuiButton *copytoButton;
 	ofxGuiGroup *presetToggles;
 
-	PresetManager *presetManager = nullptr;
-	std::vector<ParametersBase*> allParameters;
+	ofxPresets *presetManager = nullptr;
+	std::vector<ofxPresetsParametersBase*> allParameters;
 	
 	// button parameters
 	ofParameter<bool> saveParam;
@@ -39,7 +39,7 @@ public:
 
 	// TODO: review if this pointers or references are needed and correct
 
-	void setup(ofxGui &gui, PresetsParameters *preParams, PresetManager &presetMan, SimulationParameters &simParams, CameraParameters &camParams, RenderParameters &renParams) {
+	void setup(ofxGui &gui, PresetsParameters *preParams, ofxPresets &presetMan, SimulationParameters &simParams, CameraParameters &camParams, RenderParameters &renParams) {
 		// store references to all parameters to apply the presets data
 		simulationParams = simParams;
 		cameraParams = camParams;
@@ -59,21 +59,24 @@ public:
 			{"flex-direction", "row"},
 			{"padding", 10},
 			{"flex-wrap", "wrap"},
-			{"width", 6 * 30}
+			{"width", 6 * 29}
 			}));
 		presetToggles->setShowHeader(false);
 
 		for (int i = 0; i < 16; i++) {
 			statesButtons[i] = presetToggles->add<ofxGuiToggle>(presetParams->states[i].set(ofToString(i + 1), false),
-				ofJson({ {"width", 30}, {"height", 30}, {"border-width", 1}, {"type", "fullsize"}, {"text-align", "center"} }));
+				ofJson({ {"width", 30}, {"height", 30}, {"type", "fullsize"}, {"text-align", "center"} }));
 		}
 
 		recolorPresetButtons();
 
 		presetToggles->setExclusiveToggles(true);
 		presetToggles->setActiveToggle(0);
-		//presetParams.states[0].addListener(this, &PresetsPanel::presetButtonListener); // not using listener for the toggles, bc it triggers n-times toggles
 
+		presetToggles->getActiveToggleIndex().addListener(this, &PresetsPanel::onToggleGroupChangedActive);
+		//presetToggles->addEventListener(this, &PresetsPanel::onToggleGroupChangedActive);
+		//presetParams.states[0].addListener(this, &PresetsPanel::onToggleGroupChangedActive); // not using listener for the toggles, bc it triggers n-times toggles
+		ofAddListener(presetManager->presetAppicationStarted, this, &PresetsPanel::onPresetmanagerApplyPreset);
 
 		// action buttons
 		///////////////////////////////////
@@ -92,19 +95,9 @@ public:
 		clearParam.addListener(this, &PresetsPanel::clearButtonListener);
 		copyToParam.addListener(this, &PresetsPanel::copytoButtonListener);
 
-
-		camParams.gaussianBlur.addListener(this, &PresetsPanel::onGaussianblurUpdate);
-
 		configVisuals(PANEL_RECT, BG_COLOR);
 	}
 
-
-	// gaussian blur needs to be an odd value
-	void onGaussianblurUpdate(int &value) {
-		if (value % 2 == 0.0) {
-			value = value + 1;
-		}
-	}
 
 
 	void keyReleased(ofKeyEventArgs& e) {
@@ -119,16 +112,10 @@ public:
 				index += 10;
 			}
 
-			setActivePreset(index);
-			//if (presetParams.copyTo.get() == true) {
-			//	presetManager.clonePresetTo(activePreset, index, allParameters);
-			//	presetParams.copyTo.set(false);
-			//}
-			//else {
-			//}
+			onKeyboardSelectPreset(index);
 		}
 		else if (key == '0') {
-			setActivePreset(10);
+			onKeyboardSelectPreset(10);
 		}
 
 		else if (key == 'S' && e.hasModifier(OF_KEY_CONTROL)) {
@@ -137,9 +124,9 @@ public:
 		else if (key == 'C' && e.hasModifier(OF_KEY_CONTROL)) {
 			clearPreset();
 		}
-		//else if (key == 'C' && e.hasModifier(MOD_SHIFT)) {
-		//	armCopytoPreset();
-		//}
+		else if (key == 'M') {
+			presetManager->mutate();
+		}
 	}
 
 
@@ -149,14 +136,21 @@ public:
 	void recolorPresetButtons() {
 		for (int i = 0; i < 16; i++) {
 			if (presetManager->presetExist(i + 1)) {
-				statesButtons[i]->setBackgroundColor(ofColor(100, 100, 100, 200));
 				statesButtons[i]->setTextColor(ofColor(255, 255, 255, 255));
+				statesButtons[i]->setBackgroundColor(ofColor(100, 100, 100, 200));
+				ofLog() << "preset " << i + 1 << " exists";
 			}
 			else {
 				statesButtons[i]->setTextColor(ofColor(20, 20, 20, 100));
 				statesButtons[i]->setBackgroundColor(ofColor(200, 200, 200, 10));
 			}
-			statesButtons[i]->setNeedsRedraw();
+			if (i + 1 == presetManager->getCurrentPreset() ||
+				i + 1 == activePreset) {
+				statesButtons[i]->setTextColor(ofColor(255, 255, 255, 255));
+				statesButtons[i]->setBackgroundColor(ofColor(ofColor::lightSeaGreen, 200));
+				ofLog() << "preset " << i + 1 << " is " << (i + 1 == activePreset ? "local activePreset" : "manager current");
+			}
+			//statesButtons[i]->setNeedsRedraw();
 		}
 	}
 
@@ -166,26 +160,30 @@ public:
 	/// It will transform the index to 0-based to match the toggle index in the gui group
 	/// </summary>
 	/// <param name="i">consider 1 as the first preset</param>
-	void setActivePreset(int i) {
+	void applyPreset(int i) {
 		i = clamp(i, 1, 16);
 
 		if (activePreset != i) {
 			prevPreset = activePreset;
 			activePreset = i;
 
-			ofLog() << "PresetsPanel::setActivePreset:: Selecting preset: " << i;
+			ofLog() << "PresetsPanel::applyPreset:: Selecting preset: " << i;
 		}
 		
 		presetManager->applyPreset(activePreset, DEFAULT_TRANSITION_DURATION);
 
 		i--;
-		presetToggles->setActiveToggle(i);
+		//presetToggles->setActiveToggle(i);
 
-		recolorPresetButtons();
+		//recolorPresetButtons();
 	}
 
 
 
+	void updateTogglesWithActivePreset() {
+		presetToggles->setActiveToggle(activePreset - 1);
+		recolorPresetButtons();
+	}
 
 
 
@@ -208,15 +206,39 @@ public:
 	}
 
 
-	// button listeners
-	///////////////////////////////////
-	void presetButtonListener(bool& v) {
-		if (v == true) {
-			ofLog() << "PresetsPanel::presetButtonListener:: Preset button pressed: " << presetToggles->getActiveToggleIndex();
+	// listeners
+	//-----------------------------------
+
+	/// <summary>
+	/// Called by the keyboard listener when numbers are pressed
+	/// Not a listener but makes sense to be here
+	/// </summary>
+	/// <param name="id"></param>
+	void onKeyboardSelectPreset(int id) {
+		applyPreset(id);
+		presetToggles->setActiveToggle(id-1);
+		recolorPresetButtons();
+	}
+
+	/// <summary>
+	/// May be called anytime the presetToggles changed the active toggle
+	/// Should be called when a preset button is pressed on the GUI
+	/// </summary>
+	/// <param name="v"></param>
+	void onToggleGroupChangedActive(int& v) {
+		ofLog() << "PresetsPanel::onToggleGroupChangedActive:: Listener receives button ID pressed " << v;
+		applyPreset(v + 1);
+		recolorPresetButtons();
+	}
+
+	/// <summary>
+	/// Only for when the preset sequence is changing the active preset
+	/// </summary>
+	void onPresetmanagerApplyPreset() {
+		if (presetManager->isPlayingSequence()) {
+			presetToggles->setActiveToggle(presetManager->getCurrentPreset() - 1);
 		}
-		//curPreset.set(presetToggles->getActiveToggleIndex().toString());
-		//ofLog() << "active preset: " << presetToggles->getActiveToggleIndex();
-		return;
+		//recolorPresetButtons();
 	}
 
 	void saveButtonListener(bool& v) {
@@ -237,19 +259,10 @@ public:
 	///////////////////////////////////
 	void update() {
 		// to sync the activePreset with the gui
-		if (activePreset != presetToggles->getActiveToggleIndex() + 1) {
-			setActivePreset(presetToggles->getActiveToggleIndex() + 1);
-			ofLogNotice("PresetsPanel::update") << "Updating active preset to follow the GUI" << activePreset;
-		}
+
 
 		presetManager->update();
-
-		// to sync the gui with the activePreset
-		if (presetManager->isPlayingSequence()) {
-			if (presetToggles->getActiveToggleIndex() + 1 != presetManager->getCurrentPreset()) {
-				presetToggles->setActiveToggle(presetManager->getCurrentPreset() - 1);
-				ofLogNotice("PresetsPanel::update") << "Updating the preset GUI to follow the active preset from the manager" << activePreset;
-			}
-		}
 	}
+
+
 };

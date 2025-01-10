@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ParametersBase.h"
+#include "ofxPresetsParametersBase.h"
 
 
 
@@ -8,7 +8,7 @@
 /// <summary>
 /// The CameraParameters struct contains all the parameters that are used to configure the camera.
 /// </summary>
-class CameraParameters : public ParametersBase {
+class CameraParameters : public ofxPresetsParametersBase {
 public:
     ofParameter<bool> enableClipping = true;
     ofParameter<int> clipFar; // Threshold low
@@ -42,10 +42,6 @@ public:
 
 
     CameraParameters() {
-        initializeParameterMap();
-    }
-
-    void initializeParameterMap() {
         groupName = "camera";
 
         parameterMap["enableClipping"] = &enableClipping;
@@ -73,7 +69,7 @@ public:
 /// <summary>
 /// The PresetsParameters struct contains all the parameters that are used to configure the presets.
 /// </summary>
-struct PresetsParameters : public ParametersBase {
+struct PresetsParameters : public ofxPresetsParametersBase {
 
     // the following ites are only gui holders
     // 
@@ -95,11 +91,6 @@ struct PresetsParameters : public ParametersBase {
 
 
     PresetsParameters() {
-        initializeParameterMap();
-    }
-
-
-    void initializeParameterMap() {
 		groupName = "presets";
 
         parameterMap["sequence"] = &sequence;
@@ -120,7 +111,7 @@ struct PresetsParameters : public ParametersBase {
 /// <summary>
 /// The RenderParameters struct contains all the parameters that are used to configure the rendering.
 /// </summary>
-struct RenderParameters : public ParametersBase {
+struct RenderParameters : public ofxPresetsParametersBase {
     ofParameter<int> size = 3;
     ofParameter<ofColor> color;
     ofParameter<glm::vec2> windowSize;
@@ -132,10 +123,6 @@ struct RenderParameters : public ParametersBase {
     ofParameter<ofColor> videoColor;
 
     RenderParameters() {
-		initializeParameterMap();
-    }
-
-	void initializeParameterMap() {
         groupName = "render";
 
 		parameterMap["size"] = &size;
@@ -157,7 +144,7 @@ struct RenderParameters : public ParametersBase {
 /// <summary>
 /// The SimulationParameters struct contains all the parameters that are used to configure the simulation.
 /// </summary>
-struct SimulationParameters : public ParametersBase {
+struct SimulationParameters : public ofxPresetsParametersBase {
     ofParameter<float> amount;
     ofParameter<int> radius;
     ofParameter<float> targetTemperature;
@@ -167,10 +154,6 @@ struct SimulationParameters : public ParametersBase {
     ofParameter<bool> lowFps;
 
     SimulationParameters() {
-		initializeParameterMap();
-    }
-
-	void initializeParameterMap() {
 		groupName = "simulation";
 
 		parameterMap["amount"] = &amount;

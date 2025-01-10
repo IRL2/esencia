@@ -1,15 +1,15 @@
 #pragma once
 
 #include "EsenciaPanelBase.h"
-#include "PresetsManager.h"
+#include "ofxPresets.h"
 
 class SequencePanel : public EsenciaPanelBase {
 
 	const ofRectangle PANEL_RECT = ofRectangle(11, 25, 12, 0);
 	const ofColor &BG_COLOR = ofColor(100, 100, 100, 100);
 
-	PresetManager *presetManager = nullptr;
-	PresetsParameters *presetParams;
+	ofxPresets *presetManager = nullptr;
+	PresetsParameters*presetParams;
 
 	ofParameter<bool> isPlaying;
 	ofxGuiButton *playButton;
@@ -17,7 +17,7 @@ class SequencePanel : public EsenciaPanelBase {
 public:
 	ofParameter<string> curPreset;
 
-	void setup(ofxGui& gui, PresetsParameters *params, PresetManager &presetMan) {
+	void setup(ofxGui& gui, PresetsParameters *params, ofxPresets&presetMan) {
 		panel = gui.addPanel("sequence");
 
 		presetParams = params;
@@ -36,6 +36,7 @@ public:
 			{"flex-direction", "column"},
 			}));
 
+		// TODO: Use presetManager duration parameters directly
 		durations->add<ofxGuiFloatSlider>(presetParams->transitionDuration.set("transition", 5.0, 1.0, 120.0),
 			ofJson({ {"precision", 0} }));
 		durations->add<ofxGuiFloatSlider>(presetParams->presetDuration.set("preset", 20.0, 10.0, 3000.0),
@@ -88,7 +89,7 @@ public:
 		ofLogVerbose("SequencePanel::playBtn") << "Playing sequence";
 		presetManager->loadSequence(presetParams->sequence);
 		presetManager->playSequence(presetParams->presetDuration, presetParams->transitionDuration);
-		presetParams->sequence = presetManager->removeInvalidCharacters(presetParams->sequence);
+		presetManager->removeInvalidCharacters(presetParams->sequence);
 		isPlaying = true;
 	}
 
