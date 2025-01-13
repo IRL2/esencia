@@ -139,6 +139,9 @@
     <ClCompile Include="..\..\..\addons\ofxOrbbec\src\ofxOrbbecCamera.cpp">
       <Filter>addons\ofxOrbbec\src</Filter>
     </ClCompile>
+    <ClCompile Include="ParticleSizeSlider.h">
+      <Filter>src\gui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">

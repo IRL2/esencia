@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EsenciaPanelBase.h"
+#include "../ParticleSizeSlider.h"
 
 class ParticlesPanel : public EsenciaPanelBase {
 
@@ -73,9 +74,14 @@ public:
 			PARTICLES_INITIAL, PARTICLES_MIN, PARTICLES_MAX), 
 			ofJson({ {"type", "circular"}, {"width", CIRCULAR_WIDTH}, {"height", CIRCULAR_HEIGHT}, {"precision", 0} }));
 		
-		panel->add(params.radius.set("scale", 
+		//panel->add(params.radius.set("scale", 
+		//	RADIUS_INITIAL, RADIUS_MIN, RADIUS_MAX),
+		//	ofJson({{"height", RADIUS_HEIGHT}, {"precision", 0}}) );
+
+		panel->add<ParticleSizeSlider>(params.radius.set("scale",
 			RADIUS_INITIAL, RADIUS_MIN, RADIUS_MAX),
-			ofJson({{"height", RADIUS_HEIGHT}, {"precision", 0}}) );
+			ofJson({ {"height", RADIUS_HEIGHT}, {"precision", 0} }));
+
 
 		configVisuals(PANEL_RECT, ofColor(200, 20, 20, 100));
 	}
