@@ -17,6 +17,7 @@ void GuiApp::setup()
 
     allParameters = { &simulationParameters, &renderParameters, &cameraParameters }; // presets are handled at the presetsPanel
 	presetManager.setup(allParameters);
+	presetManager.setFolderPath("data\\presets\\");
 
     // the panels
     particlesPanel.setup(gui, simulationParameters);

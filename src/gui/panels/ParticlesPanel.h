@@ -44,22 +44,22 @@ class ParticlesPanel : public EsenciaPanelBase {
 		return log10(y);
 	}
 
-	float inverseExponentialFunction(float x) {
+	std::function<float(float)> inverseExponentialFunction = [this](float x) {
 		float a = log((RESOLUTION * E) + 1);
 		float b = PARTICLES_MAX / a;
 		float c = log((E * x * RESOLUTION) + 1);
 		float d = b * c;
 		return d;
-	}
+		};
 
-	float reversedInverseExponentialFunction(float y) {
+	std::function<float(float)> reversedInverseExponentialFunction = [this](float y) {
 		float a = y / PARTICLES_MAX;
 		float b = log((RESOLUTION * E) + 1);
 		float c = 1 / E;
 		float d = a * b;
 		float e = exp(d - 1) - c;
 		return e / RESOLUTION;
-	}
+		};
 
 
 public:
@@ -67,18 +67,17 @@ public:
 		panel = gui.addPanel("particles");
 		
 		// this one uses exponential sliders
-		//ofxGuiFloatFunctionSlider* functionAmmount = particlesPanel->add<ofxGuiFloatFunctionSlider>(simulationParameters.amount.set("amount", 120, PARTICLES_MIN, PARTICLES_MAX) , ofJson({{"type", "circular"}, {"width", 180}, {"height", 130}, {"precision", 0}}) );
-		//functionAmmount->setFunctions(inverseExponentialFunction, reversedInverseExponentialFunction);		
+		//ofxGuiFloatFunctionSlider* functionAmmount = panel->add<ofxGuiFloatFunctionSlider>(
+		//	params.amount.set("amount", 120, PARTICLES_MIN, PARTICLES_MAX) , 
+		//	ofJson({{"type", "circular"}, {"width", 180}, {"height", 130}, {"precision", 0}}) );
+		//functionAmmount->setFunctions(inverseExponentialFunction, reversedInverseExponentialFunction);
+		
 		// switching back to regular slider, since it does not refresh the visuals when updating the parameter directly (that is crucial for the state and interpolation control)
 		panel->add(params.amount.set("amount", 
 			PARTICLES_INITIAL, PARTICLES_MIN, PARTICLES_MAX), 
 			ofJson({ {"type", "circular"}, {"width", CIRCULAR_WIDTH}, {"height", CIRCULAR_HEIGHT}, {"precision", 0} }));
 		
-		//panel->add(params.radius.set("scale", 
-		//	RADIUS_INITIAL, RADIUS_MIN, RADIUS_MAX),
-		//	ofJson({{"height", RADIUS_HEIGHT}, {"precision", 0}}) );
-
-		panel->add<ParticleSizeSlider>(params.radius.set("scale",
+		panel->add<ParticleSizeSlider>(params.radius.set("size",
 			RADIUS_INITIAL, RADIUS_MIN, RADIUS_MAX),
 			ofJson({ {"height", RADIUS_HEIGHT}, {"precision", 0} }));
 

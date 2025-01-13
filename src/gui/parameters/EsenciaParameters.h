@@ -2,13 +2,14 @@
 
 #include "ofxPresetsParametersBase.h"
 
+#include <ofImage.h>
 
 
 
 /// <summary>
 /// The CameraParameters struct contains all the parameters that are used to configure the camera.
 /// </summary>
-class CameraParameters : public ofxPresetsParametersBase {
+struct CameraParameters : public ofxPresetsParametersBase {
 public:
     ofParameter<bool> enableClipping = true;
     ofParameter<int> clipFar; // Threshold low
@@ -86,7 +87,7 @@ struct PresetsParameters : public ofxPresetsParametersBase {
 
     ofParameter<float> transitionDuration = { 0.0 };
     ofParameter<float> presetDuration = { 0.0 };
-    ofParameter<string> sequence;
+    ofParameter<std::string> sequence;
 	ofParameter<int> sequenceIndex = { 0 };
 
 
@@ -94,8 +95,8 @@ struct PresetsParameters : public ofxPresetsParametersBase {
 		groupName = "presets";
 
         parameterMap["sequence"] = &sequence;
-        parameterMap["transitionDuration"] = &transitionDuration;
-        parameterMap["presetDuration"] = &transitionDuration;
+        //parameterMap["transitionDuration"] = &transitionDuration;
+        //parameterMap["presetDuration"] = &transitionDuration;
 
         // TODO: add presetParameters to the parameterMap (on the presetsPanel setup, that is the one who initializes the PresetManager)
         // TODO: should we move the PresetManager setup to the GuiApp?
