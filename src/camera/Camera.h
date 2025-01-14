@@ -2,7 +2,7 @@
 
 #include "ofMain.h"
 #include "ofxOrbbecCamera.h"
-#include "../gui/Gui.h"
+#include "../gui/GuiApp.h"
 #include "ofxOpenCv.h"
 
 
@@ -16,10 +16,12 @@ class Camera
     };
 
     public:
-        void setup(Gui::CameraParameters* params);
+        void setup(CameraParameters* params);
         void update();
         void draw();
         void exit();
+
+        void keyReleased(ofKeyEventArgs& e);
 
         void stopCurrentSource();
 
@@ -38,8 +40,8 @@ class Camera
 
         // parameters points to the mainApp's GUI. linked in main.cpp
 
-        Gui globalParameters;
-        Gui::CameraParameters* parameters;
+        GuiApp globalParameters;
+        CameraParameters* parameters;
 
         ofMesh mPointCloudMesh;
 
@@ -53,7 +55,7 @@ class Camera
         ofxCvGrayscaleImage segment;  // final segmented image
 
         //void linkGui();
-        //void linkGuiParams(Gui::CameraParameters* params);
+        //void linkGuiParams(GuiApp::CameraParameters* params);
         void onGUIStartBackgroundReference(bool& value);
         void onGUIChangeSource(bool& _);
         void changeSource(VideoSources newSource);

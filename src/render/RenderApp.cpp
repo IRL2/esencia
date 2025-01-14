@@ -42,7 +42,7 @@ void RenderApp::draw()
     fbo.begin();
         // solid background or trail
         if (parameters->useFaketrails) {
-            ofSetColor(0, 0, 0, (int)(parameters->fakeTrialsVisibility * 255));
+            ofSetColor(0, 0, 0, (int)((1-parameters->fakeTrialsVisibility) * 255));
             ofDrawRectangle(0,0,ofGetWidth(), ofGetHeight());
         }
         else {
@@ -90,17 +90,14 @@ void RenderApp::draw()
 
 }
 
-//--------------------------------------------------------------
-void RenderApp::keyPressed(int key){
-
-}
 
 //--------------------------------------------------------------
-void RenderApp::keyReleased(int key)
+void RenderApp::keyReleased(ofKeyEventArgs& e)
 {
+    int key = e.keycode;
     switch(key)
     {
-        case 'f':
+        case 'F':
         {
             ofToggleFullscreen();
             fbo.allocate(ofGetWidth(), ofGetHeight());

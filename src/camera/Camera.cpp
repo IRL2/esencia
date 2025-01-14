@@ -5,7 +5,7 @@
 /// assign params pointer and listeners to value changes
 /// </summary>
 /// <param name="params">pointer from the gui structure</param>
-void Camera::setup(Gui::CameraParameters* params) {
+void Camera::setup(CameraParameters* params) {
 
     // link parameters and listeners
     parameters = params;
@@ -740,3 +740,16 @@ void Camera::saveMeshFrame() {
 #pragma endregion
 
 
+
+
+void Camera::keyReleased(ofKeyEventArgs& e) {
+    if (e.hasModifier(OF_KEY_CONTROL)) {
+        switch (e.keycode) {
+        case 'B':
+            startBackgroundReferenceSampling();
+            break;
+        default:
+            break;
+        }
+    }
+}

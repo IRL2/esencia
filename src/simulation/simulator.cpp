@@ -1,11 +1,10 @@
 #include "simulator.h"
 #include "ofLog.h"
 
-void Simulator::setup(Gui::SimulationParameters* params, Gui* globalParams) {
+void Simulator::setup(SimulationParameters* params, GuiApp* globalParams) {
     parameters = params;
     globalParameters = globalParams;
 
-    initializeParticles(parameters->ammount);
     setupComputeShader();
 
     glGenTextures(1, &depthFieldTexture);
@@ -20,92 +19,25 @@ void Simulator::setup(Gui::SimulationParameters* params, Gui* globalParams) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, initialDepth.data());
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    parameters->ammount.addListener(this, &Simulator::onGUIChangeAmmount);
+    parameters->amount.addListener(this, &Simulator::onGUIChangeAmmount);
     parameters->radius.addListener(this, &Simulator::onGUIChangeRadius);
     parameters->applyThermostat.addListener(this, &Simulator::onApplyThermostatChanged);
     parameters->targetTemperature.addListener(this, &Simulator::onTemperatureChanged);
     parameters->coupling.addListener(this, &Simulator::onCouplingChanged);
     parameters->ljSigma.addListener(this, &Simulator::onSigmaChanged);
+ 
+    particles.setup(10000, parameters->amount);
+    particles.updateRadiuses(parameters->radius);
+
     globalParameters->renderParameters.windowSize.addListener(this, &Simulator::onRenderwindowResize);
-}
-
-// In simulator.cpp, replace the current initializeParticles method:
-
-void Simulator::initializeParticles(int amount) {
-    particles.resize(amount);
-
-    // Calculate max attempts to prevent infinite loops
-    const int maxAttempts = 100;
-    int successfulPlacements = 0;
-
-    // Get current window dimensions and bounds
-    float minX, maxX, minY, maxY;
-
-    if (videoRect.width <= 0 || videoRect.height <= 0) {
-        float scaledWidth = ofGetHeight() * sourceWidth / sourceHeight;
-        float xOffset = (scaledWidth - ofGetWidth()) / -2;
-
-        minX = xOffset;
-        maxX = xOffset + scaledWidth;
-        minY = 0;
-        maxY = ofGetHeight();
-    }
-    else {
-        minX = videoRect.x;
-        maxX = videoRect.x + videoRect.width;
-        minY = videoRect.y;
-        maxY = videoRect.y + videoRect.height;
-    }
-
-    // First pass: Initialize particles with attempted overlap prevention
-    for (int i = 0; i < amount; i++) {
-        Particle& particle = particles[i];
-        particle.radius = parameters->radius;
-        particle.mass = 5.0f;
-
-        bool validPosition = false;
-        int attempts = 0;
-
-        while (!validPosition && attempts < maxAttempts) {
-            // Generate random position
-            particle.position = glm::vec2(
-                ofRandom(minX, maxX),
-                ofRandom(minY, maxY)
-            );
-
-            // Check overlap with previously placed particles
-            validPosition = true;
-            for (int j = 0; j < i; j++) {
-                float minDist = particle.radius + particles[j].radius;
-                if (glm::distance(particle.position, particles[j].position) < minDist) {
-                    validPosition = false;
-                    break;
-                }
-            }
-            attempts++;
-        }
-
-        // Initialize velocity regardless of position success
-        particle.velocity = glm::vec2(ofRandom(-100.0f, 100.0f), ofRandom(-100.0f, 100.0f));
-
-        if (validPosition) {
-            successfulPlacements++;
-        }
-    }
-
-    // Log placement statistics
-    ofLogNotice("Simulator::initializeParticles")
-        << "Placed " << successfulPlacements
-        << " particles out of " << amount
-        << " requested without overlap";
-
     // Create and initialize the SSBO
     glGenBuffers(1, &ssboParticles);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboParticles);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, particles.size() * sizeof(Particle), particles.data(), GL_DYNAMIC_COPY);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, particles.active.size() * sizeof(Particle), particles.active.data(), GL_DYNAMIC_COPY);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssboParticles);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
+
 
 void Simulator::setupComputeShader() {
     computeShaderProgram = glCreateProgram();
@@ -143,7 +75,7 @@ void Simulator::update() {
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboParticles);
     Particle* ptr = (Particle*)glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
-    memcpy(particles.data(), ptr, particles.size() * sizeof(Particle));
+    memcpy(particles.active.data(), ptr, particles.active.size() * sizeof(Particle));
     glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
@@ -176,14 +108,28 @@ void Simulator::updateParticlesOnGPU() {
 
     // Bind particle buffer and dispatch compute shader
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssboParticles);
-    glDispatchCompute((particles.size() + 255) / 256, 1, 1);
+    glDispatchCompute((particles.active.size() + 255) / 256, 1, 1);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
     glUseProgram(0);
 }
 
+void Simulator::updateVideoRect(const ofRectangle& rect) {
+    videoRect = rect;
+    videoScaleX = videoRect.width / sourceWidth;
+    videoScaleY = videoRect.height / sourceHeight;
+}
+
+
+
+void Simulator::onGUIChangeAmmount(float& value) {
+    particles.resize(value);
+}
+
+
 void Simulator::onRenderwindowResize(glm::vec2& worldSize) {
     updateWorldSize(worldSize.x, worldSize.y);
+    particles.randomizePoolPositions();
 }
 
 void Simulator::updateWorldSize(int _width, int _height) {
@@ -192,6 +138,8 @@ void Simulator::updateWorldSize(int _width, int _height) {
     width = _width;
     height = _height;
     parameters->worldSize.set(glm::vec2(_width, _height)); // we may also use the parameters->worlSize.x directly
+
+	updateVideoRect(ofRectangle(0, 0, _width, _height));
 }
 
 
@@ -230,16 +178,12 @@ void Simulator::recieveFrame(ofxCvGrayscaleImage frame) {
     updateDepthFieldTexture();
 }
 
-void Simulator::onGUIChangeAmmount(float& value) {
-    initializeParticles(value);
-}
 
 void Simulator::onGUIChangeRadius(int& value) {
-    for (auto& particle : particles) {
-        particle.radius = value;
-    }
+    particles.updateRadiuses((int)value);
+
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboParticles);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, particles.size() * sizeof(Particle), particles.data(), GL_DYNAMIC_COPY);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, particles.active.size() * sizeof(Particle), particles.active.data(), GL_DYNAMIC_COPY);
 }
 
 void Simulator::onApplyThermostatChanged(bool& value) {
@@ -262,6 +206,10 @@ void Simulator::applyBerendsenThermostat() {
     // Placeholder for Berendsen thermostat function
 }
 
-std::vector<Particle>& Simulator::getParticles() {
-    return particles;
+//std::vector<Particle>& Simulator::getParticles() {
+//    return particles;
+//}
+
+void Simulator::keyReleased(ofKeyEventArgs& e) {
+    //
 }

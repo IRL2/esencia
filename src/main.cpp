@@ -20,7 +20,7 @@ int main()
 
 
     // gui window
-    settings.setSize(34*30, 32*30);
+    settings.setSize(34*30, 33*30);
     settings.setPosition(glm::vec2(0,50));
     settings.resizable = true;
     auto mainWindow = ofCreateWindow(settings);
@@ -40,7 +40,7 @@ int main()
     // ofAddListener(renderApp->viewportResizeEvent, mainApp.get(), &ofApp::onViewportResizeEvent);
 
     // this is the connection between the simulator and the render
-    renderApp->particles = &(mainApp->simulator.getParticles());
+    renderApp->particles = &(mainApp->simulator.particles.active);
     renderApp->simulator = &(mainApp->simulator);
 
     // ** note that parameters are not defined and exposed by the system (class) as the oF common way

@@ -1,17 +1,12 @@
 {
-    "video": {
-        "base": {
-            "border-radius": 4,
-            "text-color": "#ffffefaa"
-        },
+  "default": {
+    "base": {
+      "border-radius": 4,
+      "text-color": "#ffffef"
+    },
 
-        "slider": {
-            "precision": 2
-        },
-
-        "toggle": {
-          "type": "radio"
-        }
-
+    "toggle": {
+      "type": "radio"
     }
+  }
 }

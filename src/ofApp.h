@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
-#include "gui/Gui.h"
+#include "gui/GuiApp.h"
 #include "camera/Camera.h"
 #include "simulation/simulator.h"
 
@@ -16,11 +16,11 @@ public:
 
     void exit() override;
 
-    void keyReleased(int key);
+    void keyReleased(ofKeyEventArgs& e);
     void windowResized(int w, int h);
 
 
-    Gui gui;
+    GuiApp gui;
     Camera camera;
     Simulator simulator;
 };
