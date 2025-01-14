@@ -1,191 +1,185 @@
 #include "simulator.h"
-
-// <summary>
-// assign params pointer and listeners to value changes
-// </summary>
-// <param name="params">pointer from the gui structure</param>
+#include "ofLog.h"
 
 void Simulator::setup(Gui::SimulationParameters* params, Gui* globalParams) {
     parameters = params;
     globalParameters = globalParams;
+
+    initializeParticles(parameters->ammount);
+    setupComputeShader();
+
+    glGenTextures(1, &depthFieldTexture);
+    glBindTexture(GL_TEXTURE_2D, depthFieldTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    depthFieldScale = -100000.0f;
+    std::vector<float> initialDepth(width * height, 0.5f);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, initialDepth.data());
+    glBindTexture(GL_TEXTURE_2D, 0);
+
     parameters->ammount.addListener(this, &Simulator::onGUIChangeAmmount);
     parameters->radius.addListener(this, &Simulator::onGUIChangeRadius);
     parameters->applyThermostat.addListener(this, &Simulator::onApplyThermostatChanged);
     parameters->targetTemperature.addListener(this, &Simulator::onTemperatureChanged);
     parameters->coupling.addListener(this, &Simulator::onCouplingChanged);
-
+    parameters->ljSigma.addListener(this, &Simulator::onSigmaChanged);
     globalParameters->renderParameters.windowSize.addListener(this, &Simulator::onRenderwindowResize);
-    initializeParticles(parameters->ammount);
 }
 
+// In simulator.cpp, replace the current initializeParticles method:
 
-void Simulator::update() {
-    for (auto &particle : particles) {
-            updateParticle(particle, timeStep);
-        }
+void Simulator::initializeParticles(int amount) {
+    particles.resize(amount);
 
-    
-//            initializeParticles(parameters->ammount);
+    // Calculate max attempts to prevent infinite loops
+    const int maxAttempts = 100;
+    int successfulPlacements = 0;
 
-        if(applyThermostat) {
-            applyBerendsenThermostat();
-        }
-        for (auto &particle : particles) {
-            checkWallCollisions(particle);
-        }
-}
-void Simulator::calculateEnergyTerms() {
-    int count = particles.size();
-    for (int i = 0; i < count; ++i) {
-        Particle &particle = particles[i];
-        particle.minimumDistance.resize(count);
-        particle.LJenergyTermA.resize(count);
-        particle.LJenergyTermB.resize(count);
-        particle.LJgradientTermA.resize(count);
-        particle.LJgradientTermB.resize(count);
+    // Get current window dimensions and bounds
+    float minX, maxX, minY, maxY;
 
-        for (int j = 0; j < count; ++j) {
-            float radiusi = particle.radius;
-            float radiusj = particles[j].radius;
+    if (videoRect.width <= 0 || videoRect.height <= 0) {
+        float scaledWidth = ofGetHeight() * sourceWidth / sourceHeight;
+        float xOffset = (scaledWidth - ofGetWidth()) / -2;
 
-            float MinDistance = 2.0f * (radiusi + radiusj);
-            particle.minimumDistance[j] = MinDistance * MinDistance;
-            particle.LJenergyTermA[j] = epsilon * pow(MinDistance, 12.0f);
-            particle.LJenergyTermB[j] = -2.0f * epsilon * pow(MinDistance, 6.0f);
-            particle.LJgradientTermA[j] = -12.0f * particle.LJenergyTermA[j];
-            particle.LJgradientTermB[j] = -6.0f * particle.LJenergyTermB[j];
-        }
+        minX = xOffset;
+        maxX = xOffset + scaledWidth;
+        minY = 0;
+        maxY = ofGetHeight();
     }
-}
-
-glm::vec2 Simulator::computeForce(Particle &particle) {
-    glm::vec2 totalForce(0.0f, 0.0f);
-    float maxForce = 100000.0f;
-    float minForce = 1e-6f;
-
-    int i = &particle - &particles[0]; // Get the index of the particle
-
-    for (int j = 0; j < particles.size(); ++j) {
-        if (i == j) continue;
-
-        Particle &other = particles[j];
-        glm::vec2 rVec = particle.position - other.position;
-        float r = glm::length(rVec);
-        if (r < epsilon) {
-            r = epsilon; // Prevent division by zero by adding epsilon
-        }
-        if (i < particle.minimumDistance.size() && j < particle.minimumDistance.size()) {
-            float cutoffDistance = particle.minimumDistance[j];
-            if (r * r < cutoffDistance && r > 0) {
-                float LJgradientTermA = particle.LJgradientTermA[j];
-                float LJgradientTermB = particle.LJgradientTermB[j];
-
-//                r = sqrt(r * r); // Adjust separation distance
-
-                float forceX = (other.position.x - particle.position.x) *
-                               (LJgradientTermA / pow(r, 13.0f) + LJgradientTermB / pow(r, 7.0f)) / r;
-                float forceY = (other.position.y - particle.position.y) *
-                               (LJgradientTermA / pow(r, 13.0f) + LJgradientTermB / pow(r, 7.0f)) / r;
-
-                glm::vec2 force(forceX, forceY);
-
-                if (glm::length(force) > maxForce) force = glm::normalize(force) * maxForce;
-                else if (glm::length(force) < minForce) force = glm::vec2(0.0f, 0.0f);
-
-                totalForce += force;
-            }
-        }
+    else {
+        minX = videoRect.x;
+        maxX = videoRect.x + videoRect.width;
+        minY = videoRect.y;
+        maxY = videoRect.y + videoRect.height;
     }
-    return totalForce;
-}
 
-void Simulator::updateParticle(Particle &particle, float deltaTime) {
-    // Velocity Verlet Integration
-    glm::vec2 force = computeForce(particle);
-    glm::vec2 acceleration = force / particle.mass;
-    glm::vec2 newVelocity = particle.velocity + deltaTime * acceleration;
-    glm::vec2 newPosition = particle.position + deltaTime * newVelocity;
+    // First pass: Initialize particles with attempted overlap prevention
+    for (int i = 0; i < amount; i++) {
+        Particle& particle = particles[i];
+        particle.radius = parameters->radius;
+        particle.mass = 5.0f;
 
-    particle.velocity = newVelocity;
-    particle.position = newPosition;
-}
+        bool validPosition = false;
+        int attempts = 0;
 
-void Simulator::applyBerendsenThermostat() {
-    float targetTemp = targetTemperature; // m_EquilibriumTemperature
-    float tau = coupling; // m_BerendsenThermostatCoupling
-    float kB = 8.314; // Boltzmann constant
+        while (!validPosition && attempts < maxAttempts) {
+            // Generate random position
+            particle.position = glm::vec2(
+                ofRandom(minX, maxX),
+                ofRandom(minY, maxY)
+            );
 
-    // temp calculation
-    float currentTemperature = 0.0;
-    float kineticEnergy = 0.0;
-    for (const auto& particle : particles) {
-        kineticEnergy += 0.5f * particle.mass * glm::length2(particle.velocity);
-    }
-    currentTemperature = kineticEnergy / (3.0 * kB);
-    
-
-    float scaleFactor = sqrt(targetTemp / (tau * currentTemperature));
-
-    scaleFactor = ofClamp(scaleFactor, 0.95, 1.05);
-    for (auto& particle : particles) {
-        particle.velocity *= scaleFactor;
-    }
-}
-
-void Simulator::checkWallCollisions(Particle &particle) {
-    if (particle.position.x < 0 || particle.position.x > width) {
-        particle.velocity.x *= -1.0f;
-        particle.position.x = ofClamp(particle.position.x, 0, width);
-    }
-    if (particle.position.y < 0 || particle.position.y > height) {
-        particle.velocity.y *= -1.0f;
-        particle.position.y = ofClamp(particle.position.y, 0, height);
-    }
-}
-
-void Simulator::initializeParticles(float ammount) {
-    initializeParticles((int)ammount);
-}
-
-void Simulator::initializeParticles(int ammount) {
-    particles.clear(); // Clear existing particles
-    particles.resize(ammount); // Resize to hold the new particles
-
-    for (int i = 0; i < ammount; ++i) {
-        Particle p;
-        bool isOverlapping;
-        do {
-            isOverlapping = false;
-            p.position = glm::vec2(ofRandom(0, width), ofRandom(0, height));
-            p.velocity = glm::vec2(ofRandom(-100.0f, 200.0f), ofRandom(-100.0f, 200.0f));
-            p.radius = 5.0f;
-            p.mass = 5.0f; // Adjust as necessary
-
-            // Check for overlap with existing particles
-            for (const auto& other : particles) {
-                if (glm::distance(p.position, other.position) < (p.radius + other.radius)) {
-                    isOverlapping = true;
+            // Check overlap with previously placed particles
+            validPosition = true;
+            for (int j = 0; j < i; j++) {
+                float minDist = particle.radius + particles[j].radius;
+                if (glm::distance(particle.position, particles[j].position) < minDist) {
+                    validPosition = false;
                     break;
                 }
             }
-        } while (isOverlapping); // Try new positions for the current particle until no overlap
-        
-        particles.push_back(p);
+            attempts++;
+        }
+
+        // Initialize velocity regardless of position success
+        particle.velocity = glm::vec2(ofRandom(-100.0f, 100.0f), ofRandom(-100.0f, 100.0f));
+
+        if (validPosition) {
+            successfulPlacements++;
+        }
     }
 
-    calculateEnergyTerms(); // Calculate the energy terms after initializing particles
+    // Log placement statistics
+    ofLogNotice("Simulator::initializeParticles")
+        << "Placed " << successfulPlacements
+        << " particles out of " << amount
+        << " requested without overlap";
+
+    // Create and initialize the SSBO
+    glGenBuffers(1, &ssboParticles);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboParticles);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, particles.size() * sizeof(Particle), particles.data(), GL_DYNAMIC_COPY);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssboParticles);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
-#pragma region Listeners
+void Simulator::setupComputeShader() {
+    computeShaderProgram = glCreateProgram();
+    GLuint computeShader = glCreateShader(GL_COMPUTE_SHADER);
 
-void Simulator::onGUIChangeAmmount(float& value) {
-    initializeParticles(value);
-}
+    std::string shaderCode = ofBufferFromFile("shaders/particlesComputeShader.glsl").getText();
+    const char* shaderSource = shaderCode.c_str();
+    glShaderSource(computeShader, 1, &shaderSource, nullptr);
+    glCompileShader(computeShader);
 
-void Simulator::onGUIChangeRadius(int& value) {
-    for (auto &p : particles) {
-        p.radius = value;
+    GLint compileStatus;
+    glGetShaderiv(computeShader, GL_COMPILE_STATUS, &compileStatus);
+    if (compileStatus != GL_TRUE) {
+        char buffer[512];
+        glGetShaderInfoLog(computeShader, 512, nullptr, buffer);
+        ofLogError() << "Shader compilation failed: " << buffer;
     }
+
+    glAttachShader(computeShaderProgram, computeShader);
+    glLinkProgram(computeShaderProgram);
+
+    GLint linkStatus;
+    glGetProgramiv(computeShaderProgram, GL_LINK_STATUS, &linkStatus);
+    if (linkStatus != GL_TRUE) {
+        char buffer[512];
+        glGetProgramInfoLog(computeShaderProgram, 512, nullptr, buffer);
+        ofLogError() << "Program linking failed: " << buffer;
+    }
+
+    glDeleteShader(computeShader);
+}
+
+void Simulator::update() {
+    updateParticlesOnGPU();
+
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboParticles);
+    Particle* ptr = (Particle*)glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
+    memcpy(particles.data(), ptr, particles.size() * sizeof(Particle));
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+}
+
+void Simulator::updateParticlesOnGPU() {
+    glUseProgram(computeShaderProgram);
+
+    // Basic uniforms
+    glUniform1f(glGetUniformLocation(computeShaderProgram, "deltaTime"), 0.01f);
+    glUniform2f(glGetUniformLocation(computeShaderProgram, "worldSize"), width, height);
+    glUniform1f(glGetUniformLocation(computeShaderProgram, "targetTemperature"), targetTemperature);
+    glUniform1f(glGetUniformLocation(computeShaderProgram, "coupling"), coupling);
+    glUniform1i(glGetUniformLocation(computeShaderProgram, "applyThermostat"), applyThermostat ? 1 : 0);
+    glUniform1f(glGetUniformLocation(computeShaderProgram, "depthFieldScale"), hasDepthField ? depthFieldScale : 0.0f);
+
+    // Video scaling uniforms
+    glUniform2f(glGetUniformLocation(computeShaderProgram, "videoOffset"), videoRect.x, videoRect.y);
+    glUniform2f(glGetUniformLocation(computeShaderProgram, "videoScale"), videoScaleX, videoScaleY);
+    glUniform2f(glGetUniformLocation(computeShaderProgram, "sourceSize"), sourceWidth, sourceHeight);
+
+    glUniform1f(glGetUniformLocation(computeShaderProgram, "ljEpsilon"), ljEpsilon);
+    glUniform1f(glGetUniformLocation(computeShaderProgram, "ljSigma"), ljSigma);
+    glUniform1f(glGetUniformLocation(computeShaderProgram, "ljCutoff"), ljCutoff);
+    glUniform1f(glGetUniformLocation(computeShaderProgram, "maxForce"), maxForce);
+
+    // Bind depth field texture
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, depthFieldTexture);
+    glUniform1i(glGetUniformLocation(computeShaderProgram, "depthField"), 0);
+
+    // Bind particle buffer and dispatch compute shader
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssboParticles);
+    glDispatchCompute((particles.size() + 255) / 256, 1, 1);
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+    glUseProgram(0);
 }
 
 void Simulator::onRenderwindowResize(glm::vec2& worldSize) {
@@ -200,26 +194,74 @@ void Simulator::updateWorldSize(int _width, int _height) {
     parameters->worldSize.set(glm::vec2(_width, _height)); // we may also use the parameters->worlSize.x directly
 }
 
-void Simulator::recieveFrame(ofxCvGrayscaleImage frame) {
-    return;
-}
 
-void Simulator::onApplyThermostatChanged(bool &value) {
-    applyThermostat = value;
-    if (applyThermostat) {
-        std::printf("Thermostat enabled\n");
-    } else {
-        std::printf("Thermostat disabled\n");
+
+void Simulator::updateDepthFieldTexture() {
+    if (!hasDepthField) return;
+
+    const unsigned char* pixels = currentDepthField.getPixels().getData();
+    int frameWidth = currentDepthField.getWidth();
+    int frameHeight = currentDepthField.getHeight();
+    std::vector<float> normalizedPixels(frameWidth * frameHeight);
+
+    // Normalize and invert pixels
+    for (int i = 0; i < frameWidth * frameHeight; i++) {
+        normalizedPixels[i] = 1.0f - (pixels[i] / 255.0f);
     }
+
+    // Update texture dimensions if changed
+    if (frameWidth != width || frameHeight != height) {
+        width = frameWidth;
+        height = frameHeight;
+        glBindTexture(GL_TEXTURE_2D, depthFieldTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, normalizedPixels.data());
+    }
+    else {
+        glBindTexture(GL_TEXTURE_2D, depthFieldTexture);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RED, GL_FLOAT, normalizedPixels.data());
+    }
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Simulator::onTemperatureChanged(float &value) {
+void Simulator::recieveFrame(ofxCvGrayscaleImage frame) {
+    if (frame.getWidth() == 0 || frame.getHeight() == 0) return;
+    currentDepthField = frame;
+    hasDepthField = true;
+    updateDepthFieldTexture();
+}
+
+void Simulator::onGUIChangeAmmount(float& value) {
+    initializeParticles(value);
+}
+
+void Simulator::onGUIChangeRadius(int& value) {
+    for (auto& particle : particles) {
+        particle.radius = value;
+    }
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboParticles);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, particles.size() * sizeof(Particle), particles.data(), GL_DYNAMIC_COPY);
+}
+
+void Simulator::onApplyThermostatChanged(bool& value) {
+    applyThermostat = value;
+}
+
+void Simulator::onTemperatureChanged(float& value) {
     targetTemperature = value;
-//    std::printf("%f\n",targetTemperature);
 }
 
-void Simulator::onCouplingChanged(float &value) {
+void Simulator::onCouplingChanged(float& value) {
     coupling = value;
-//    std::printf("%f\n", coupling);
 }
-#pragma endregion
+
+void Simulator::onSigmaChanged(float& value) {
+    ljSigma = value;
+}
+
+void Simulator::applyBerendsenThermostat() {
+    // Placeholder for Berendsen thermostat function
+}
+
+std::vector<Particle>& Simulator::getParticles() {
+    return particles;
+}

@@ -28,6 +28,8 @@ void RenderApp::update()
         videoRectangle.y = 0;
         videoRectangle.width = ofGetHeight()*video.getWidth()/video.getHeight();
         videoRectangle.height = ofGetHeight();
+
+        simulator->updateVideoRect(videoRectangle);
     }
 }
 

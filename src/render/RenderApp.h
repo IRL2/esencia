@@ -24,6 +24,8 @@ class RenderApp : public ofBaseApp
         // (parameters points to the mainApp's GUI. linked in main.cpp)
         Gui::RenderParameters * parameters;
         Gui* globalParameters;
+
+        Simulator* simulator;
         
         // This points directly to the simulator particles (through mainapp->simulator.particles in main.cpp)
         vector<Particle> * particles;
