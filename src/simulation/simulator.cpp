@@ -248,17 +248,14 @@ void Simulator::onApplyThermostatChanged(bool& value) {
 
 void Simulator::onTemperatureChanged(float& value) {
     targetTemperature = value;
-    printf("%f\n", targetTemperature);
 }
 
 void Simulator::onCouplingChanged(float& value) {
     coupling = value;
-    printf("%f\n", coupling);
 }
 
 void Simulator::onSigmaChanged(float& value) {
     ljSigma = value;
-    printf("%f\n", ljSigma);
 }
 
 void Simulator::applyBerendsenThermostat() {

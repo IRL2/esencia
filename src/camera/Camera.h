@@ -58,6 +58,14 @@ class Camera
         void onGUIChangeSource(bool& _);
         void changeSource(VideoSources newSource);
 
+        ofShader blurHorizontal;
+        ofShader blurVertical;
+        ofFbo   fboBlurOnePass;
+        ofFbo   fboBlurTwoPass;
+
+        // We'll wrap the GPU blur in a helper method:
+        void gpuBlur(ofxCvGrayscaleImage& input, float sigma);
+
     private:
         ofxCvColorImage colorFrame; // to store>transform from video file or webcam
         ofxCvGrayscaleImage source; // camera frame

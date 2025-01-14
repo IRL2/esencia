@@ -10,6 +10,9 @@ void Camera::setup(Gui::CameraParameters* params) {
     // link parameters and listeners
     parameters = params;
 
+    blurHorizontal.load("shaders/blur.vert", "shaders/blurHorizontal.frag");
+    blurVertical.load("shaders/blur.vert", "shaders/blurVertical.frag");
+
     // for when the 'bg reference' button is pressed
     parameters->startBackgroundReference.addListener(this, &Camera::onGUIStartBackgroundReference);
 
@@ -113,6 +116,9 @@ void Camera::setFrameSize(int width, int height) {
     IMG_HEIGHT_2 = IMG_HEIGHT / 2;
     IMG_HEIGHT_4 = IMG_HEIGHT / 4;
     IMG_WIDTH_4 = IMG_WIDTH / 4;
+
+    fboBlurOnePass.allocate(IMG_WIDTH, IMG_HEIGHT, GL_R8);  // or GL_R8 if you want single channel
+    fboBlurTwoPass.allocate(IMG_WIDTH, IMG_HEIGHT, GL_R8);
 
     source.allocate(IMG_WIDTH, IMG_HEIGHT);
     processedImage.allocate(IMG_WIDTH, IMG_HEIGHT);
@@ -410,9 +416,72 @@ void Camera::processCameraFrame(ofxCvGrayscaleImage frame, ofxCvGrayscaleImage b
 
     // add gaussian blur to the silouetes
     // (this step was originaly performed by the simulation on the sorounds of each particle, its here now to test if the performance is better)
-    processedImage.blurGaussian(parameters->gaussianBlur);
+    gpuBlur(processedImage, parameters->gaussianBlur);
 
     segment = processedImage;
+}
+
+void Camera::gpuBlur(ofxCvGrayscaleImage& input, float sigma) {
+    // 1) Upload the current grayscale image to a texture if not already done
+    //    (ofxCvGrayscaleImage has .getTexture() in modern openFrameworks).
+    //    We assume .updateTexture() is called internally if needed,
+    //    but if not, do: input.updateTexture() or input.flagImageChanged() 
+    //    to ensure the texture is fresh.
+
+    // 2) First pass: Horizontal blur into fboBlurOnePass
+    fboBlurOnePass.begin();
+    {
+        ofClear(0, 0, 0, 0);
+        blurHorizontal.begin();
+        // pass the grayscale texture + sigma
+        blurHorizontal.setUniformTexture("tex0", input.getTexture(), 0);
+        blurHorizontal.setUniform1f("sigma", sigma);
+
+        // because the FBO is sized exactly the same,
+        // draw a quad from (0,0) to (width,height)
+        input.draw(0, 0, fboBlurOnePass.getWidth(), fboBlurOnePass.getHeight());
+
+        blurHorizontal.end();
+    }
+    fboBlurOnePass.end();
+
+    // 3) Second pass: Vertical blur into fboBlurTwoPass
+    fboBlurTwoPass.begin();
+    {
+        ofClear(0, 0, 0, 0);
+        blurVertical.begin();
+        blurVertical.setUniformTexture("tex0", fboBlurOnePass.getTexture(), 0);
+        blurVertical.setUniform1f("sigma", sigma);
+
+        fboBlurOnePass.draw(0, 0, fboBlurTwoPass.getWidth(), fboBlurTwoPass.getHeight());
+        blurVertical.end();
+    }
+    fboBlurTwoPass.end();
+
+    // 4) Copy back to CPU (ofxCvGrayscaleImage) if needed
+    //    For your pipeline, you need "processedImage" updated on CPU side.
+    //    The easiest approach: read the 8-bit grayscale channel from the FBO
+    //    (though we stored RGBA, the image is grayscale in .r)
+    ofPixels pixels;
+    fboBlurTwoPass.readToPixels(pixels);
+
+    // If you used GL_RGBA, `pixels` is 4-channel RGBA. We only need the red channel.
+    // We'll build a single-channel (grayscale) pixels object:
+    ofPixels grayPix;
+    grayPix.allocate(pixels.getWidth(), pixels.getHeight(), 1);
+
+    // copy the red channel
+    for (int y = 0; y < pixels.getHeight(); y++) {
+        for (int x = 0; x < pixels.getWidth(); x++) {
+            // read RGBA (r,g,b,a)
+            ofColor c = pixels.getColor(x, y);
+            grayPix.setColor(x, y, ofColor(c.r));
+        }
+    }
+
+    // Now set it to the incoming ofxCvGrayscaleImage
+    input.setFromPixels(grayPix);
+    // done
 }
 
 void Camera::getContourPolygonsFromImage(ofxCvGrayscaleImage image, vector<ofPolyline> *output) {

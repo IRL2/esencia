@@ -815,6 +815,11 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="bin\data\shaders\blur.vert" />
+    <None Include="bin\data\shaders\blurHorizontal.frag" />
+    <None Include="bin\data\shaders\blurVertical.frag" />
+    <None Include="bin\data\shaders\gaussianBlur.frag" />
+    <None Include="bin\data\shaders\gaussianBlur.vert" />
     <None Include="bin\data\shaders\particlesComputeShader.glsl" />
     <None Include="bin\data\shaders\shaderBlur.frag" />
     <None Include="bin\data\shaders\shaderBlur.vert" />
