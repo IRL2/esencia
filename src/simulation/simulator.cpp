@@ -5,6 +5,9 @@ void Simulator::setup(SimulationParameters* params, GuiApp* globalParams) {
     parameters = params;
     globalParameters = globalParams;
 
+    particles.setup(1000, parameters->amount);
+    particles.updateRadiuses(parameters->radius);
+
     setupComputeShader();
 
     glGenTextures(1, &depthFieldTexture);
@@ -26,10 +29,9 @@ void Simulator::setup(SimulationParameters* params, GuiApp* globalParams) {
     parameters->coupling.addListener(this, &Simulator::onCouplingChanged);
     parameters->ljSigma.addListener(this, &Simulator::onSigmaChanged);
  
-    particles.setup(10000, parameters->amount);
-    particles.updateRadiuses(parameters->radius);
 
     globalParameters->renderParameters.windowSize.addListener(this, &Simulator::onRenderwindowResize);
+
     // Create and initialize the SSBO
     glGenBuffers(1, &ssboParticles);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboParticles);

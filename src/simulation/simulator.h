@@ -3,7 +3,7 @@
 #include "ofMain.h"
 #include <GL/glew.h>
 #include "../gui/GuiApp.h"
-#include "ofxOpenCv.h" // TODO: research on using a different datastructure to pass the frame segment and avoid loading opencv here
+//#include "ofxOpenCv.h" // TODO: research on using a different datastructure to pass the frame segment and avoid loading opencv here
 #include "particles.h"
 
 

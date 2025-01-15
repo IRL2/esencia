@@ -8,7 +8,7 @@
 /// Partice structure to hold all data from a single particle
 /// </summary>
 struct Particle {
-    int index;
+    //int index;
 
     glm::vec2 position;
     glm::vec2 velocity;
@@ -32,6 +32,8 @@ struct Particle {
 /// </summary>
 class ParticleSystem {
 public:
+	size_t maxPoolSize;
+
     /// <summary>
     /// The active particle set, the one used by the simulation
     /// </summary>

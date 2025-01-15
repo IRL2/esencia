@@ -11,22 +11,23 @@
         "nConsidered": 8,
         "polygonTolerance": 1.0,
         "showPolygons": false,
-        "useMask": false
+        "useMask": true
     },
     "render": {
-        "color": 5079606,
-        "fakeTrialsVisibility": 0.7736607193946838,
+        "color": 5079752,
+        "fakeTrialsVisibility": 0.7830356955528259,
         "showVideoPreview": true,
         "size": 3,
         "useFaketrails": true,
         "useShaders": true,
         "videoColor": 16777215,
-        "videopreviewVisibility": 0.5357142686843872
+        "videopreviewVisibility": 0.30000001192092896
     },
     "simulation": {
         "amount": 120.0,
-        "applyThermostat": false,
+        "applyThermostat": true,
         "coupling": 0.5,
+        "ljSigma": 75.0250015258789,
         "radius": 3,
         "targetTemperature": 25000.0
     }

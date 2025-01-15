@@ -8,19 +8,20 @@
 void ParticleSystem::setup(size_t maxPoolSize, size_t initialAmount) {
     ofLogVerbose("ParticleSystem::ParticleSystem():Initializing particle pool with: ") << maxPoolSize;
 
+	this->maxPoolSize = maxPoolSize;
+
     pool.resize(maxPoolSize);
 
     int i = 0;
     // Initialize the particles in the pool
     for (auto& p : pool) {
-        p.index = i++;
+        //p.index = i++;
         // Set initial position, velocity, etc.
         p.position.x = ofRandom(1, ofGetWidth()-2);
         p.position.y = ofRandom(1, ofGetHeight()-2);
-        p.velocity.x = ofRandom(0.5, 2.0) * (ofRandom(1.0) > 0.5 ? 1 : -1);
-        p.velocity.y = ofRandom(0.5, 2.0) * (ofRandom(1.0) > 0.5 ? 1 : -1);
-
-        //TODO: Check for 'collisions at birth'
+        p.velocity = glm::vec2(ofRandom(-10.0f, 10.0f), ofRandom(-10.0f, 10.0f));
+        p.mass = 5.0;
+        p.radius = 2.0;
     }
 
     active = pool;
@@ -33,7 +34,7 @@ void ParticleSystem::setup(size_t maxPoolSize, size_t initialAmount) {
 /// </summary>
 /// <param name="newActiveAmount">amount of particles in the active set</param>
 void ParticleSystem::resize(size_t newActiveAmount) {
-    ofLogVerbose("ParticleSystem::resize():Resizing to ") << newActiveAmount;
+    ofLog(OF_LOG_NOTICE) << "ParticleSystem::resize():Resizing to " << newActiveAmount;
 
     size_t currentSize = active.size();
     size_t newSize = std::min(newActiveAmount, pool.size());
@@ -51,11 +52,12 @@ void ParticleSystem::resize(size_t newActiveAmount) {
             pool[i] = active[i];
         }
 
-        // then, remove elements from active
+        // then, remove the excedent from active
         active.erase(active.begin() + newSize, active.end());
     }
     else if (newSize > currentSize) {  // add elements to active from pool
         for (int i = currentSize; i < newSize; ++i) {
+            //pool[i].radius = pool[1].radius;
             active.push_back(pool[i]);
         }
     }

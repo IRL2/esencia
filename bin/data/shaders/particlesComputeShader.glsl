@@ -3,7 +3,7 @@
 layout(local_size_x = 256) in;
 
 struct Particle {
-    int index;
+    //int index;
     vec2 position;
     vec2 velocity;
     float radius;
