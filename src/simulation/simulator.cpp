@@ -70,10 +70,57 @@ void Simulator::setupComputeShader() {
     }
 
     glDeleteShader(computeShader);
+
+    // Set uniforms only once
+    deltaTimeLocation = glGetUniformLocation(computeShaderProgram, "deltaTime");
+    worldSizeLocation = glGetUniformLocation(computeShaderProgram, "worldSize");
+    targetTemperatureLocation = glGetUniformLocation(computeShaderProgram, "targetTemperature");
+    couplingLocation = glGetUniformLocation(computeShaderProgram, "coupling");
+    applyThermostatLocation = glGetUniformLocation(computeShaderProgram, "applyThermostat");
+    depthFieldScaleLocation = glGetUniformLocation(computeShaderProgram, "depthFieldScale");
+    videoOffsetLocation = glGetUniformLocation(computeShaderProgram, "videoOffset");
+    videoScaleLocation = glGetUniformLocation(computeShaderProgram, "videoScale");
+    sourceSizeLocation = glGetUniformLocation(computeShaderProgram, "sourceSize");
+    ljEpsilonLocation = glGetUniformLocation(computeShaderProgram, "ljEpsilon");
+    ljSigmaLocation = glGetUniformLocation(computeShaderProgram, "ljSigma");
+    ljCutoffLocation = glGetUniformLocation(computeShaderProgram, "ljCutoff");
+    maxForceLocation = glGetUniformLocation(computeShaderProgram, "maxForce");
+    depthFieldLocation = glGetUniformLocation(computeShaderProgram, "depthField");
 }
 
 void Simulator::update() {
     updateParticlesOnGPU();
+}
+
+
+void Simulator::updateParticlesOnGPU() {
+    glUseProgram(computeShaderProgram);
+
+    glUniform1f(deltaTimeLocation, 0.01f);
+    glUniform2f(worldSizeLocation, width, height);
+    glUniform1f(targetTemperatureLocation, targetTemperature);
+    glUniform1f(couplingLocation, coupling);
+    glUniform1i(applyThermostatLocation, applyThermostat ? 1 : 0);
+    glUniform1f(depthFieldScaleLocation, hasDepthField ? depthFieldScale : 0.0f);
+    glUniform2f(videoOffsetLocation, videoRect.x, videoRect.y);
+    glUniform2f(videoScaleLocation, videoScaleX, videoScaleY);
+    glUniform2f(sourceSizeLocation, sourceWidth, sourceHeight);
+    glUniform1f(ljEpsilonLocation, ljEpsilon);
+    glUniform1f(ljSigmaLocation, ljSigma);
+    glUniform1f(ljCutoffLocation, ljCutoff);
+    glUniform1f(maxForceLocation, maxForce);
+
+    // Bind depth field texture
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, depthFieldTexture);
+    glUniform1i(depthFieldLocation, 0);
+
+    // Bind particle buffer and dispatch compute shader
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssboParticles);
+    glDispatchCompute((particles.active.size() + 255) / 256, 1, 1);
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+    glUseProgram(0);
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboParticles);
     Particle* ptr = (Particle*)glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
@@ -82,39 +129,6 @@ void Simulator::update() {
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
-void Simulator::updateParticlesOnGPU() {
-    glUseProgram(computeShaderProgram);
-
-    // Basic uniforms
-    glUniform1f(glGetUniformLocation(computeShaderProgram, "deltaTime"), 0.01f);
-    glUniform2f(glGetUniformLocation(computeShaderProgram, "worldSize"), width, height);
-    glUniform1f(glGetUniformLocation(computeShaderProgram, "targetTemperature"), targetTemperature);
-    glUniform1f(glGetUniformLocation(computeShaderProgram, "coupling"), coupling);
-    glUniform1i(glGetUniformLocation(computeShaderProgram, "applyThermostat"), applyThermostat ? 1 : 0);
-    glUniform1f(glGetUniformLocation(computeShaderProgram, "depthFieldScale"), hasDepthField ? depthFieldScale : 0.0f);
-
-    // Video scaling uniforms
-    glUniform2f(glGetUniformLocation(computeShaderProgram, "videoOffset"), videoRect.x, videoRect.y);
-    glUniform2f(glGetUniformLocation(computeShaderProgram, "videoScale"), videoScaleX, videoScaleY);
-    glUniform2f(glGetUniformLocation(computeShaderProgram, "sourceSize"), sourceWidth, sourceHeight);
-
-    glUniform1f(glGetUniformLocation(computeShaderProgram, "ljEpsilon"), ljEpsilon);
-    glUniform1f(glGetUniformLocation(computeShaderProgram, "ljSigma"), ljSigma);
-    glUniform1f(glGetUniformLocation(computeShaderProgram, "ljCutoff"), ljCutoff);
-    glUniform1f(glGetUniformLocation(computeShaderProgram, "maxForce"), maxForce);
-
-    // Bind depth field texture
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, depthFieldTexture);
-    glUniform1i(glGetUniformLocation(computeShaderProgram, "depthField"), 0);
-
-    // Bind particle buffer and dispatch compute shader
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssboParticles);
-    glDispatchCompute((particles.active.size() + 255) / 256, 1, 1);
-    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-
-    glUseProgram(0);
-}
 
 void Simulator::updateVideoRect(const ofRectangle& rect) {
     videoRect = rect;
@@ -173,6 +187,7 @@ void Simulator::updateDepthFieldTexture() {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+// TODO: Get a pointer/reference to the frame instead of copying it
 void Simulator::recieveFrame(ofxCvGrayscaleImage frame) {
     if (frame.getWidth() == 0 || frame.getHeight() == 0) return;
     currentDepthField = frame;

@@ -11,11 +11,11 @@
         "nConsidered": 8,
         "polygonTolerance": 1.0,
         "showPolygons": false,
-        "useMask": true
+        "useMask": false
     },
     "render": {
         "color": 5079752,
-        "fakeTrialsVisibility": 0.7830356955528259,
+        "fakeTrialsVisibility": 0.8526785373687744,
         "showVideoPreview": true,
         "size": 3,
         "useFaketrails": true,
@@ -27,8 +27,8 @@
         "amount": 120.0,
         "applyThermostat": true,
         "coupling": 0.5,
-        "ljSigma": 75.0250015258789,
+        "ljSigma": 9.465625762939453,
         "radius": 3,
-        "targetTemperature": 25000.0
+        "targetTemperature": 5861.60693359375
     }
 }

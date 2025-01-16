@@ -19,6 +19,21 @@ public:
 
     ParticleSystem particles;
 
+    GLint deltaTimeLocation;
+    GLint worldSizeLocation;
+    GLint targetTemperatureLocation;
+    GLint couplingLocation;
+    GLint applyThermostatLocation;
+    GLint depthFieldScaleLocation;
+    GLint videoOffsetLocation;
+    GLint videoScaleLocation;
+    GLint sourceSizeLocation;
+    GLint ljEpsilonLocation;
+    GLint ljSigmaLocation;
+    GLint ljCutoffLocation;
+    GLint maxForceLocation;
+    GLint depthFieldLocation;
+
 
 private:
     void setupComputeShader();
