@@ -140,7 +140,13 @@ void Simulator::updateVideoRect(const ofRectangle& rect) {
 
 void Simulator::onGUIChangeAmmount(float& value) {
     particles.resize(value);
+
+    // Update the SSBO with the new size
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboParticles);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, particles.active.size() * sizeof(Particle), particles.active.data(), GL_DYNAMIC_COPY);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
+
 
 
 void Simulator::onRenderwindowResize(glm::vec2& worldSize) {
