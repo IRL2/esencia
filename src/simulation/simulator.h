@@ -12,7 +12,7 @@ public:
 	void setup(SimulationParameters* params, GuiApp* globalParams);
     void update();
     void updateWorldSize(int _width, int _height);
-    void recieveFrame(ofxCvGrayscaleImage frame);
+    void recieveFrame(ofxCvGrayscaleImage &frame);
     void updateVideoRect(const ofRectangle& rect);
 
 	void keyReleased(ofKeyEventArgs& e);
@@ -65,7 +65,7 @@ private:
     float ljCutoff = 150.0f;    // Interaction cutoff
     float maxForce = 10000.0f;  // Force clamping
 
-    ofxCvGrayscaleImage currentDepthField;
+    ofxCvGrayscaleImage *currentDepthField;
 
     ofRectangle videoRect = ofRectangle(0,0,-45,-45);
     float videoScaleX = 1.4;
@@ -78,4 +78,6 @@ private:
 
     SimulationParameters* parameters;
     GuiApp* globalParameters;
+
+    const float INV255 = 1.0f / 255.0f;
 };

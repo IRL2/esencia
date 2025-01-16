@@ -164,19 +164,17 @@ void Simulator::updateWorldSize(int _width, int _height) {
 	updateVideoRect(ofRectangle(0, 0, _width, _height));
 }
 
-
-
 void Simulator::updateDepthFieldTexture() {
     if (!hasDepthField) return;
 
-    const unsigned char* pixels = currentDepthField.getPixels().getData();
-    int frameWidth = currentDepthField.getWidth();
-    int frameHeight = currentDepthField.getHeight();
+    const unsigned char* pixels = currentDepthField->getPixels().getData();
+    int frameWidth = currentDepthField->getWidth();
+    int frameHeight = currentDepthField->getHeight();
     std::vector<float> normalizedPixels(frameWidth * frameHeight);
 
     // Normalize and invert pixels
     for (int i = 0; i < frameWidth * frameHeight; i++) {
-        normalizedPixels[i] = 1.0f - (pixels[i] / 255.0f);
+        normalizedPixels[i] = 1.0f - (pixels[i] * INV255);
     }
 
     // Update texture dimensions if changed
@@ -193,10 +191,9 @@ void Simulator::updateDepthFieldTexture() {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-// TODO: Get a pointer/reference to the frame instead of copying it
-void Simulator::recieveFrame(ofxCvGrayscaleImage frame) {
+void Simulator::recieveFrame(ofxCvGrayscaleImage & frame) {
     if (frame.getWidth() == 0 || frame.getHeight() == 0) return;
-    currentDepthField = frame;
+    currentDepthField = &frame;
     hasDepthField = true;
     updateDepthFieldTexture();
 }

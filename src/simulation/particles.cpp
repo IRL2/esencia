@@ -34,7 +34,7 @@ void ParticleSystem::setup(size_t maxPoolSize, size_t initialAmount) {
 /// </summary>
 /// <param name="newActiveAmount">amount of particles in the active set</param>
 void ParticleSystem::resize(size_t newActiveAmount) {
-    ofLog(OF_LOG_NOTICE) << "ParticleSystem::resize():Resizing to " << newActiveAmount;
+    //ofLog(OF_LOG_NOTICE) << "ParticleSystem::resize():Resizing to " << newActiveAmount;
 
     size_t currentSize = active.size();
     size_t newSize = std::min(newActiveAmount, pool.size());

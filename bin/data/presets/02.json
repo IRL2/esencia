@@ -24,10 +24,10 @@
         "videopreviewVisibility": 0.1071428582072258
     },
     "simulation": {
-        "amount": 45.92778778076172,
+        "amount": 451.0777893066406,
         "applyThermostat": true,
         "coupling": 0.5,
-        "lowFps": true,
+        "ljSigma": 9.465625762939453,
         "radius": 14,
         "targetTemperature": 25000.0
     }
