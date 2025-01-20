@@ -5,7 +5,7 @@ void Simulator::setup(SimulationParameters* params, GuiApp* globalParams) {
     parameters = params;
     globalParameters = globalParams;
 
-    particles.setup(1000, parameters->amount);
+    particles.setup(parameters->amount.getMax(), parameters->amount);
     particles.updateRadiuses(parameters->radius);
 
     setupComputeShader();
@@ -119,8 +119,6 @@ void Simulator::updateParticlesOnGPU() {
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssboParticles);
     glDispatchCompute((particles.active.size() + 255) / 256, 1, 1);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-
-    glUseProgram(0);
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboParticles);
     Particle* ptr = (Particle*)glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);

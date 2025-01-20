@@ -28,7 +28,7 @@ public:
 		ofSetFrameRate(90);
 
 		systemUsage.setup();
-		p->add<ofxGuiValuePlotter>(cpuUsage.set("% CPU", 0.0, 0.0, 100.0), ofJson({ {"precision", 0}}));
+		p->add<ofxGuiValuePlotter>(cpuUsage.set("% CPU", 0, 0, 100), ofJson({ {"precision", 0} }));
 		ofAddListener(ofEvents().update, this, &SystemstatsPanel::update);
 
 		configVisuals(PANEL_RECT, BG_COLOR);
