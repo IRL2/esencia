@@ -38,8 +38,8 @@ public:
 
 
 	// TODO: review if this pointers or references are needed and correct
-
 	void setup(ofxGui& gui, PresetsParameters* preParams, ofxPresets& presetMan, SimulationParameters& simParams, CameraParameters& camParams, RenderParameters& renParams) {
+
 		// store references to all parameters to apply the presets data
 		simulationParams = simParams;
 		cameraParams = camParams;
@@ -48,13 +48,12 @@ public:
 		presetManager = &presetMan;
 		allParameters = { &simulationParams, &renderParams };
 
-		// create the panel with 2 groups: the toggle buttons, the actions buttons
+		// presets panel to group the preset toggles
 		panel = gui.addPanel("presets");
 
-		//panel->add<ofxGuiLabel>(curPreset.set("presets",">"), ofJson({{"type", "label"}}));
 
-		// the preset toggles (the group)
-		///////////////////////////////////
+		// the preset toggles
+		//-----------------------------------
 		presetToggles = panel->addGroup("presetToggles", ofJson({
 			{"flex-direction", "row"},
 			{"padding", 10},
@@ -74,20 +73,24 @@ public:
 		presetToggles->setExclusiveToggles(true);
 		presetToggles->setActiveToggle(0);
 
+		// Listener for the active toggle on the group -> should trigger when user clicks on any toggle
 		presetToggles->getActiveToggleIndex().addListener(this, &PresetsPanel::onToggleGroupChangedActive);
-		//presetToggles->addEventListener(this, &PresetsPanel::onToggleGroupChangedActive);
-		//presetParams.states[0].addListener(this, &PresetsPanel::onToggleGroupChangedActive); // not using listener for the toggles, bc it triggers n-times toggles
+
+		// Listener for when the preset starts applying a preset -> should trigger after any inputmode on preset and sequence change
 		ofAddListener(presetManager->presetAppicationStarted, this, &PresetsPanel::onPresetmanagerApplyPreset);
+
+		// Listener for when the preset finishes applying a preset -> should trigger on preset and sequence change
 		ofAddListener(presetManager->transitionFinished, this, &PresetsPanel::onPresetmanagerTransitionFinished);
 
-		// action buttons
-		///////////////////////////////////
-		ofxGuiGroup* actions = panel->addGroup("actions");
-		actions->setShowHeader(false);
 
-		saveButton = actions->add<ofxGuiButton>(saveParam.set("save", false),
+		// action buttons
+		//-----------------------------------
+		ofxGuiGroup* actionsPanel = panel->addGroup("actionsPanel");
+		actionsPanel->setShowHeader(false);
+
+		saveButton = actionsPanel->add<ofxGuiButton>(saveParam.set("save", false),
 			ofJson({ {"type", "fullsize"}, {"text-align","center"} }));
-		clearButton = actions->add<ofxGuiButton>(clearParam.set("clear", false),
+		clearButton = actionsPanel->add<ofxGuiButton>(clearParam.set("clear", false),
 			ofJson({ {"type", "fullsize"}, {"text-align","center"} }));
 
 		//presetParams.save.enableEvents();

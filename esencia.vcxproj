@@ -89,6 +89,8 @@
       <ObjectFileName>$(IntDir)\Build\%(RelativeDir)\$(Configuration)\</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -150,6 +152,7 @@
     <ClCompile Include="..\..\..\addons\ofxOrbbec\src\ofxOrbbecCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\gui\SystemUsage.h" />
     <ClInclude Include="src\ofApp.h" />
     <ClInclude Include="src\camera\Camera.h" />
     <ClInclude Include="src\gui\EsenciaPanelBase.h" />

@@ -1,23 +1,20 @@
 #pragma once
 
 #include "EsenciaPanelBase.h"
+#include "SystemUsage.h"
 
 class SystemstatsPanel : public EsenciaPanelBase {
 
 	// default initial values
 	
-	bool LIMIT_FPS = { false };
-
-#ifdef DEBUG
-	LIMIT_FPS = { true };
-#endif
-
 	const int WIDTH = 200;
 	const int HEIGHT = 30;
 
-	const ofRectangle PANEL_RECT = ofRectangle(12, 1, 8, 0);
+	const ofRectangle PANEL_RECT = ofRectangle(11, 1, 8, 0);
 	const ofColor BG_COLOR = ofColor(100, 100, 100, 100);
 
+	SystemUsage systemUsage;
+	ofParameter<float> cpuUsage;
 
 public:
 	void setup(ofxGui &gui, SimulationParameters &params) {
@@ -28,27 +25,20 @@ public:
 
 		p->addFpsPlotter(ofJson({ {"width", WIDTH}, {"height", HEIGHT} } ));
 
-		p->add(params.lowFps.set("30fps", LIMIT_FPS),
-			ofJson({ {"type", "radio"} }));
+		ofSetFrameRate(90);
 
-		limitFps(LIMIT_FPS);
-
-		params.lowFps.addListener(this, &SystemstatsPanel::limitFps); // TODO:: listeners back to the guiapp x_x
+		systemUsage.setup();
+		p->add<ofxGuiValuePlotter>(cpuUsage.set("% CPU", 0.0, 0.0, 100.0), ofJson({ {"precision", 0}}));
+		ofAddListener(ofEvents().update, this, &SystemstatsPanel::update);
 
 		configVisuals(PANEL_RECT, BG_COLOR);
-
 	}
 
-	void limitFps(bool& v)
+	void update(ofEventArgs&)
 	{
-		if (v) {
-			ofSetFrameRate(30);
-		}
-		else {
-			ofSetFrameRate(60);
-		}
+		cpuUsage = systemUsage.getSmoothedCPUUsage();
+		systemUsage.update();
 	}
 
 };
-
 
