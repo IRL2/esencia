@@ -16,9 +16,9 @@ class SimulationPanel : public EsenciaPanelBase {
 	const float THERMOSTAT_MIN  = 0.1;
 	const float THERMOSTAT_MAX  = 1.0;
 
-	const float SIGMA_INIT = 0.5;
-	const float SIGMA_MIN = 0.1;
-	const float SIGMA_MAX = 100.0;
+	const float DEPTH_INIT = -80000.0;
+	const float DEPTH_MIN = -100000.0;
+	const float DEPTH_MAX = 100000.0;
 
 	const float SLIDERS_WIDTH = 10;
 	const float SLIDERS_HEIGHT = 70;
@@ -48,8 +48,8 @@ public:
 			THERMOSTAT_INIT, THERMOSTAT_MIN, THERMOSTAT_MAX),
 			ofJson({ {"width", "50%"}, {"height", SLIDERS_HEIGHT}, {"precision", 3}}));
 
-		p->add(params.ljSigma.set("Sigma", 
-			SIGMA_INIT, SIGMA_MIN, SIGMA_MAX),
+		p->add(params.depthFieldScale.set("depth\nfield\nscale",
+			DEPTH_INIT, DEPTH_MIN, DEPTH_MAX),
 			ofJson({ {"width", "50%"}, {"height", SLIDERS_HEIGHT}, {"precision", 3}}));
 
 		configVisuals(PANEL_RECT, BG_COLOR);

@@ -29,8 +29,7 @@ uniform float depthFieldScale;
 // Lennard-Jones parameters
 uniform float ljEpsilon;   // Depth of potential well
 uniform float ljCutoff;    // Cutoff for interaction distance
-uniform float maxForce;    // Max allowable force magnitude
-uniform float sigma;       // Currently unused, kept for potential scaling
+uniform float maxForce;    // Max allowable force magnitude     
 
 void main() {
     uint index = gl_GlobalInvocationID.x;

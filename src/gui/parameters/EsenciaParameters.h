@@ -150,7 +150,7 @@ struct SimulationParameters : public ofxPresetsParametersBase {
     ofParameter<int> radius;
     ofParameter<float> targetTemperature;
     ofParameter<float> coupling;
-    ofParameter<float> ljSigma;
+    ofParameter<float> depthFieldScale;
     ofParameter<bool> applyThermostat;
     ofParameter<glm::vec2> worldSize;
     ofParameter<bool> lowFps;
@@ -163,7 +163,7 @@ struct SimulationParameters : public ofxPresetsParametersBase {
 		parameterMap["targetTemperature"] = &targetTemperature;
 		parameterMap["coupling"] = &coupling;
 		parameterMap["applyThermostat"] = &applyThermostat;
-		parameterMap["ljSigma"] = &ljSigma;
+		parameterMap["depthFieldScale"] = &depthFieldScale;
 		//parameterMap["worldSize"] = &worldSize;
 		//parameterMap["lowFps"] = &lowFps;
 	}

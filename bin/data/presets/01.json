@@ -27,7 +27,7 @@
         "amount": 264.29998779296875,
         "applyThermostat": true,
         "coupling": 0.5580357313156128,
-        "ljSigma": 75.0250015258789,
+        "depthFieldScale": -100000.0,
         "radius": 5,
         "targetTemperature": 4093.75
     }

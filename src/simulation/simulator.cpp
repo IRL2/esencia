@@ -17,7 +17,6 @@ void Simulator::setup(SimulationParameters* params, GuiApp* globalParams) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    depthFieldScale = -100000.0f;
     std::vector<float> initialDepth(width * height, 0.5f);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, initialDepth.data());
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -27,7 +26,7 @@ void Simulator::setup(SimulationParameters* params, GuiApp* globalParams) {
     parameters->applyThermostat.addListener(this, &Simulator::onApplyThermostatChanged);
     parameters->targetTemperature.addListener(this, &Simulator::onTemperatureChanged);
     parameters->coupling.addListener(this, &Simulator::onCouplingChanged);
-    parameters->ljSigma.addListener(this, &Simulator::onSigmaChanged);
+    parameters->depthFieldScale.addListener(this, &Simulator::onDepthFieldScaleChanged);
  
 
     globalParameters->renderParameters.windowSize.addListener(this, &Simulator::onRenderwindowResize);
@@ -82,7 +81,6 @@ void Simulator::setupComputeShader() {
     videoScaleLocation = glGetUniformLocation(computeShaderProgram, "videoScale");
     sourceSizeLocation = glGetUniformLocation(computeShaderProgram, "sourceSize");
     ljEpsilonLocation = glGetUniformLocation(computeShaderProgram, "ljEpsilon");
-    ljSigmaLocation = glGetUniformLocation(computeShaderProgram, "ljSigma");
     ljCutoffLocation = glGetUniformLocation(computeShaderProgram, "ljCutoff");
     maxForceLocation = glGetUniformLocation(computeShaderProgram, "maxForce");
     depthFieldLocation = glGetUniformLocation(computeShaderProgram, "depthField");
@@ -106,7 +104,6 @@ void Simulator::updateParticlesOnGPU() {
     glUniform2f(videoScaleLocation, videoScaleX, videoScaleY);
     glUniform2f(sourceSizeLocation, sourceWidth, sourceHeight);
     glUniform1f(ljEpsilonLocation, ljEpsilon);
-    glUniform1f(ljSigmaLocation, ljSigma);
     glUniform1f(ljCutoffLocation, ljCutoff);
     glUniform1f(maxForceLocation, maxForce);
 
@@ -216,8 +213,8 @@ void Simulator::onCouplingChanged(float& value) {
     coupling = value;
 }
 
-void Simulator::onSigmaChanged(float& value) {
-    ljSigma = value;
+void Simulator::onDepthFieldScaleChanged(float& value) {
+    depthFieldScale = value;
 }
 
 void Simulator::applyBerendsenThermostat() {

@@ -48,7 +48,7 @@ private:
     void onApplyThermostatChanged(bool& value);
     void onTemperatureChanged(float& value);
     void onCouplingChanged(float& value);
-    void onSigmaChanged(float& value);
+    void onDepthFieldScaleChanged(float& value);
     void applyBerendsenThermostat();
 
     GLuint ssboParticles;
@@ -61,7 +61,6 @@ private:
     float depthFieldScale = -100000.0f;
     bool hasDepthField = false;
     float ljEpsilon = 10.0f;    // Lennard-Jones well depth
-    float ljSigma = 0.5f;      // Lennard-Jones distance scale
     float ljCutoff = 150.0f;    // Interaction cutoff
     float maxForce = 10000.0f;  // Force clamping
 
