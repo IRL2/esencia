@@ -33,12 +33,11 @@ public:
             PARTICLE_COLOR)
         )->minimize();
 
-        panel->add(params.useShaders.set("use shaders", 
-            USE_SHADERS));
+        //panel->add(params.useShaders.set("use shaders",  USE_SHADERS));
 
         // video
         ofxGuiGroup* vp = panel->addGroup("video");
-        vp->add(params.showVideoPreview.set("visible", VIDEO_PREVIEW));
+        //vp->add(params.showVideoPreview.set("visible", VIDEO_PREVIEW));
         
         vp->add(params.videopreviewVisibility.set("visibility", 
             VIDEO_VISIBILITY_INITIAL, VIDEO_VISIBILITY_MIN, VIDEO_VISIBILITY_MAX),
@@ -49,8 +48,7 @@ public:
         // trails
         ofxGuiGroup* ofTrialsPanel = panel->addGroup("trails");
 
-        ofTrialsPanel->add(params.useFaketrails.set("enable", 
-            USE_FAKETRAILS));
+        //ofTrialsPanel->add(params.useFaketrails.set("enable", USE_FAKETRAILS));
 
         ofTrialsPanel->add(params.fakeTrialsVisibility.set("lenght", 
             TRAILS_VISIBILITY_INITIAL, TRAILS_VISIBILITY_MIN, TRAILS_VISIBILITY_MAX),

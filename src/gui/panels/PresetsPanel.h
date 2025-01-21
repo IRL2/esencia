@@ -136,14 +136,12 @@ public:
 	/// (Attempt to) Updated the background color of the active preset button
 	/// </summary>
 	void recolorPresetButtons() {
-		//recolorExistentPresetButtons();
+		recolorExistentPresetButtons();
 
 		for (int i = 0; i < 16; i++) {
-			recolorResetButton(i);
-
 			if (i + 1 == activePreset) {
 				recolorActiveButton(i);
-				if (!presetManager->presetExist(i + 1)) {
+				if (presetManager->presetExist(i + 1)) {
 					recolorInexistentActiveButton(i);
 				}
 			}	
@@ -172,21 +170,21 @@ public:
 		statesButtons[i]->setBorderWidth(1);
 	}
 	void recolorActiveButton(int i) {
-		statesButtons[i]->setTextColor(ofColor::white);
-		statesButtons[i]->setBackgroundColor(ofColor(ofColor::lightSeaGreen, 200));
-		statesButtons[i]->setBorderColor(ofColor(ofColor::lightSeaGreen, 200));
-		statesButtons[i]->setBorderWidth(15);
-	}
-	void recolorExistentButton(int i) {
 		statesButtons[i]->setTextColor(ofColor(20, 20, 20, 100));
 		statesButtons[i]->setBackgroundColor(ofColor(100, 100, 100, 200));
 		statesButtons[i]->setBorderColor(ofColor(20, 20, 20, 100));
 		statesButtons[i]->setBorderWidth(1);
 	}
-	void recolorInexistentActiveButton(int i) {
+	void recolorExistentButton(int i) {
 		statesButtons[i]->setTextColor(ofColor(20, 20, 20, 100));
 		statesButtons[i]->setBackgroundColor(ofColor(ofColor::lightSeaGreen, 100));
 		statesButtons[i]->setBorderColor(ofColor(ofColor::lightSeaGreen, 100));
+		statesButtons[i]->setBorderWidth(15);
+	}
+	void recolorInexistentActiveButton(int i) {
+		statesButtons[i]->setTextColor(ofColor::white);
+		statesButtons[i]->setBackgroundColor(ofColor(ofColor::lightSeaGreen, 200));
+		statesButtons[i]->setBorderColor(ofColor(ofColor::lightSeaGreen, 200));
 		statesButtons[i]->setBorderWidth(15);
 	}
 
@@ -230,13 +228,15 @@ public:
 
 	void savePreset() {
 		presetManager->savePreset(activePreset);
-		recolorExistentPresetButtons();
+		recolorPresetButtons();
+		//recolorExistentPresetButtons();
 	}
 
 
 	void clearPreset() {
 		presetManager->deletePreset(activePreset);
-		recolorExistentPresetButtons();
+		//recolorExistentPresetButtons();
+		recolorPresetButtons();
 	}
 
 
