@@ -38,6 +38,8 @@ void RenderApp::draw()
 {
     ofBackground(0);
 
+	// TODO: remove on/off toggles and use the values directly
+
     // draw elements
     fbo.begin();
         // solid background or trail

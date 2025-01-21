@@ -116,9 +116,9 @@ struct RenderParameters : public ofxPresetsParametersBase {
     ofParameter<int> size = 3;
     ofParameter<ofColor> color;
     ofParameter<glm::vec2> windowSize;
-    ofParameter<bool> useShaders = false;
-    ofParameter<bool> useFaketrails = false;
-    ofParameter<bool> showVideoPreview = false;
+    ofParameter<bool> useShaders = true;
+    ofParameter<bool> useFaketrails = true;
+    ofParameter<bool> showVideoPreview = true;
     ofParameter<float> fakeTrialsVisibility = 0.0;
     ofParameter<float> videopreviewVisibility = 0.0;
     ofParameter<ofColor> videoColor;
