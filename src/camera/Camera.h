@@ -25,7 +25,7 @@ class Camera
 
         void stopCurrentSource();
 
-        void processCameraFrame(ofxCvGrayscaleImage cameraFrame, ofxCvGrayscaleImage backgroundReference);
+        void processCameraFrame(ofxCvGrayscaleImage &cameraFrame, ofxCvGrayscaleImage &backgroundReference);
         void addSampleToBackgroundReference(ofxCvGrayscaleImage newFrame, ofxCvGrayscaleImage& output, int samples);
         void startBackgroundReferenceSampling(int samples);
         void startBackgroundReferenceSampling();

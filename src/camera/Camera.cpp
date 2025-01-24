@@ -310,7 +310,7 @@ void Camera::update() {
 /// <summary>
 /// Process each camera frame to extract interested objects
 /// </summary>
-void Camera::processCameraFrame(ofxCvGrayscaleImage frame, ofxCvGrayscaleImage backgroundReference) {
+void Camera::processCameraFrame(ofxCvGrayscaleImage &frame, ofxCvGrayscaleImage &backgroundReference) {
     // The processing assumes a depth grayscalled image, a background reference if available
     // 
     // 1. removes far and near elements by thresholding
@@ -404,9 +404,8 @@ void Camera::processCameraFrame(ofxCvGrayscaleImage frame, ofxCvGrayscaleImage b
     }
 
     // remove noise from the extracted image
-    // to-do: check if a single erode pass is usually enough to remove the noise
+    // to-do: a single erode pass is usually enough to remove the noise
     processedImage.erode();
-    //processedImage.erode();
     //saveDebugImage(processedImage, "processedImage", "eroded");
 
     // calculate the polygons from the roi
@@ -468,16 +467,10 @@ void Camera::gpuBlur(ofxCvGrayscaleImage& input, float sigma) {
     // If you used GL_RGBA, `pixels` is 4-channel RGBA. We only need the red channel.
     // We'll build a single-channel (grayscale) pixels object:
     ofPixels grayPix;
-    grayPix.allocate(pixels.getWidth(), pixels.getHeight(), 1);
+    //grayPix.allocate(pixels.getWidth(), pixels.getHeight(), 1); // no need to allocate now since its going to be set on next step (setchannel with data)
 
-    // copy the red channel
-    for (int y = 0; y < pixels.getHeight(); y++) {
-        for (int x = 0; x < pixels.getWidth(); x++) {
-            // read RGBA (r,g,b,a)
-            ofColor c = pixels.getColor(x, y);
-            grayPix.setColor(x, y, ofColor(c.r));
-        }
-    }
+	// copy the red channel from the RGBA pixels into grayPix
+	grayPix.setChannel(0, pixels.getChannel(0));
 
     // Now set it to the incoming ofxCvGrayscaleImage
     input.setFromPixels(grayPix);
@@ -647,11 +640,13 @@ void convertToTransparent(ofxCvGrayscaleImage &grayImage, ofImage &rgbaImage) {
     cv::Mat cvRgbaImage(cvGrayImage.rows, cvGrayImage.cols, CV_8UC4);
 
     // grays to trnsparents
-    for (int y = 0; y < cvGrayImage.rows; ++y) {
-        for (int x = 0; x < cvGrayImage.cols; ++x) {
-            uchar grayValue = cvGrayImage.at<uchar>(y, x);
-            cvRgbaImage.at<cv::Vec4b>(y, x) = cv::Vec4b(255, 255, 255, grayValue);
-        }
+    int totalPixels = cvGrayImage.rows * cvGrayImage.cols;
+    uchar* grayData = cvGrayImage.data;
+    cv::Vec4b* rgbaData = cvRgbaImage.ptr<cv::Vec4b>();
+    uchar grayValue;
+    for (int i = 0; i < totalPixels; ++i) {
+        grayValue = grayData[i];
+        rgbaData[i] = cv::Vec4b(255, 255, 255, grayValue);
     }
 
     // regenerate the modified data to an image
