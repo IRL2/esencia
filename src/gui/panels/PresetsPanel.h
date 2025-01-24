@@ -139,8 +139,9 @@ public:
 		recolorExistentPresetButtons();
 
 		for (int i = 0; i < 16; i++) {
-			if (i + 1 == activePreset) {
+			if (i + 1 == abs(activePreset)) {
 				recolorActiveButton(i);
+
 				if (presetManager->presetExist(i + 1)) {
 					recolorInexistentActiveButton(i);
 				}
