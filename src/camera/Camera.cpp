@@ -467,7 +467,7 @@ void Camera::gpuBlur(ofxCvGrayscaleImage& input, float sigma) {
     // If you used GL_RGBA, `pixels` is 4-channel RGBA. We only need the red channel.
     // We'll build a single-channel (grayscale) pixels object:
     ofPixels grayPix;
-    //grayPix.allocate(pixels.getWidth(), pixels.getHeight(), 1); // no need to allocate now since its going to be set on next step (setchannel with data)
+    grayPix.allocate(pixels.getWidth(), pixels.getHeight(), 1);
 
 	// copy the red channel from the RGBA pixels into grayPix
 	grayPix.setChannel(0, pixels.getChannel(0));
