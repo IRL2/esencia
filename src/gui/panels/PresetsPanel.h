@@ -18,7 +18,7 @@ class PresetsPanel : public EsenciaPanelBase {
 	ofxGuiToggle* statesButtons[16];
 	ofxGuiButton* saveButton;
 	ofxGuiButton* clearButton;
-	ofxGuiButton* copytoButton;
+	ofxGuiButton* mutateButton;
 	ofxGuiGroup* presetToggles;
 
 	ofxPresets* presetManager = nullptr;
@@ -28,6 +28,7 @@ class PresetsPanel : public EsenciaPanelBase {
 	ofParameter<bool> saveParam;
 	ofParameter<bool> clearParam;
 	ofParameter<bool> copyToParam;
+	ofParameter<bool> mutateParam;
 
 	float prevTransitionDuration = 0;
 
@@ -92,10 +93,13 @@ public:
 			ofJson({ {"type", "fullsize"}, {"text-align","center"} }));
 		clearButton = actionsPanel->add<ofxGuiButton>(clearParam.set("clear", false),
 			ofJson({ {"type", "fullsize"}, {"text-align","center"} }));
+		mutateButton = actionsPanel->add<ofxGuiButton>(mutateParam.set("mutate", false),
+			ofJson({ {"type", "fullsize"}, {"text-align","center"} }));
 
 		//presetParams.save.enableEvents();
 		saveParam.addListener(this, &PresetsPanel::saveButtonListener);
 		clearParam.addListener(this, &PresetsPanel::clearButtonListener);
+		mutateParam.addListener(this, &PresetsPanel::mutateButtonListener);
 
 		configVisuals(PANEL_RECT, BG_COLOR);
 	}
@@ -290,6 +294,9 @@ public:
 		clearPreset();
 	}
 
+	void mutateButtonListener(bool& v) {
+		presetManager->mutate();
+	}
 
 
 	// update
