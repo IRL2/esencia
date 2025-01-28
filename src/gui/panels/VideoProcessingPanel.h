@@ -24,7 +24,7 @@ class VideoProcessingPanel : public EsenciaPanelBase {
 
     const float GAUSSIAN_BLUR_INITIAL = 1;
     const float GAUSSIAN_BLUR_MIN = 0;
-    const float GAUSSIAN_BLUR_MAX = 130;
+    const float GAUSSIAN_BLUR_MAX = 25;
 
     const float POLYGON_APPROX_INITIAL = 1.0;
     const float POLYGON_APPROX_MIN = 0.0;

@@ -46,8 +46,8 @@ public:
         groupName = "camera";
 
         parameterMap["enableClipping"] = &enableClipping;
-        parameterMap["clipFar"] = &clipFar;
-        parameterMap["clipNear"] = &clipNear;
+        //parameterMap["clipFar"] = &clipFar;
+        //parameterMap["clipNear"] = &clipNear;
         parameterMap["blobMinArea"] = &blobMinArea;
         parameterMap["blobMaxArea"] = &blobMaxArea;
         parameterMap["gaussianBlur"] = &gaussianBlur;

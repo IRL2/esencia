@@ -8,7 +8,7 @@ class ParticlesPanel : public EsenciaPanelBase {
 	// default initial values
 	const float PARTICLES_INITIAL = 100;
 	const float PARTICLES_MIN = 1.0;
-	const float PARTICLES_MAX = 1000.0;
+	const float PARTICLES_MAX = 10000.0;
 
 	const int RADIUS_INITIAL = 3;
 	const int RADIUS_MIN = 1;

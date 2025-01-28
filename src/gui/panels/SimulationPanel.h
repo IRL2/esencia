@@ -42,15 +42,15 @@ public:
 
 		p->add(params.targetTemperature.set("equilibrium\ntemperature", 
 			TEMPERATURE_INIT, TEMPERATURE_MIN, TEMPERATURE_MAX),
-			ofJson({ {"width", "50%"}, {"height", SLIDERS_HEIGHT}, {"precision", 0} }));
+			ofJson({{"height", SLIDERS_HEIGHT}, {"precision", 0} }));
 
 		p->add(params.coupling.set("Berendsen\nthermostat\ncoupling", 
 			THERMOSTAT_INIT, THERMOSTAT_MIN, THERMOSTAT_MAX),
-			ofJson({ {"width", "50%"}, {"height", SLIDERS_HEIGHT}, {"precision", 3}}));
+			ofJson({{"height", SLIDERS_HEIGHT}, {"precision", 3}}));
 
 		p->add(params.depthFieldScale.set("depth\nfield\nscale",
 			DEPTH_INIT, DEPTH_MIN, DEPTH_MAX),
-			ofJson({ {"width", "50%"}, {"height", SLIDERS_HEIGHT}, {"precision", 3}}));
+			ofJson({{"height", SLIDERS_HEIGHT}, {"precision", 0}}));
 
 		configVisuals(PANEL_RECT, BG_COLOR);
 	}

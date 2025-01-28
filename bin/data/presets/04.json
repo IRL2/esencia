@@ -2,31 +2,33 @@
     "camera": {
         "blobMaxArea": 8.0,
         "blobMinArea": 0.05000000074505806,
+        "clipFar": 170,
+        "clipNear": 20,
         "enableClipping": true,
         "fillHolesOnPolygons": false,
         "floodfillHoles": false,
-        "gaussianBlur": 9,
+        "gaussianBlur": 13,
         "nConsidered": 8,
         "polygonTolerance": 1.0,
         "showPolygons": false,
-        "useMask": true
+        "useMask": false
     },
     "render": {
-        "color": 9274056,
-        "fakeTrialsVisibility": 0.9102678298950195,
+        "color": 11958701,
+        "fakeTrialsVisibility": 0.954464316368103,
         "showVideoPreview": true,
         "size": 3,
         "useFaketrails": true,
         "useShaders": true,
-        "videoColor": 16777215,
-        "videopreviewVisibility": 0.2991071343421936
+        "videoColor": 13643638,
+        "videopreviewVisibility": 0.3348214328289032
     },
     "simulation": {
-        "amount": 451.0777893066406,
+        "amount": 16.8499755859375,
         "applyThermostat": true,
-        "coupling": 0.8111607432365417,
-        "depthFieldScale": -34000.0,
-        "radius": 8,
-        "targetTemperature": 8513.392578125
+        "coupling": 0.7709821462631226,
+        "depthFieldScale": -100000.0,
+        "radius": 10,
+        "targetTemperature": 16026.78515625
     }
 }
