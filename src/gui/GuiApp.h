@@ -66,8 +66,6 @@ private:
 	SequencePanel sequencePanel;
      
 
-    void drawLineBetween(EsenciaPanelBase &a, EsenciaPanelBase&b);
-
     ofFbo fbo;  // for the extra layers behind the GUI (lines, background, etc)
 
     // for the presets and their needed parameter refs
@@ -75,7 +73,15 @@ private:
 
     ofxPresets presetManager;
 
-
+    ofColor bgColor1 = ofColor::darkSlateGray;
+	ofColor bgColor2 = ofColor::darkSalmon;
+    ofColor bgTargetColor1 = bgColor2;
+    ofColor bgStartColor1  = bgColor1;
+    ofColor bgTargetColor2 = bgColor1;
+    ofColor bgStartColor2  = bgColor2;
+    float bgChangeFrequency = 0;
+    int bgChangeDuration = 1000;
+    std::vector<ofColor> bgColors = { ofColor::darkSalmon, ofColor::darkGrey, ofColor::darkSlateGray, ofColor::darkKhaki, ofColor::darkViolet, ofColor::deepSkyBlue };
 };
 
 

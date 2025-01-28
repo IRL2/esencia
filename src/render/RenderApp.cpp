@@ -36,6 +36,7 @@ void RenderApp::update()
 //--------------------------------------------------------------
 void RenderApp::draw()
 {
+	ofSetCircleResolution(10);
     ofBackground(0);
 
 	// TODO: remove on/off toggles and use the values directly

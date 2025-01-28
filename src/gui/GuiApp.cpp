@@ -42,14 +42,30 @@ void GuiApp::setup()
 void GuiApp::update() 
 {
     presetsPanel.update();
+
+	float colorProgress = ofxeasing::map_clamp(bgChangeFrequency++, 0, bgChangeDuration, 0, 1, &ofxeasing::linear::easeInOut);
+    if (bgChangeFrequency == bgChangeDuration) bgChangeFrequency = 0;
+
+    if (colorProgress == 0) {
+        //bgTargetColor1 = bgColors[ofRandom(bgColors.size())];
+        //bgTargetColor2 = bgColors[ofRandom(bgColors.size())];
+        bgTargetColor1 = renderParameters.color;
+        bgTargetColor2 = renderParameters.videoColor;
+        bgStartColor1 = bgColor1;
+        bgStartColor2 = bgColor2;
+    }
+    //bgColor1 = bgStartColor1.getLerped(bgTargetColor1, colorProgress);
+    //bgColor2 = bgStartColor2.getLerped(bgTargetColor2, colorProgress);
+
+    bgColor1 = bgStartColor1.getLerped(renderParameters.color, colorProgress);
+    bgColor2 = bgStartColor2.getLerped(renderParameters.videoColor, colorProgress);
 }
 
 
 void GuiApp::draw()
 {
     fbo.begin();
-    //ofBackgroundGradient(ofColor::darkSlateGray, ofColor::lightGoldenRodYellow, OF_GRADIENT_LINEAR);
-    ofBackgroundGradient(ofColor::darkSlateGray, ofColor::darkSalmon, OF_GRADIENT_LINEAR);
+    ofBackgroundGradient(bgColor2, bgColor1, OF_GRADIENT_LINEAR);
 
     // draw lines
     EsenciaPanelBase::drawLineBetween(videoOriginPanel, videoProcessingPanel);

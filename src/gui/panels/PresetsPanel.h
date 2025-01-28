@@ -201,7 +201,7 @@ public:
 			prevPreset = activePreset;
 			activePreset = i;
 
-			ofLog() << "PresetsPanel::applyPreset:: Selecting preset: " << i;
+			ofLog(OF_LOG_NOTICE) << "PresetsPanel::applyPreset:: Selecting preset: " << i;
 		}
 		
 		prevTransitionDuration = presetManager->interpolationDuration;
@@ -262,6 +262,8 @@ public:
 	/// </summary>
 	/// <param name="v"></param>
 	void onToggleGroupChangedActive(int& v) {
+		if (v+1 == activePreset) return;
+
 		if (!presetManager->isPlayingSequence()) {
 			ofLog(OF_LOG_VERBOSE) << "PresetsPanel::onToggleGroupChangedActive:: Listener receives button ID pressed " << v;
 			applyPreset(v + 1);

@@ -33,7 +33,7 @@ public:
         // DEPTH CLIPPING
         ofxGuiGroup* cameraClippingPanel = panel->addGroup("depth clipping");
         
-        params.clipNear.set("v", 
+        params.clipNear.set("", 
             CLIP_NEAR_INITIAL, CLIP_NEAR_MIN, CLIP_NEAR_MAX);
         
         //params.clipFar.set("f", 

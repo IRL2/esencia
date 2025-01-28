@@ -38,11 +38,6 @@ public:
 	void setup(ofxGui &gui, CameraParameters &params) {
 		panel = gui.addPanel("video processing");
 		
-        ofxGuiGroup* cameraSourcePreview = panel->addGroup("preview");
-        
-        cameraSourcePreview->add<ofxGuiGraphics>("segment", &params.previewSegment.getTexture(), 
-            ofJson({ {"height", 200} }));
-
 
         // PROCESSING
         ofxGuiGroup* cameraProcessingPanel = panel->addGroup("processing");
@@ -59,6 +54,12 @@ public:
         cameraProcessingPanel->add(params.useMask.set("preserve depth", 
             PRESERVE_DEPTH));
 
+
+        // PREVIEW
+        ofxGuiGroup* cameraSourcePreview = panel->addGroup("preview");
+        
+        cameraSourcePreview->add<ofxGuiGraphics>("segment", &params.previewSegment.getTexture(), 
+            ofJson({ {"height", 200} }));
 
 
         // POLYGONS
