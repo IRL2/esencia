@@ -79,7 +79,7 @@ public:
         // Draw a 3x3 rectangle moving along the Bezier line
         float percent = fmod((oy + ofGetElapsedTimef()) / 5, 1.0f); // Get a percentage value that loops from 0 to 1
         ofVec3f rectPos = l.getPointAtPercent(percent);
-        ofSetColor(ofColor::white, 180);
+        ofSetColor(ofColor::paleTurquoise, 180);
         ofDrawRectangle(rectPos.x - 1.5f, rectPos.y - 1.5f, 3, 3);
 
         ofPopMatrix();

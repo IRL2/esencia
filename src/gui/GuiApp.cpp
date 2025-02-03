@@ -29,13 +29,8 @@ void GuiApp::setup()
 	sequencePanel.setup(gui, &presetsParameters, presetManager);
     presetsPanel.setup(gui, &presetsParameters, presetManager, simulationParameters, cameraParameters, renderParameters);
 
-    #ifdef DEBUG_IMAGES
-        cameraGroup.add(ofParameter<string>().set("DEBUG"));
-        camera.add(cameraParameters.saveDebugImages.set("save debug images", false));
-    #endif
-    #ifdef RECORD_TESTING_VIDEO
-        camera.add(cameraParameters.recordTestingVideo.set("record testing video", false));
-    #endif
+
+    //parameters->previewRender.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
 
 }
 

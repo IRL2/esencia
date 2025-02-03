@@ -31,6 +31,7 @@ Currently working on the [Orbbec Femto Bolt](https://www.orbbec.com/products/tof
    - [ofxOrbbec](https://github.com/IRL2/ofxOrbbec/) (forked from [design-io](https://github.com/design-io/ofxOrbbec/))
    - [ofxGuiExtended](https://github.com/radamchin/ofxGuiExtended) (forked from [frauzufall](https://github.com/frauzufall/ofxGuiExtended) via [radamchin fix](https://github.com/radamchin/ofxGuiExtended))
    - [ofxEasing](https://github.com/arturoc/ofxEasing)
+   - [ofxPresets](https://github.com/IRL2/ofxPresets)
 
 \*Note this repo already includes the orbbec shared libraries on the bin and bin/libs folder, from the ofxOrbbec addon.
 

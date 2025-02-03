@@ -50,7 +50,7 @@ public:
 
         //ofTrialsPanel->add(params.useFaketrails.set("enable", USE_FAKETRAILS));
 
-        ofTrialsPanel->add(params.fakeTrialsVisibility.set("lenght", 
+        ofTrialsPanel->add(params.fakeTrialsVisibility.set("length", 
             TRAILS_VISIBILITY_INITIAL, TRAILS_VISIBILITY_MIN, TRAILS_VISIBILITY_MAX),
             ofJson({ {"precision", 3} }));
 

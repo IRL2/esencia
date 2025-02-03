@@ -30,8 +30,7 @@ int main()
 
 
     // PARAMETERS
-    // this is how parameters are linked in between Apps (main/gui and render)
-    // there are other linkages inside ofApp (gui-camera, gui-simulator)
+    // this is how parameters are linked in between ofApps (main/gui and render)
 
     renderApp->globalParameters = &(mainApp->gui);
     renderApp->parameters = &(mainApp->gui.renderParameters);
@@ -43,9 +42,9 @@ int main()
     renderApp->particles = &(mainApp->simulator.particles.active);
     renderApp->simulator = &(mainApp->simulator);
 
-    // ** note that parameters are not defined and exposed by the system (class) as the oF common way
-    //    all params are defined by the GUI class in ofApp, then linked to each system
-    //    this is because the systems may need to use params from the other systems
+    // ** note that parameters are not defined and exposed by its system (class) as the oF common way
+    //    all params are defined on the GUI class in GUI ofApp, then linked to each system
+	//    this is because parameter are shared between systems, so it make sense to have them in a single common place (the gui)
     //    i.e. the render may use the original size of the particles in the simulation
 
     //       TO-DO: may worth exploring how to link values in between parameters (i.e. move particle size affects render particle size * 10)
