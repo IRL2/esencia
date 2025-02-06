@@ -82,7 +82,7 @@ void main() {
     float dy = (texture(depthField, clamp(texCoord + vec2(0, texelSize.y), vec2(0), vec2(1))).r -
         texture(depthField, clamp(texCoord - vec2(0, texelSize.y), vec2(0), vec2(1))).r) * 0.5;
 
-    vec2 depthForce = depthFieldScale * vec2(dx, dy) * videoScale;
+    vec2 depthForce = (depthFieldScale * 3.0) * vec2(dx, dy) * videoScale;
 
     // Combine all forces
     vec2 totalForce = depthForce + totalLJForce;
