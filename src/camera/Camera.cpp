@@ -107,6 +107,9 @@ void Camera::changeSource(VideoSources newSource) {
 /// <param name="width"></param>
 /// <param name="height"></param>
 void Camera::setFrameSize(int width, int height) {
+    if (orbbecSettings.rotation == OB_ROTATE_DEGREE_90 || orbbecSettings.rotation == OB_ROTATE_DEGREE_270) {
+        std::swap(width, height);
+    }
     IMG_WIDTH = width;
     IMG_HEIGHT = height;
 
@@ -183,7 +186,7 @@ void Camera::setupOrbbecCamera() {
     orbbecSettings.bPointCloud = false;
     orbbecSettings.bPointCloudRGB = false;
     orbbecSettings.depthFrameSize.requestWidth = orbbecRequestedWidth;
-
+    orbbecSettings.rotation = OB_ROTATE_DEGREE_90;
     orbbecCam.open(orbbecSettings);
     currentVideosource = VideoSources::VIDEOSOURCE_ORBBEC;
 }
@@ -224,28 +227,33 @@ void Camera::draw() {
     ofBackground(60, 60, 60);
 
     ofSetHexColor(0xffffff);
-    
+
+    int drawWidth = IMG_WIDTH_2 - 1;
+    int drawHeight = IMG_HEIGHT_2 - 1;
+
+    if (orbbecSettings.rotation == OB_ROTATE_DEGREE_90 || orbbecSettings.rotation == OB_ROTATE_DEGREE_270) {
+        std::swap(drawWidth, drawHeight);
+    }
+
     //prerecordedVideo.draw(1, 1);
-    source.draw(1, 1, IMG_WIDTH_2-1, IMG_HEIGHT_2-1);
-    ofDrawBitmapStringHighlight("Raw camera", 11, 20, ofColor(30,30,30), ofColor(104,140,247));
+    source.draw(1, 1, drawWidth, drawHeight);
+    ofDrawBitmapStringHighlight("Raw camera", 11, 20, ofColor(30, 30, 30), ofColor(104, 140, 247));
 
-    backgroundNewFrame.draw(1, IMG_HEIGHT_2+1, IMG_WIDTH_2-1, IMG_HEIGHT_2-1);
-    ofDrawBitmapStringHighlight("Background reference", 11, IMG_HEIGHT_2+20, ofColor(30,30,30), ofColor(104,140,247));
-
+    backgroundNewFrame.draw(1, drawHeight + 1, drawWidth, drawHeight);
+    ofDrawBitmapStringHighlight("Background reference", 11, drawHeight + 20, ofColor(30, 30, 30), ofColor(104, 140, 247));
 
     if (isTakingBackgroundReference) {
-        ofDrawBitmapStringHighlight("registering background reference: -" + ofToString(backgroundReferenceLeftFrames), 10, IMG_HEIGHT_2 * 1.5, ofColor(230, 30,40), ofColor(250,250,250));
+        ofDrawBitmapStringHighlight("registering background reference: -" + ofToString(backgroundReferenceLeftFrames), 10, drawHeight * 1.5, ofColor(230, 30, 40), ofColor(250, 250, 250));
         return;
     }
     if (parameters->recordTestingVideo) {
-        ofDrawBitmapStringHighlight("recording testing video " + ofToString(recordTestingFramesCounter), 30, IMG_HEIGHT_2/2, ofColor(230, 30, 40), ofColor(250, 250, 250));
+        ofDrawBitmapStringHighlight("recording testing video " + ofToString(recordTestingFramesCounter), 30, drawHeight / 2, ofColor(230, 30, 40), ofColor(250, 250, 250));
         return;
     }
 
-
     // draw the processed image
-    segment.draw(1, IMG_HEIGHT+2, IMG_WIDTH_2-1, IMG_HEIGHT_2-1);
-    ofDrawBitmapStringHighlight("Final extraction", 11, IMG_HEIGHT+20, ofColor(30,30,30), ofColor(104,140,247));
+    segment.draw(1, drawHeight + 2, drawWidth, drawHeight);
+    ofDrawBitmapStringHighlight("Final extraction", 11, drawHeight + 20, ofColor(30, 30, 30), ofColor(104, 140, 247));
 
     // draw found polygons
     if (parameters->showPolygons) {
@@ -253,7 +261,7 @@ void Camera::draw() {
         ofSetLineWidth(5);
         ofFill();
         ofPushMatrix();
-        ofTranslate(1, IMG_HEIGHT);
+        ofTranslate(1, drawHeight);
         ofScale(0.5);
         for (const auto& polyline : polygons) {
             polyline.draw();
@@ -263,8 +271,9 @@ void Camera::draw() {
     }
 
     ofSetHexColor(0xffffff);
-    ofDrawBitmapString(ofGetFrameRate(), ofGetWidth()-40, 20);
+    ofDrawBitmapString(ofGetFrameRate(), ofGetWidth() - 40, 20);
 }
+
 
 
 //--------------------------------------------------------------
