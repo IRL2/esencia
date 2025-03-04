@@ -95,7 +95,7 @@ void Simulator::updateParticlesOnGPU() {
     glUseProgram(computeShaderProgram);
 
     glUniform1f(deltaTimeLocation, 0.01f);
-    glUniform2f(worldSizeLocation, width, height);
+    glUniform2f(worldSizeLocation, parameters->worldSize->x, parameters->worldSize->y);
     glUniform1f(targetTemperatureLocation, targetTemperature);
     glUniform1f(couplingLocation, coupling);
     glUniform1i(applyThermostatLocation, applyThermostat ? 1 : 0);
@@ -150,14 +150,12 @@ void Simulator::onRenderwindowResize(glm::vec2& worldSize) {
 }
 
 void Simulator::updateWorldSize(int _width, int _height) {
-    ofLogNotice("Simulator::updateWorldSize()") << "wew size: " << _width << "," << _height;
-
     width = _width;
     height = _height;
-    parameters->worldSize.set(glm::vec2(_width, _height)); // we may also use the parameters->worlSize.x directly
-
-	updateVideoRect(ofRectangle(0, 0, _width, _height));
+    parameters->worldSize.set(glm::vec2(_width, _height));
+    updateVideoRect(ofRectangle(0, 0, _width, _height));
 }
+
 
 void Simulator::updateDepthFieldTexture() {
     if (!hasDepthField) return;

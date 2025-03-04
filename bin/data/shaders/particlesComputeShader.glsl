@@ -104,8 +104,9 @@ void main() {
     p.position += p.velocity * deltaTime;
 
     // Boundary conditions
-    vec2 minBound = videoOffset;
-    vec2 maxBound = videoOffset + sourceSize * videoScale;
+// Boundary conditions
+    vec2 minBound = vec2(0.0, 0.0);
+    vec2 maxBound = worldSize;
 
     if (p.position.x < minBound.x || p.position.x > maxBound.x) {
         p.velocity.x *= -0.9;
@@ -115,6 +116,7 @@ void main() {
         p.velocity.y *= -0.9;
         p.position.y = clamp(p.position.y, minBound.y, maxBound.y);
     }
+
 
     particles[index] = p;
 }

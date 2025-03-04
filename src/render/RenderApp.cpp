@@ -22,12 +22,12 @@ void RenderApp::setup()
 void RenderApp::update()
 {
     if (parameters->showVideoPreview) {
-    // update the segment image from the camera
+        // update the segment image from the camera
         video.setFromPixels(globalParameters->cameraParameters.previewSegment.getPixels());
-        videoRectangle.x =((ofGetHeight()*video.getWidth()/video.getHeight()) - ofGetWidth()) / -2;
-        videoRectangle.y = 0;
-        videoRectangle.width = ofGetHeight()*video.getWidth()/video.getHeight();
-        videoRectangle.height = ofGetHeight();
+        videoRectangle.x = 0;
+        videoRectangle.y = ((ofGetWidth() * video.getHeight() / video.getWidth()) - ofGetHeight()) / -2;
+        videoRectangle.width = ofGetWidth();
+        videoRectangle.height = ofGetWidth() * video.getHeight() / video.getWidth();
 
         simulator->updateVideoRect(videoRectangle);
     }
