@@ -10,9 +10,9 @@ https://www.theguardian.com/science/small-world/2013/oct/25/danceroom-spectrosco
 
 ## Goals
 
-- Create a reinterpretation / rewrite
-- Be able to exhibit it again
-- Make it opensource for remixing
+- Create a rewrite and reinterpretation of the original
+- Be able to exhibit it again on modern hardware with more accessible hardware
+- Make it open source for remixing
 
 ## Setup
 
@@ -21,23 +21,20 @@ Currently working on the [Orbbec Femto Bolt](https://www.orbbec.com/products/tof
 ### Developing environment
 
 1. [Install and setup openFrameworks 0.12](https://openframeworks.cc/download/)
-	- [Windows visual studio 2019](https://openframeworks.cc/setup/vs/)
-	- [Linux visual studio code](https://openframeworks.cc/setup/vscode/)
-        - [OSX/macOS via Xcode](https://openframeworks.cc/setup/xcode/)
+    - [Windows visual studio 2019](https://openframeworks.cc/setup/vs/)
+    - [Linux visual studio code](https://openframeworks.cc/setup/vscode/) Not tested
+    - [OSX/macOS via Xcode](https://openframeworks.cc/setup/xcode/) Orbbec Femto Bolt camera is not currently supported on macOS
 
 2. Clone this repo on apps folder `{openframeworks_folder}/apps/myApps/`
 
 3. Clone the following addons on the addons folder `{openframeworks_folder}/addons/`
    - [ofxOrbbec](https://github.com/IRL2/ofxOrbbec/) (forked from [design-io](https://github.com/design-io/ofxOrbbec/))
-   - [ofxGuiExtended](https://github.com/radamchin/ofxGuiExtended) (forked from [frauzufall](https://github.com/frauzufall/ofxGuiExtended) via [radamchin fix](https://github.com/radamchin/ofxGuiExtended))
+   - [ofxGuiExtended](https://github.com/IRL2/ofxGuiExtended) (forked from [frauzufall](https://github.com/frauzufall/ofxGuiExtended) via [radamchin fix](https://github.com/radamchin/ofxGuiExtended))
    - [ofxEasing](https://github.com/arturoc/ofxEasing)
    - [ofxPresets](https://github.com/IRL2/ofxPresets)
 
-\*Note this repo already includes the orbbec shared libraries on the bin and bin/libs folder, from the ofxOrbbec addon.
+\*Note this repo already includes the required orbbec shared libraries on the bin and bin/libs folder, from the ofxOrbbec addon.
 
-### Flags
-- DEBUG_IMAGES shows a button to allow save each step of the video frame processing
-- RECORD_TESTING_VIDEO shows a button to save frames directly form the camera, allowing to create test videos
 
 ## Usage
 
@@ -50,8 +47,8 @@ Currently working on the [Orbbec Femto Bolt](https://www.orbbec.com/products/tof
 - For Linux Visual Studio Code (min 1.80) open `esencia.code-workspace`
 - For macOS Xcode (14.1 or newer) open `esencia.xcode-project`
 - Or just run `make` from the terminal
-*Release mode gives better performance.
+**Release mode gives better performance.**
 
-3. Play whith the gui parameters [See the wiki](https://github.com/IRL2/esencia/wiki).
+3. Play with the gui parameters [See the wiki](https://github.com/IRL2/esencia/wiki).
    - Currently the simulation runs on CPU so its limited to 200 particles.
 
