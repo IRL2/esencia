@@ -612,20 +612,25 @@ void Camera::saveBackgroundReference(ofxCvGrayscaleImage image) {
 
 
 /// <summary>
-/// Reloads a previous reference from the disk
+/// Reloads a previous background reference from the disk
 /// </summary>
 /// <param name="imageObject"></param>
 /// <returns>True if loads the reference successfully</returns>
 bool Camera::restoreBackgroundReference(ofxCvGrayscaleImage & outputImage) {
-    ofLogNotice("Camera::restoreBackgroundReference") << "Attempting to load a background reference at data/" + BG_REFERENCE_FILENAME;
+    ofLogNotice(__FUNCTION__) << "Attempting to load a background reference at data/" + BG_REFERENCE_FILENAME;
     ofPixels pixels;
     bool loaded = ofLoadImage(pixels, BG_REFERENCE_FILENAME);
     if (loaded) {
-        // to-do: validate bg ref and frame have the same size resolution
+		// validate if the bg ref and the camera frame have the same size to continue, otherwise delete the bg ref for sanity
+		if (pixels.getWidth() != IMG_WIDTH || pixels.getHeight() != IMG_HEIGHT) {
+			ofLogError("Camera::restoreBackgroundReference") << "The background reference image has a different resolution from the current frame and will be deleted";
+			ofFile::removeFile(BG_REFERENCE_FILENAME);
+			return false;
+		}
         outputImage.allocate(pixels.getWidth(), pixels.getHeight());
         outputImage.setFromPixels(pixels);
         backgroundReferenceTaken = true;
-        parameters->previewBackground.setFromPixels(backgroundReference.getPixels()); // updates the gui preview // not perfect code, since this function should be agnostic and saving value to a pointer, but this param access is used directly
+        parameters->previewBackground.setFromPixels(backgroundReference.getPixels()); // updates the gui preview // not perfect code, since this function should be agnostic and saving value to a pointer, but using a param is convenient and params are already glueing the modules
         ofLogNotice("Camera::restoreBackgroundReference") << "Load successfull";
     }
     else {
