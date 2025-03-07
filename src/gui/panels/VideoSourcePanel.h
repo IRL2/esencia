@@ -2,7 +2,7 @@
 
 #include "EsenciaPanelBase.h"
 
-class VideoOriginPanel : public EsenciaPanelBase {
+class VideoSourcePanel : public EsenciaPanelBase {
 
     const bool SOURCE_ORBBEC = { false };
     const bool SOURCE_FILE = { false };
@@ -27,7 +27,6 @@ public:
         cameraSourcePanel->add(params._sourceOrbbec.set("orbbec camera", SOURCE_ORBBEC));
 
         cameraSourcePanel->add(params._sourceVideofile.set("video file", SOURCE_FILE));
-        //cameraSourcePanel->setWidth(w * 30);
         cameraSourcePanel->minimize();
 
         // DEPTH CLIPPING

@@ -163,7 +163,7 @@
     <ClInclude Include="src\gui\panels\SequencePanel.h" />
     <ClInclude Include="src\gui\panels\SimulationPanel.h" />
     <ClInclude Include="src\gui\panels\SystemstatsPanel.h" />
-    <ClInclude Include="src\gui\panels\VideoOriginPanel.h" />
+    <ClInclude Include="src\gui\panels\VideoSourcePanel.h" />
     <ClInclude Include="src\gui\panels\VideoProcessingPanel.h" />
     <ClInclude Include="src\gui\parameters\EsenciaParameters.h" />
     <ClInclude Include="src\render\RenderApp.h" />
