@@ -9,6 +9,10 @@ const int PANELS_CIRCLE_RESOLUTION = 8;
 const int PANELS_BEZIER_PADDING = 40;
 const int PANELS_BEZIER_RESOLUTION = 10;
 const int PANELS_TRIANGLE_SIZE = 4;
+const ofColor LINE_COLOR1 = ofColor::darkSlateGrey; //paleGoldenRod;
+const ofColor LINE_COLOR2 = ofColor::darkSlateGrey; //paleTurquoise;
+const ofColor LINE_COLOR3 = ofColor::darkSlateGrey; // khaki;
+const ofColor FLOW_COLOR  = ofColor::darkSlateGrey; //paleGoldenRod;
 
 class EsenciaPanelBase {
 
@@ -58,16 +62,16 @@ public:
         ofPushMatrix();
 
         // origin glyph
-        ofSetColor(ofColor::paleGoldenRod, 200);
+        ofSetColor(LINE_COLOR2, 200);
 		ofSetCircleResolution(PANELS_CIRCLE_RESOLUTION);
         ofFill();
         ofDrawCircle(originCircleX, originCircleY, PANELS_CIRCLE_RADIUS);
 
         // destination glyph
-        ofSetColor(ofColor::paleTurquoise, 200);
+        ofSetColor(LINE_COLOR1, 200);
 		ofDrawArrow(destinationArrowStart, destinationArrowEnd, PANELS_TRIANGLE_SIZE);
 
-        ofSetColor(ofColor::khaki, 200);
+        ofSetColor(LINE_COLOR3, 200);
         ofPolyline l;
         l.addVertex(originCircleX, originCircleY);
         l.bezierTo(bezierCX1, bezierCY1,
@@ -79,7 +83,7 @@ public:
         // Draw a 3x3 rectangle moving along the Bezier line
         float percent = fmod((oy + ofGetElapsedTimef()) / 5, 1.0f); // Get a percentage value that loops from 0 to 1
         ofVec3f rectPos = l.getPointAtPercent(percent);
-        ofSetColor(ofColor::paleTurquoise, 180);
+        ofSetColor(FLOW_COLOR, 220);
         ofDrawRectangle(rectPos.x - 1.5f, rectPos.y - 1.5f, 3, 3);
 
         ofPopMatrix();
