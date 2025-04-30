@@ -5,7 +5,7 @@
 
 class SequencePanel : public EsenciaPanelBase {
 
-	const ofRectangle PANEL_RECT = ofRectangle(11, 25, 12, 0);
+	const ofRectangle PANEL_RECT = ofRectangle(13, 26, 8, 0);
 	const ofColor &BG_COLOR = ofColor(100, 100, 100, 100);
 
 	const float DEFAULT_TRANSITION_DURATION_INIT = 5.0;
@@ -27,7 +27,7 @@ public:
 	ofParameter<string> curPreset;
 
 	void setup(ofxGui& gui, PresetsParameters *params, ofxPresets&presetMan) {
-		panel = gui.addPanel("sequence");
+		panel = gui.addPanel("sequencer");
 
 		presetParams = params;
 		presetManager = &presetMan;
@@ -98,7 +98,7 @@ public:
 		playButton->setNeedsRedraw();
 	}
 	void updatePlaybuttonToStopped() {
-		playButton->setLabel("stopped");
+		playButton->setLabel("play");
 		playButton->setBackgroundColor(ofColor(ofColor::orangeRed, 200));
 		playButton->setNeedsRedraw();
 	}
