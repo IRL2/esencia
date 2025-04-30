@@ -74,6 +74,8 @@ void RenderApp::draw()
         shader.setUniform1f("blurAmnt", 5);
         shader.setUniform1f("texwidth", ofGetWidth());
         shader.setUniform1f("texheight", ofGetHeight());
+        ofBackground(0);
+
         fbo.draw(0,0);
         shader.end();
         fboS.end();
@@ -103,8 +105,14 @@ void RenderApp::keyReleased(ofKeyEventArgs& e)
         case 'F':
         {
             ofToggleFullscreen();
-            fbo.allocate(ofGetWidth(), ofGetHeight());
-            fboS.allocate(ofGetWidth(), ofGetHeight());
+            fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
+            fboS.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
+            break;
+        }
+
+        case 'S':
+        {
+            ofSaveFrame();
             break;
         }
         default: break;
@@ -125,8 +133,8 @@ void RenderApp::mouseMoved(int x, int y ){
 void RenderApp::windowResized(int _width, int _height) {
     ofLogNotice("RenderApp::windowResized()") << "window resized to: " << _width << "," << _height;
 
-    fbo.allocate(_width, _height);
-    fboS.allocate(_width, _height);
+    fbo.allocate(_width, _height, GL_RGBA);
+    fboS.allocate(_width, _height, GL_RGBA);
 
     glm::vec2 newSize = glm::vec2(_width, _height);
     parameters->windowSize.set(glm::vec2(_width, _height));
