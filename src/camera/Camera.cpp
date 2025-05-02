@@ -56,6 +56,8 @@ void Camera::onGUIChangeSource(bool& _) {
     } else {
         stopCurrentSource();
     }
+
+    restoreBackgroundReference(backgroundReference);
 }
 
 
@@ -175,6 +177,12 @@ void Camera::loadVideoFile() {
 
     currentVideosource = VideoSources::VIDEOSOURCE_VIDEOFILE;
     ofLogNotice(__FUNCTION__) << "Video file loaded";
+
+    // copy the the associated precaptured background into the right folder
+    ofFile::removeFile(BG_REFERENCE_FILENAME);
+    ofFile::copyFromTo("video_mocks\\" + BG_REFERENCE_FILENAME, BG_REFERENCE_FILENAME);
+    restoreBackgroundReference(backgroundReference);
+    ofLogNotice(__FUNCTION__) << "Load precaptured background reference from video file";
 }
 
 /// <summary>
@@ -197,6 +205,7 @@ void Camera::setupOrbbecCamera() {
     orbbecSettings.depthFrameSize.requestWidth = orbbecRequestedWidth;
     orbbecSettings.rotation = OB_ROTATE_DEGREE_90;
     orbbecCam.open(orbbecSettings);
+
     currentVideosource = VideoSources::VIDEOSOURCE_ORBBEC;
 }
 
@@ -379,6 +388,8 @@ void Camera::processCameraFrame(ofxCvGrayscaleImage &frame, ofxCvGrayscaleImage 
     // ---------
     // remove the background from the frame (save the output in maskImage object)
     if (backgroundReferenceTaken) {
+        if (backgroundNewFrame.width != processedImage.width) return;
+
         cvAbsDiff(processedImage.getCvImage(), backgroundNewFrame.getCvImage(), segment.getCvImage()); // this works great for a single background frame of reference!
 
         saveDebugImage(segment, "segment", "removed background absdiff");
@@ -607,10 +618,17 @@ void Camera::startBackgroundReferenceSampling(int samples) {
     backgroundReferenceLeftFrames = samples;
 }
 
+/// <summary>
+/// Clear the background reference image
+/// will remove the previous bg reference file
+/// wil set the Taken flag to false
+/// </summary>
 void Camera::clearBackgroundReference() {
     ofLogNotice("Camera::clearBackgroundReference()") << "Cleaning background";
     backgroundReference.set(0);
     parameters->previewBackground.clear();
+	ofFile::removeFile(BG_REFERENCE_FILENAME);
+	backgroundReferenceTaken = false;
 }
 
 
