@@ -17,6 +17,10 @@ class RenderApp : public ofBaseApp
         void keyReleased(ofKeyEventArgs& e);
         void mouseMoved(int x, int y );
         void windowResized(int w, int h);
+        void updateParticleBuffers();
+        void renderParticlesGPU();
+
+        
 
 
         // PARAMETERS
@@ -33,6 +37,11 @@ class RenderApp : public ofBaseApp
         ofEvent<glm::vec2> viewportResizeEvent; // an event to send window size updates to the simulation
 
     private:
+        ofVbo particleVbo;
+        ofShader particleShader;
+        std::vector<glm::vec3> particlePositions;
+        std::vector<float> particleSizes;
+
         ofColor particleColor;
         int particleSize;
 
