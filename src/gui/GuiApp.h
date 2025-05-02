@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "ofxGuiExtended.h"
 #include "ofxOpenCv.h"
+#include "ofxEasing.h"
 
 #include "ofxPresetsParametersBase.h"
 #include "EsenciaParameters.h"

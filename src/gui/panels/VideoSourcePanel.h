@@ -2,6 +2,10 @@
 
 #include "EsenciaPanelBase.h"
 
+#define DEBUG_IMAGES false
+//#define RECORD_TESTING_VIDEO true
+
+
 class VideoSourcePanel : public EsenciaPanelBase {
 
     const bool SOURCE_ORBBEC = { false };
@@ -64,12 +68,14 @@ public:
 
 
 
+#if defined DEBUG_IMAGES || defined RECORD_TESTING_VIDEO
+        ofxGuiGroup* debug = panel->addGroup("debug");
+#endif
 #ifdef DEBUG_IMAGES
-        cameraGroup.add(ofParameter<string>().set("DEBUG"));
-        camera.add(cameraParameters.saveDebugImages.set("save debug images", false));
+        debug->add<ofxGuiToggle>(params.saveDebugImages.set("save debug images", false));
 #endif
 #ifdef RECORD_TESTING_VIDEO
-        camera.add(cameraParameters.recordTestingVideo.set("record testing video", false));
+        debug.add<ofxGuiToggle>(cameraParameters.recordTestingVideo.set("record testing video", false));
 #endif
 
 
