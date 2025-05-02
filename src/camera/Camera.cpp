@@ -290,15 +290,6 @@ void Camera::draw() {
 void Camera::update() {
 
     // acquire frame
-    if (currentVideosource == VideoSources::VIDEOSOURCE_VIDEOFILE) {
-        prerecordedVideo.update();
-
-        if (prerecordedVideo.isFrameNew()) {
-            colorFrame.setFromPixels(prerecordedVideo.getPixels());
-            source = colorFrame;
-        }
-    }
-
     if (currentVideosource == VideoSources::VIDEOSOURCE_ORBBEC) {
         orbbecCam.update();
 
@@ -306,6 +297,20 @@ void Camera::update() {
             source.setFromPixels(orbbecCam.getDepthPixels());
         }
     }
+    else if (currentVideosource == VideoSources::VIDEOSOURCE_VIDEOFILE) {
+        prerecordedVideo.update();
+
+        if (prerecordedVideo.isFrameNew()) {
+            colorFrame.setFromPixels(prerecordedVideo.getPixels());
+            source = colorFrame;
+        }
+    }
+    else {
+        // no source, no update
+        return;
+    }
+
+    parameters->previewSource.setFromPixels(source.getPixels());
 
     // to-do: make backgroundref an object with state?
     if (isTakingBackgroundReference) {
@@ -316,9 +321,7 @@ void Camera::update() {
     // all the processing from source to extract the final segment
     processCameraFrame(source, backgroundReference);
 
-
     // update the preview images on the shared parameters data structure for the GUI
-    parameters->previewSource.setFromPixels(source.getPixels());
     convertToTransparent(segment, parameters->previewSegment); // to-do: should be called only when accessed 
 
     saveDebugImage(segment, "segment", "final");
@@ -692,7 +695,6 @@ void convertToTransparent(ofxCvGrayscaleImage &grayImage, ofImage &rgbaImage) {
 /// <param name="name">object name id (background, camera, cleared..)</param>
 /// <param name="step">additional id, i.e. sequence step</param>
 void Camera::saveDebugImage(ofxCvGrayscaleImage img, string name, string step) {
-#ifdef DEBUG_IMAGES
     if (parameters->saveDebugImages) {
         const string& filename = "raw_recording\\" + ofGetTimestampString() + "_" + name + "_" + step + ".png";
         ofSaveImage(img.getPixels(), filename);
