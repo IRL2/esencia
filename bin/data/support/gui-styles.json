@@ -2,6 +2,9 @@
   "default": {
     "base": {
       "border-radius": 4,
+      "border-color": "#444444",
+      "fill-color": "#aaaaaa",
+      "border-width": 1,
       "text-color": "#ffffef"
     },
 

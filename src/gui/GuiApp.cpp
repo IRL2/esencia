@@ -5,7 +5,7 @@
 void GuiApp::setup()
 {
     ofBackground(0);
-    fbo.allocate(ofGetWindowWidth(), ofGetWindowHeight());
+    fbo.allocate(ofGetWindowWidth(), ofGetWindowHeight(), GL_RGBA32F_ARB);
     ofEnableSmoothing();
 
     gui.setupFlexBoxLayout();
@@ -38,7 +38,7 @@ void GuiApp::update()
 {
     presetsPanel.update();
 
-	float colorProgress = ofxeasing::map_clamp(bgChangeFrequency++, 0, bgChangeDuration, 0, 1, &ofxeasing::linear::easeInOut);
+    float colorProgress = ofxeasing::map_clamp(bgChangeFrequency++, 0, bgChangeDuration, 0, 1, &ofxeasing::linear::easeInOut);
     if (bgChangeFrequency == bgChangeDuration) bgChangeFrequency = 0;
 
     if (colorProgress == 0) {
@@ -59,8 +59,11 @@ void GuiApp::update()
 
 void GuiApp::draw()
 {
-    fbo.begin();
     ofBackgroundGradient(bgColor2, bgColor1, OF_GRADIENT_LINEAR);
+    fbo.begin();
+
+    ofSetColor(255, 150);
+    ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
 
     // draw lines
     EsenciaPanelBase::drawLineBetween(videoOriginPanel, videoProcessingPanel);
@@ -75,10 +78,13 @@ void GuiApp::draw()
 
 
 
-
 void GuiApp::keyReleased(ofKeyEventArgs& e) {
     presetsPanel.keyReleased(e);
     sequencePanel.keyReleased(e);
+    
+    if (e.keycode == 'S' && e.hasModifier(OF_KEY_SHIFT)) {
+        ofSaveFrame(true);
+    }    
 }
 
 

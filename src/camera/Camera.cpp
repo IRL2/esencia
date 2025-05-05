@@ -36,8 +36,6 @@ void Camera::setup(CameraParameters* params) {
     else {
         changeSource(VideoSources::VIDEOSOURCE_VIDEOFILE);
     }
-
-    restoreBackgroundReference(backgroundReference);
 }
 
 /// <summary>
@@ -58,6 +56,8 @@ void Camera::onGUIChangeSource(bool& _) {
     } else {
         stopCurrentSource();
     }
+
+    restoreBackgroundReference(backgroundReference);
 }
 
 
@@ -67,6 +67,8 @@ void Camera::onGUIChangeSource(bool& _) {
 /// </summary>
 /// <param name="newSource">From the list of VideoSources</param>
 void Camera::changeSource(VideoSources newSource) {
+    ofLogNotice(__FUNCTION__) << "Attempting to change source to " << (int)newSource;
+
     stopCurrentSource();
 
     currentVideosource = VideoSources::VIDEOSOURCE_NONE; // in the new setup fail, stay at None
@@ -79,6 +81,9 @@ void Camera::changeSource(VideoSources newSource) {
     }
     else if (newSource == VideoSources::VIDEOSOURCE_WEBCAM) {
         setupWebcam();
+    }
+    else {
+        return;
     }
 
     // to-do: need to call setFrameSize with the updated frame size from the new source
@@ -107,9 +112,15 @@ void Camera::changeSource(VideoSources newSource) {
 /// <param name="width"></param>
 /// <param name="height"></param>
 void Camera::setFrameSize(int width, int height) {
+    ofLogNotice(__FUNCTION__) << "Resizing every image and fb to " << width << ", " << height;
+
+    if (currentVideosource == VideoSources::VIDEOSOURCE_ORBBEC) {
     if (orbbecSettings.rotation == OB_ROTATE_DEGREE_90 || orbbecSettings.rotation == OB_ROTATE_DEGREE_270) {
+            ofLogNotice(__FUNCTION__) << "Rotating orbbec camera also rotates dimentions (rotation " << orbbecSettings.rotation << " degrees)";
         std::swap(width, height);
     }
+    }
+
     IMG_WIDTH = width;
     IMG_HEIGHT = height;
 
@@ -154,10 +165,10 @@ void Camera::onGUIStartBackgroundReference(bool &value) {
 /// Loads a video file to use it as the video source
 /// </summary>
 void Camera::loadVideoFile() {
-    ofLogNotice("Camera::loadVideoFile()") << "Switching source to video file";
+    ofLogNotice(__FUNCTION__) << "Switching source to video file";
 
     // to-do: let the user select the file (ofFileDialogResult from ofSystemLoadDialog)
-    ofLogNotice("Camera::loadVideoFile()") << "Attempting to load a video file";
+    ofLogNotice(__FUNCTION__) << "Attempting to load a video file";
     prerecordedVideo.load("video_mocks/movement_nfov_h264.mp4");
     // to-do: throw error when file does not exist, or cant be loaded
 
@@ -165,7 +176,13 @@ void Camera::loadVideoFile() {
     prerecordedVideo.play();
 
     currentVideosource = VideoSources::VIDEOSOURCE_VIDEOFILE;
-    ofLogNotice("Camera::loadVideoFile()") << "Camera::loadVideoFile Video file loaded";
+    ofLogNotice(__FUNCTION__) << "Video file loaded";
+
+    // copy the the associated precaptured background into the right folder
+    ofFile::removeFile(BG_REFERENCE_FILENAME);
+    ofFile::copyFromTo("video_mocks\\" + BG_REFERENCE_FILENAME, BG_REFERENCE_FILENAME);
+    restoreBackgroundReference(backgroundReference);
+    ofLogNotice(__FUNCTION__) << "Load precaptured background reference from video file";
 }
 
 /// <summary>
@@ -188,6 +205,7 @@ void Camera::setupOrbbecCamera() {
     orbbecSettings.depthFrameSize.requestWidth = orbbecRequestedWidth;
     orbbecSettings.rotation = OB_ROTATE_DEGREE_90;
     orbbecCam.open(orbbecSettings);
+
     currentVideosource = VideoSources::VIDEOSOURCE_ORBBEC;
 }
 
@@ -215,10 +233,11 @@ void Camera::stopCurrentSource() {
         ofLogNotice("Camera::stopCurrentSource()") << "Closing the orbbec camera";
         orbbecCam.close();
     }
-    else if (currentVideosource == VideoSources::VIDEOSOURCE_VIDEOFILE) {
+    if (currentVideosource == VideoSources::VIDEOSOURCE_VIDEOFILE) {
         ofLogNotice("Camera::stopCurrentSource()") << "Stopping the video file playback";
         prerecordedVideo.stop();
     }
+    currentVideosource = VideoSources::VIDEOSOURCE_NONE;
     // webcam.stop
 }
 
@@ -280,15 +299,6 @@ void Camera::draw() {
 void Camera::update() {
 
     // acquire frame
-    if (currentVideosource == VideoSources::VIDEOSOURCE_VIDEOFILE) {
-        prerecordedVideo.update();
-
-        if (prerecordedVideo.isFrameNew()) {
-            colorFrame.setFromPixels(prerecordedVideo.getPixels());
-            source = colorFrame;
-        }
-    }
-
     if (currentVideosource == VideoSources::VIDEOSOURCE_ORBBEC) {
         orbbecCam.update();
 
@@ -296,6 +306,20 @@ void Camera::update() {
             source.setFromPixels(orbbecCam.getDepthPixels());
         }
     }
+    else if (currentVideosource == VideoSources::VIDEOSOURCE_VIDEOFILE) {
+        prerecordedVideo.update();
+
+        if (prerecordedVideo.isFrameNew()) {
+            colorFrame.setFromPixels(prerecordedVideo.getPixels());
+            source = colorFrame;
+        }
+    }
+    else {
+        // no source, no update
+        return;
+    }
+
+    parameters->previewSource.setFromPixels(source.getPixels());
 
     // to-do: make backgroundref an object with state?
     if (isTakingBackgroundReference) {
@@ -306,10 +330,10 @@ void Camera::update() {
     // all the processing from source to extract the final segment
     processCameraFrame(source, backgroundReference);
 
-
     // update the preview images on the shared parameters data structure for the GUI
-    parameters->previewSource.setFromPixels(source.getPixels());
     convertToTransparent(segment, parameters->previewSegment); // to-do: should be called only when accessed 
+
+    saveDebugImage(segment, "segment", "final");
     // parameters->previewBackground.setFromPixels(backgroundReference.getPixels()); // this does not need to run every update, so its placed when updating backgroundReference data
 }
 
@@ -364,9 +388,11 @@ void Camera::processCameraFrame(ofxCvGrayscaleImage &frame, ofxCvGrayscaleImage 
     // ---------
     // remove the background from the frame (save the output in maskImage object)
     if (backgroundReferenceTaken) {
+        if (backgroundNewFrame.width != processedImage.width) return;
+
         cvAbsDiff(processedImage.getCvImage(), backgroundNewFrame.getCvImage(), segment.getCvImage()); // this works great for a single background frame of reference!
 
-        saveDebugImage(processedImage, "processedImage", "removed background absdiff");
+        saveDebugImage(segment, "segment", "removed background absdiff");
     }
     else {
         segment = processedImage;
@@ -421,6 +447,8 @@ void Camera::processCameraFrame(ofxCvGrayscaleImage &frame, ofxCvGrayscaleImage 
     if (parameters->showPolygons) {
         getContourPolygonsFromImage(processedImage, &polygons);
     }
+
+    saveDebugImage(processedImage, "processedImage", "pre-gpuBlur");
 
     // add gaussian blur to the silouetes
     // (this step was originaly performed by the simulation on the sorounds of each particle, its here now to test if the performance is better)
@@ -582,7 +610,7 @@ void Camera::startBackgroundReferenceSampling() {
 }
 
 void Camera::startBackgroundReferenceSampling(int samples) {
-    ofLogNotice("Camera::startBackgroundReferenceSampling()") << "Starting background";
+    ofLogNotice(__FUNCTION__) << "Starting background sampling for futher substraction";
     isTakingBackgroundReference = true;
     backgroundReferenceTaken = false;
     clearBackgroundReference();
@@ -590,10 +618,17 @@ void Camera::startBackgroundReferenceSampling(int samples) {
     backgroundReferenceLeftFrames = samples;
 }
 
+/// <summary>
+/// Clear the background reference image
+/// will remove the previous bg reference file
+/// wil set the Taken flag to false
+/// </summary>
 void Camera::clearBackgroundReference() {
-    ofLogNotice("Camera::clearBackgroundReference()") << "Clearing background";
+    ofLogNotice("Camera::clearBackgroundReference()") << "Cleaning background";
     backgroundReference.set(0);
     parameters->previewBackground.clear();
+	ofFile::removeFile(BG_REFERENCE_FILENAME);
+	backgroundReferenceTaken = false;
 }
 
 
@@ -612,20 +647,27 @@ void Camera::saveBackgroundReference(ofxCvGrayscaleImage image) {
 
 
 /// <summary>
-/// Reloads a previous reference from the disk
+/// Reloads a previous background reference from the disk
 /// </summary>
 /// <param name="imageObject"></param>
 /// <returns>True if loads the reference successfully</returns>
 bool Camera::restoreBackgroundReference(ofxCvGrayscaleImage & outputImage) {
-    ofLogNotice("Camera::restoreBackgroundReference") << "Attempting to load a background reference at data/" + BG_REFERENCE_FILENAME;
+    ofLogNotice(__FUNCTION__) << "Attempting to load a background reference at data/" + BG_REFERENCE_FILENAME;
+    
     ofPixels pixels;
     bool loaded = ofLoadImage(pixels, BG_REFERENCE_FILENAME);
+    
     if (loaded) {
-        // to-do: validate bg ref and frame have the same size resolution
+		// validate if the bg ref and the camera frame have the same size to continue, otherwise delete the bg ref for sanity
+		if (pixels.getWidth() != IMG_WIDTH || pixels.getHeight() != IMG_HEIGHT) {
+			ofLogError("Camera::restoreBackgroundReference") << "The background reference image has a different resolution from the current frame and will be deleted";
+			ofFile::removeFile(BG_REFERENCE_FILENAME);
+			return false;
+		}
         outputImage.allocate(pixels.getWidth(), pixels.getHeight());
         outputImage.setFromPixels(pixels);
         backgroundReferenceTaken = true;
-        parameters->previewBackground.setFromPixels(backgroundReference.getPixels()); // updates the gui preview // not perfect code, since this function should be agnostic and saving value to a pointer, but this param access is used directly
+        parameters->previewBackground.setFromPixels(backgroundReference.getPixels()); // updates the gui preview // not perfect code, since this function should be agnostic and saving value to a pointer, but using a param is convenient and params are already glueing the modules
         ofLogNotice("Camera::restoreBackgroundReference") << "Load successfull";
     }
     else {
@@ -671,12 +713,17 @@ void convertToTransparent(ofxCvGrayscaleImage &grayImage, ofImage &rgbaImage) {
 /// <param name="name">object name id (background, camera, cleared..)</param>
 /// <param name="step">additional id, i.e. sequence step</param>
 void Camera::saveDebugImage(ofxCvGrayscaleImage img, string name, string step) {
-#ifdef DEBUG_IMAGES
     if (parameters->saveDebugImages) {
-        const string& filename = ofGetTimestampString() + "_" + name + "_" + step + ".png";
+        const string& filename = "raw_recording\\" + ofGetTimestampString() + "_" + name + "_" + step + ".png";
         ofSaveImage(img.getPixels(), filename);
     }
-#endif
+}
+
+void Camera::saveDebugImage(ofPixels img, string name, string step) {
+    if (parameters->saveDebugImages) {
+        const string& filename = "raw_recording\\" + ofGetTimestampString() + "_" + name + "_" + step + ".png";
+        ofSaveImage(img, filename);
+    }
 }
 
 void Camera::recordTestingFrames(ofxCvGrayscaleImage img) {

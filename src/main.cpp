@@ -20,8 +20,8 @@ int main()
 
 
     // gui window
-    settings.setSize(34*30, 33*30);
-    settings.setPosition(glm::vec2(0,50));
+    settings.setSize(34*30, 34*30);
+    settings.setPosition(glm::vec2(0,40));
     settings.resizable = true;
     auto mainWindow = ofCreateWindow(settings);
     shared_ptr<ofApp> mainApp(new ofApp);

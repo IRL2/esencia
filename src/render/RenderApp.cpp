@@ -167,14 +167,21 @@ void RenderApp::keyReleased(ofKeyEventArgs& e)
     int key = e.keycode;
     switch (key)
     {
-    case 'F':
-    {
-        ofToggleFullscreen();
-        fbo.allocate(ofGetWidth(), ofGetHeight());
-        fboS.allocate(ofGetWidth(), ofGetHeight());
-        break;
-    }
-    default: break;
+        case 'F':
+        {
+            ofToggleFullscreen();
+            fbo.allocate(ofGetWidth(), ofGetHeight());
+            fboS.allocate(ofGetWidth(), ofGetHeight());
+            break;
+        }
+
+        case 'S':
+        {
+            ofSaveFrame();
+            break;
+        }
+
+        default: break;
     }
 }
 
@@ -183,12 +190,17 @@ void RenderApp::mouseMoved(int x, int y) {
 
 }
 
-//--------------------------------------------------------------
+/// <summary>
+/// on window resized event
+/// updates the window size render parameter (simulator is listening to this from her side)
+/// </summary>
+/// <param name="_width"></param>
+/// <param name="_height"></param>
 void RenderApp::windowResized(int _width, int _height) {
     ofLogNotice("RenderApp::windowResized()") << "window resized to: " << _width << "," << _height;
 
-    fbo.allocate(_width, _height);
-    fboS.allocate(_width, _height);
+    fbo.allocate(_width, _height, GL_RGBA);
+    fboS.allocate(_width, _height, GL_RGBA);
 
     glm::vec2 newSize = glm::vec2(_width, _height);
     parameters->windowSize.set(glm::vec2(_width, _height));

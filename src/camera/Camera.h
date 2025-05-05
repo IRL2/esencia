@@ -9,10 +9,10 @@
 class Camera
 {
     enum class VideoSources : int {
-        VIDEOSOURCE_ORBBEC,
-        VIDEOSOURCE_VIDEOFILE,
-        VIDEOSOURCE_WEBCAM,
-        VIDEOSOURCE_NONE
+        VIDEOSOURCE_ORBBEC = 1,
+        VIDEOSOURCE_VIDEOFILE = 2,
+        VIDEOSOURCE_WEBCAM = 3,
+        VIDEOSOURCE_NONE = 0
     };
 
     public:
@@ -34,6 +34,7 @@ class Camera
         void getContourPolygonsFromImage(ofxCvGrayscaleImage image, vector<ofPolyline>* output);
 
         void saveDebugImage(ofxCvGrayscaleImage img, string name, string step);
+        void saveDebugImage(ofPixels img, string name, string step);
         void recordTestingFrames(ofxCvGrayscaleImage frame);
         uint64 recordTestingFramesCounter = 0;
         void saveMeshFrame();

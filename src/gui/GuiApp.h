@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "ofxGuiExtended.h"
 #include "ofxOpenCv.h"
+#include "ofxEasing.h"
 
 #include "ofxPresetsParametersBase.h"
 #include "EsenciaParameters.h"
@@ -11,7 +12,7 @@
 #include "panels/SystemstatsPanel.h"
 #include "panels/SimulationPanel.h"
 #include "panels/RenderPanel.h"
-#include "panels/VideoOriginPanel.h"
+#include "panels/VideoSourcePanel.h"
 #include "panels/VideoProcessingPanel.h"
 #include "panels/PresetsPanel.h"
 #include "panels/SequencePanel.h"
@@ -57,7 +58,7 @@ private:
         
     VideoProcessingPanel videoProcessingPanel;
         
-    VideoOriginPanel videoOriginPanel;
+    VideoSourcePanel videoOriginPanel;
         
     RenderPanel renderPanel;
 
