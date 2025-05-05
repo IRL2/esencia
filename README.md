@@ -48,7 +48,8 @@ Currently working on the [Orbbec Femto Bolt](https://www.orbbec.com/products/tof
 - For Linux Visual Studio Code (min 1.80) open `esencia.code-workspace`
 - For macOS Xcode (14.1 or newer) open `esencia.xcode-project`
 - Or just run `make` from the terminal
-**Release mode gives better performance.**
+
+**Select Release for the best performance.**
 
 3. Save a background reference image (for the background subtraction)
  

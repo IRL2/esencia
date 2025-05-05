@@ -2530,5 +2530,11 @@
     <None Include="bin\data\shaders\shaderBlur.vert">
       <Filter>src\render\shaders</Filter>
     </None>
+    <None Include="bin\data\shaders\particle.frag">
+      <Filter>src\render\shaders</Filter>
+    </None>
+    <None Include="bin\data\shaders\particle.vert">
+      <Filter>src\render\shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
