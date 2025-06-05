@@ -83,6 +83,7 @@ void RenderApp::updateParticleBuffers() {
 //--------------------------------------------------------------
 void RenderApp::draw()
 {
+    
     ofSetCircleResolution(10);
     ofBackground(0);
 
@@ -148,6 +149,7 @@ void RenderApp::renderParticlesGPU() {
     glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
     glEnable(GL_POINT_SPRITE);
     glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
+
 
     particleVbo.draw(GL_POINTS, 0, particlePositions.size());
 
