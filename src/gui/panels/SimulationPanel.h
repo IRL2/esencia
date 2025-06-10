@@ -17,8 +17,8 @@ class SimulationPanel : public EsenciaPanelBase {
 	const float THERMOSTAT_MAX  = 1.0;
 
 	const float DEPTH_INIT = -80000.0;
-	const float DEPTH_MIN = -100000.0;
-	const float DEPTH_MAX = 100000.0;
+	const float DEPTH_MIN = -130000.0;
+	const float DEPTH_MAX = 130000.0;
 
 	const float SLIDERS_WIDTH = 10;
 	const float SLIDERS_HEIGHT = 70;

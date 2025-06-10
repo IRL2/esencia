@@ -15,6 +15,8 @@ class SequencePanel : public EsenciaPanelBase {
 	const float DEFAULT_PRESET_DURATION_MAX = 300.0;
 	const float DEFAULT_PRESET_DURATION_MIN = 10.0;
 
+	const std::string DEFAULT_SEQUENCE = "?";
+
 	ofxPresets *presetManager = nullptr;
 	PresetsParameters*presetParams;
 
@@ -30,7 +32,7 @@ public:
 		presetParams = params;
 		presetManager = &presetMan;
 
-		panel->add<ofxGuiTextField>(presetParams->sequence.set("1,2,1"));
+		panel->add<ofxGuiTextField>(presetParams->sequence.set(DEFAULT_SEQUENCE));
 
 		playButton = panel->add<ofxGuiButton>(isPlaying.set("play", false),
 			ofJson( {{"type", "fullsize"}, {"text-align","center"} }));

@@ -63,6 +63,17 @@ public:
         //cameraBackgroundPanel->setWidth(w * 30);
         cameraBackgroundPanel->minimize();
 
+
+
+#ifdef DEBUG_IMAGES
+        cameraGroup.add(ofParameter<string>().set("DEBUG"));
+        camera.add(cameraParameters.saveDebugImages.set("save debug images", false));
+#endif
+#ifdef RECORD_TESTING_VIDEO
+        camera.add(cameraParameters.recordTestingVideo.set("record testing video", false));
+#endif
+
+
         configVisuals(PANEL_RECT, BG_COLOR);
     }
 
