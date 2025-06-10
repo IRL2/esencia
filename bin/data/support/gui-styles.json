@@ -2,7 +2,12 @@
   "default": {
     "base": {
       "border-radius": 4,
-      "text-color": "#ffffef"
+      "border-color": "rgba(44,44,44,200)",
+      "border-width": 0.1,
+      "fill-color": "rgba(200,200,200,150)",
+      "border-width": 1,
+      "text-color": "#ffffff",
+      "font-family": "support/RedHatMono-Regular.ttf"
     },
 
     "toggle": {
