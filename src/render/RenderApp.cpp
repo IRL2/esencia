@@ -101,14 +101,14 @@ void RenderApp::draw()
     ofBackground(0);
 
     fbo.begin();
-    // solid background or trail
-    if (parameters->useFaketrails) {
-        ofSetColor(0, 0, 0, (int)((1 - parameters->fakeTrialsVisibility) * 255));
-        ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
-    }
-    else {
+    //// solid background or trail
+    //if (parameters->useFaketrails) {
+    //    ofSetColor(0, 0, 0, (int)((1 - parameters->fakeTrialsVisibility) * 255));
+    //    ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
+    //}
+    //else {
         ofBackground(0);
-    }
+    //}
 
     // video
     if (parameters->showVideoPreview) {
@@ -125,9 +125,11 @@ void RenderApp::draw()
     ofSetColor(255);
     fbo.draw(0, 0);
 
-    // Draw the trail FBO to the screen
+    // Draw the trail FBO to the screen using additive blending to avoid black trail
+    ofEnableBlendMode(OF_BLENDMODE_ADD);
     ofSetColor(255);
     trailFbo.draw(0, 0);
+    ofEnableBlendMode(OF_BLENDMODE_ALPHA); // Reset blend mode
 }
 
 //--------------------------------------------------------------
@@ -160,39 +162,42 @@ void RenderApp::renderParticlesGPU() {
     particleShader.end();
     particleTexture.unbind();
 
-    // Fade the trail FBO to make trails disappear gradually
-    // Use fakeTrialsVisibility to control trail length - higher values = longer trails
-    float fadeAmount = (1.0f - parameters->fakeTrialsVisibility) * 50.0f; // Scale the fade amount
-    trailFbo.begin();
-    ofEnableBlendMode(OF_BLENDMODE_ALPHA);
-    ofSetColor(0, 0, 0, (int)fadeAmount); // Use calculated fade amount
-    ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
-    trailFbo.end();
+    // Only do trail FBO and shader if useFaketrails is enabled
+    if (parameters->useFaketrails) {
+        // Fade the trail FBO to make trails disappear gradually
+        // Use fakeTrialsVisibility to control trail length - higher values = longer trails
+        float fadeAmount = (1.0f - parameters->fakeTrialsVisibility) * 50.0f; // Scale the fade amount
+        trailFbo.begin();
+        ofEnableBlendMode(OF_BLENDMODE_ALPHA);
+        ofSetColor(0, 0, 0, (int)fadeAmount); // Use calculated fade amount
+        ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
+        trailFbo.end();
 
-    // Render particle trails
-    trailFbo.begin();
-    ofEnableBlendMode(OF_BLENDMODE_ADD);
+        // Render particle trails
+        trailFbo.begin();
+        ofEnableBlendMode(OF_BLENDMODE_ADD);
 
-    // Enable point sprites for trail rendering
-    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
-    glEnable(GL_POINT_SPRITE);
-    glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
+        // Enable point sprites for trail rendering
+        glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+        glEnable(GL_POINT_SPRITE);
+        glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
 
-    particleTexture.bind(); // Bind the particle texture, not trail texture
-    trailShader.begin();
-    trailShader.setUniformTexture("particleTexture", particleTexture, 0);
-    trailShader.setUniform4f("color", parameters->color.get().r / 255.0f, parameters->color.get().g / 255.0f, parameters->color.get().b / 255.0f, parameters->color.get().a / 255.0f);
-    trailShader.setUniform1f("fadeFactor", 1.0f); // Set to full opacity for trails
+        particleTexture.bind(); // Bind the particle texture, not trail texture
+        trailShader.begin();
+        trailShader.setUniformTexture("particleTexture", particleTexture, 0);
+        trailShader.setUniform4f("color", parameters->color.get().r / 255.0f, parameters->color.get().g / 255.0f, parameters->color.get().b / 255.0f, parameters->color.get().a / 255.0f);
+        trailShader.setUniform1f("fadeFactor", 1.0f); // Set to full opacity for trails
 
-    particleVbo.draw(GL_POINTS, 0, particlePositions.size());
+        particleVbo.draw(GL_POINTS, 0, particlePositions.size());
 
-    trailShader.end();
-    particleTexture.unbind();
+        trailShader.end();
+        particleTexture.unbind();
 
-    glDisable(GL_POINT_SPRITE);
-    glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
+        glDisable(GL_POINT_SPRITE);
+        glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
 
-    trailFbo.end();
+        trailFbo.end();
+    }
 
     // reset blend mode
     ofEnableBlendMode(OF_BLENDMODE_ALPHA);

@@ -36,11 +36,9 @@ void main() {
     
     // Blend core particle with glow
     vec3 finalColor = coreColor.rgb + glowColor;
-    float finalAlpha = max(coreColor.a, totalGlow * 0.8);
+    // Apply the input alpha to the final result - this was the missing piece!
+    float finalAlpha = max(coreColor.a, totalGlow * 0.8) * color.a;
     
-    // Add subtle pulsing effect
-    float pulse = 1.0 + sin(gl_FragCoord.x * 0.01 + gl_FragCoord.y * 0.01) * 0.1;
-    finalColor *= pulse;
     
     outputColor = vec4(finalColor, finalAlpha);
 }
