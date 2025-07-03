@@ -2536,5 +2536,19 @@
     <None Include="bin\data\shaders\particle.vert">
       <Filter>src\render\shaders</Filter>
     </None>
+    <None Include="bin\data\shaders\trail.frag">
+      <Filter>src\render\shaders</Filter>
+    </None>
+    <None Include="bin\data\shaders\trail.vert">
+      <Filter>src\render\shaders</Filter>
+    </None>
+    <None Include="bin\data\shaders\warp.vert" />
+    <None Include="bin\data\shaders\warp.frag" />
+    <None Include="bin\data\shaders\feedback.frag" />
+    <None Include="bin\data\shaders\feedback.vert" />
+    <None Include="bin\data\shaders\improved_trail.vert" />
+    <None Include="bin\data\shaders\improved_trail.frag" />
+    <None Include="bin\data\shaders\enhanced_particle.vert" />
+    <None Include="bin\data\shaders\enhanced_particle.frag" />
   </ItemGroup>
 </Project>

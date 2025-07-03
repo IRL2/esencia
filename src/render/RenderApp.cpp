@@ -7,6 +7,8 @@ ofRectangle videoRectangle;
 
 ofVbo particleVbo;
 ofShader particleShader;
+ofShader trailShader;
+ofFbo trailFbo;
 std::vector<glm::vec3> particlePositions;
 std::vector<float> particleSizes;
 
@@ -19,8 +21,6 @@ void RenderApp::setup()
     ofEnableAlphaBlending();
 
     windowResized(ofGetWidth(), ofGetHeight());
-
-    shader.load("shaders\\shaderBlur");
 
 	// Load the particle texture    
 	bool textureLoaded = particleTexture.load("images/particle.png");
@@ -38,6 +38,20 @@ void RenderApp::setup()
 	else {
 		ofLogNotice("RenderApp::setup()") << "Particle shaders loaded successfully!";
 	}
+
+    // Load the trail shader
+    bool trailShaderLoaded = trailShader.load("shaders/trail.vert", "shaders/trail.frag");
+    if (!trailShaderLoaded) {
+        ofLogError("RenderApp::setup()") << "Failed to load trail shaders!";
+    } else {
+        ofLogNotice("RenderApp::setup()") << "Trail shaders loaded successfully!";
+    }
+
+    // Allocate the trail FBO
+    trailFbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA32F_ARB);
+    trailFbo.begin();
+    ofClear(0, 0, 0, 0);
+    trailFbo.end();
 
     // allocate memory for particle data
     particlePositions.reserve(10000);
@@ -58,11 +72,11 @@ void RenderApp::update()
         simulator->updateVideoRect(videoRectangle);
     }
 
-    updateParticleBuffers();
+    updateParticleSystem();
 }
 
 //--------------------------------------------------------------
-void RenderApp::updateParticleBuffers() {
+void RenderApp::updateParticleSystem() {
     if (particles->empty()) return;
 
     particlePositions.clear();
@@ -83,7 +97,6 @@ void RenderApp::updateParticleBuffers() {
 //--------------------------------------------------------------
 void RenderApp::draw()
 {
-    
     ofSetCircleResolution(10);
     ofBackground(0);
 
@@ -109,23 +122,12 @@ void RenderApp::draw()
 
     fbo.end();
 
-    // shader effects
     ofSetColor(255);
-    if (parameters->useShaders) {
-        fboS.begin();
-        shader.begin();
-        shader.setUniform1f("blurAmnt", 3);
-        shader.setUniform1f("texwidth", ofGetWidth());
-        shader.setUniform1f("texheight", ofGetHeight());
-        fbo.draw(0, 0);
-        shader.end();
-        fboS.end();
+    fbo.draw(0, 0);
 
-        fboS.draw(0, 0);
-    }
-    else {
-        fbo.draw(0, 0);
-    }
+    // Draw the trail FBO to the screen
+    ofSetColor(255);
+    trailFbo.draw(0, 0);
 }
 
 //--------------------------------------------------------------
@@ -150,7 +152,6 @@ void RenderApp::renderParticlesGPU() {
     glEnable(GL_POINT_SPRITE);
     glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
 
-
     particleVbo.draw(GL_POINTS, 0, particlePositions.size());
 
     glDisable(GL_POINT_SPRITE);
@@ -158,6 +159,40 @@ void RenderApp::renderParticlesGPU() {
 
     particleShader.end();
     particleTexture.unbind();
+
+    // Fade the trail FBO to make trails disappear gradually
+    // Use fakeTrialsVisibility to control trail length - higher values = longer trails
+    float fadeAmount = (1.0f - parameters->fakeTrialsVisibility) * 50.0f; // Scale the fade amount
+    trailFbo.begin();
+    ofEnableBlendMode(OF_BLENDMODE_ALPHA);
+    ofSetColor(0, 0, 0, (int)fadeAmount); // Use calculated fade amount
+    ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
+    trailFbo.end();
+
+    // Render particle trails
+    trailFbo.begin();
+    ofEnableBlendMode(OF_BLENDMODE_ADD);
+
+    // Enable point sprites for trail rendering
+    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+    glEnable(GL_POINT_SPRITE);
+    glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
+
+    particleTexture.bind(); // Bind the particle texture, not trail texture
+    trailShader.begin();
+    trailShader.setUniformTexture("particleTexture", particleTexture, 0);
+    trailShader.setUniform4f("color", parameters->color.get().r / 255.0f, parameters->color.get().g / 255.0f, parameters->color.get().b / 255.0f, parameters->color.get().a / 255.0f);
+    trailShader.setUniform1f("fadeFactor", 1.0f); // Set to full opacity for trails
+
+    particleVbo.draw(GL_POINTS, 0, particlePositions.size());
+
+    trailShader.end();
+    particleTexture.unbind();
+
+    glDisable(GL_POINT_SPRITE);
+    glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
+
+    trailFbo.end();
 
     // reset blend mode
     ofEnableBlendMode(OF_BLENDMODE_ALPHA);
@@ -192,6 +227,25 @@ void RenderApp::windowResized(int _width, int _height) {
     fbo.allocate(_width, _height);
     fboS.allocate(_width, _height);
 
+    // Reallocate the trail FBO to match the new window size
+    trailFbo.allocate(_width, _height, GL_RGBA32F_ARB);
+    trailFbo.begin();
+    ofClear(0, 0, 0, 0);
+    trailFbo.end();
+
     glm::vec2 newSize = glm::vec2(_width, _height);
     parameters->windowSize.set(glm::vec2(_width, _height));
+}
+
+//--------------------------------------------------------------
+void RenderApp::setupParticleBuffers() {
+    // Initialize particle buffers if needed
+    particlePositions.reserve(10000);
+    particleSizes.reserve(10000);
+}
+
+//--------------------------------------------------------------
+void RenderApp::renderTrailsGPU() {
+    // Simple GPU trail rendering - can be expanded if needed
+    // Currently trails are rendered within renderParticlesGPU()
 }

@@ -5,6 +5,7 @@
 #include "../gui/GuiApp.h"
 #include "ofEvents.h"
 #include "particles.h"
+#include <deque>
 
 class RenderApp : public ofBaseApp
 {
@@ -17,11 +18,12 @@ class RenderApp : public ofBaseApp
         void keyReleased(ofKeyEventArgs& e);
         void mouseMoved(int x, int y );
         void windowResized(int w, int h);
-        void updateParticleBuffers();
-        void renderParticlesGPU();
-
         
-
+        // Basic particle rendering methods
+        void updateParticleSystem();
+        void renderParticlesGPU();
+        void renderTrailsGPU();
+        void setupParticleBuffers();
 
         // PARAMETERS
         // (parameters points to the mainApp's GUI. linked in main.cpp)
@@ -31,14 +33,17 @@ class RenderApp : public ofBaseApp
         // This points directly to the simulator particles (through mainapp->simulator.particles in main.cpp)
         vector<Particle> * particles;
 
-
         Simulator* simulator; 
     
         ofEvent<glm::vec2> viewportResizeEvent; // an event to send window size updates to the simulation
 
     private:
+        // Basic particle rendering system
         ofVbo particleVbo;
         ofShader particleShader;
+        ofShader trailShader;
+        
+        // Basic data structures
         std::vector<glm::vec3> particlePositions;
         std::vector<float> particleSizes;
 
@@ -47,8 +52,8 @@ class RenderApp : public ofBaseApp
 
         ofFbo fbo;
         ofFbo fboS;
+        ofFbo trailFbo; 
 
         ofShader shader;
         ofShader shaderBloom;
-        
 };

@@ -122,6 +122,15 @@ struct RenderParameters : public ofxPresetsParametersBase {
     ofParameter<float> fakeTrialsVisibility = 0.0;
     ofParameter<float> videopreviewVisibility = 0.0;
     ofParameter<ofColor> videoColor;
+    
+    // Enhanced rendering parameters
+    ofParameter<bool> useEnhancedShaders = true;
+    ofParameter<bool> useImprovedTrails = true;
+    ofParameter<float> trailDecayRate = 1.0;
+    ofParameter<float> motionBlurStrength = 0.5;
+    ofParameter<bool> useMotionBlur = true;
+    ofParameter<float> particleGlow = 1.0;
+    ofParameter<bool> useColorVariation = true;
 
     RenderParameters() {
         groupName = "render";
@@ -135,6 +144,15 @@ struct RenderParameters : public ofxPresetsParametersBase {
 		parameterMap["fakeTrialsVisibility"] = &fakeTrialsVisibility;
 		parameterMap["videopreviewVisibility"] = &videopreviewVisibility;
 		parameterMap["videoColor"] = &videoColor;
+		
+		// Enhanced parameters
+		parameterMap["useEnhancedShaders"] = &useEnhancedShaders;
+		parameterMap["useImprovedTrails"] = &useImprovedTrails;
+		parameterMap["trailDecayRate"] = &trailDecayRate;
+		parameterMap["motionBlurStrength"] = &motionBlurStrength;
+		parameterMap["useMotionBlur"] = &useMotionBlur;
+		parameterMap["particleGlow"] = &particleGlow;
+		parameterMap["useColorVariation"] = &useColorVariation;
 	}
 };
 
@@ -168,6 +186,9 @@ struct SimulationParameters : public ofxPresetsParametersBase {
 		//parameterMap["lowFps"] = &lowFps;
 	}
 };
+
+
+
 
 
 

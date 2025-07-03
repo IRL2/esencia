@@ -15,9 +15,9 @@ class RenderPanel : public EsenciaPanelBase {
 
     const bool VIDEO_PREVIEW = { false };
 
-    const float TRAILS_VISIBILITY_INITIAL = 0.95; // 0.95 // 0.95
-    const float TRAILS_VISIBILITY_MIN = 0.7; // 1 // 0.0
-    const float TRAILS_VISIBILITY_MAX = 1.0; // 0.7 // 0.3
+    const float TRAILS_VISIBILITY_INITIAL = 0.7; // 0.95 // 0.95
+    const float TRAILS_VISIBILITY_MIN = 0.0; // 1 // 0.0
+    const float TRAILS_VISIBILITY_MAX = 0.7; // 0.7 // 0.3
 
     const ofColor VIDEO_COLOR = ofColor::white;
 
