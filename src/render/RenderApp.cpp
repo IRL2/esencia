@@ -8,7 +8,7 @@ ofRectangle videoRectangle;
 ofVbo particleVbo;
 ofShader particleShader;
 ofShader trailShader;
-ofShader videoShader;  // Add video shader
+ofShader videoShader;
 ofFbo trailFbo;
 std::vector<glm::vec3> particlePositions;
 std::vector<float> particleSizes;
