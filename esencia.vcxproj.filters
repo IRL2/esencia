@@ -2542,5 +2542,17 @@
     <None Include="bin\data\shaders\trail.vert">
       <Filter>src\render\shaders</Filter>
     </None>
+    <None Include="bin\data\shaders\video.frag">
+      <Filter>src\render\shaders</Filter>
+    </None>
+    <None Include="bin\data\shaders\video.vert">
+      <Filter>src\render\shaders</Filter>
+    </None>
+    <None Include="bin\data\shaders\distortion.frag">
+      <Filter>src\render\shaders</Filter>
+    </None>
+    <None Include="bin\data\shaders\distortion.vert">
+      <Filter>src\render\shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

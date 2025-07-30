@@ -8,6 +8,7 @@ ofRectangle videoRectangle;
 ofVbo particleVbo;
 ofShader particleShader;
 ofShader trailShader;
+ofShader videoShader;  // Add video shader
 ofFbo trailFbo;
 std::vector<glm::vec3> particlePositions;
 std::vector<float> particleSizes;
@@ -22,29 +23,40 @@ void RenderApp::setup()
 
     windowResized(ofGetWidth(), ofGetHeight());
 
-	// Load the particle texture    
-	bool textureLoaded = particleTexture.load("images/particle.png");
-	if (!textureLoaded) {
-		ofLogError("RenderApp::setup()") << "Failed to load particle texture!";
-	}   else
-	{
-		ofLogNotice("RenderApp::setup()") << "Particle texture loaded successfully!";
-	}
+    // Load the particle texture    
+    bool textureLoaded = particleTexture.load("images/particle.png");
+    if (!textureLoaded) {
+        ofLogError("RenderApp::setup()") << "Failed to load particle texture!";
+    }
+    else
+    {
+        ofLogNotice("RenderApp::setup()") << "Particle texture loaded successfully!";
+    }
 
     bool shaderLoaded = particleShader.load("shaders/particle.vert", "shaders/particle.frag");
     if (!shaderLoaded) {
         ofLogError("RenderApp::setup()") << "Failed to load particle shaders!";
-	}
-	else {
-		ofLogNotice("RenderApp::setup()") << "Particle shaders loaded successfully!";
-	}
+    }
+    else {
+        ofLogNotice("RenderApp::setup()") << "Particle shaders loaded successfully!";
+    }
 
     // Load the trail shader
     bool trailShaderLoaded = trailShader.load("shaders/trail.vert", "shaders/trail.frag");
     if (!trailShaderLoaded) {
         ofLogError("RenderApp::setup()") << "Failed to load trail shaders!";
-    } else {
+    }
+    else {
         ofLogNotice("RenderApp::setup()") << "Trail shaders loaded successfully!";
+    }
+
+    // Load the video shader
+    bool videoShaderLoaded = videoShader.load("shaders/video.vert", "shaders/video.frag");
+    if (!videoShaderLoaded) {
+        ofLogError("RenderApp::setup()") << "Failed to load video shaders!";
+    }
+    else {
+        ofLogNotice("RenderApp::setup()") << "Video shaders loaded successfully!";
     }
 
     // Allocate the trail FBO
@@ -101,20 +113,11 @@ void RenderApp::draw()
     ofBackground(0);
 
     fbo.begin();
-    //// solid background or trail
-    //if (parameters->useFaketrails) {
-    //    ofSetColor(0, 0, 0, (int)((1 - parameters->fakeTrialsVisibility) * 255));
-    //    ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
-    //}
-    //else {
-        ofBackground(0);
-    //}
+    ofBackground(0);
 
-    // video
+    // video with shader
     if (parameters->showVideoPreview) {
-        ofEnableBlendMode(OF_BLENDMODE_ALPHA);
-        ofSetColor(parameters->videoColor, (int)(parameters->videopreviewVisibility * 255));
-        video.draw(videoRectangle);
+        renderVideoWithShader();
     }
 
     // draw particles
@@ -130,6 +133,35 @@ void RenderApp::draw()
     ofSetColor(255);
     trailFbo.draw(0, 0);
     ofEnableBlendMode(OF_BLENDMODE_ALPHA); // Reset blend mode
+}
+
+//--------------------------------------------------------------
+void RenderApp::renderVideoWithShader() {
+    ofEnableBlendMode(OF_BLENDMODE_ALPHA);
+
+    // Bind video texture and start shader
+    video.getTexture().bind(0);
+
+    videoShader.begin();
+
+    // Set color and alpha uniforms - existing parameter controls
+    videoShader.setUniform4f("videoColor",
+        parameters->videoColor.get().r / 255.0f,
+        parameters->videoColor.get().g / 255.0f,
+        parameters->videoColor.get().b / 255.0f,
+        parameters->videopreviewVisibility); //  existing alpha control
+
+    videoShader.setUniformTexture("tex0", video.getTexture(), 0);
+
+    videoShader.setUniform1f("time", ofGetElapsedTimef());
+    videoShader.setUniform2f("resolution", videoRectangle.width, videoRectangle.height);
+
+    // Draw the video rectangle with shader applied
+    video.draw(videoRectangle);
+
+    videoShader.end();
+    video.getTexture().unbind(1);
+    video.getTexture().unbind(0);
 }
 
 //--------------------------------------------------------------
@@ -166,7 +198,7 @@ void RenderApp::renderParticlesGPU() {
     if (parameters->useFaketrails) {
         // Fade the trail FBO to make trails disappear gradually
         // Use fakeTrialsVisibility to control trail length - higher values = longer trails
-        float fadeAmount = (1.0f - parameters->fakeTrialsVisibility) * 50.0f; // Scale the fade amount
+        float fadeAmount = (1.0f - parameters->fakeTrialsVisibility) * 40.0f; // Scale the fade amount
         trailFbo.begin();
         ofEnableBlendMode(OF_BLENDMODE_ALPHA);
         ofSetColor(0, 0, 0, (int)fadeAmount); // Use calculated fade amount

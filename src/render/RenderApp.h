@@ -24,6 +24,8 @@ class RenderApp : public ofBaseApp
         void renderParticlesGPU();
         void renderTrailsGPU();
         void setupParticleBuffers();
+		void renderVideoWithShader();
+		void updateDistortionTexture();
 
         // PARAMETERS
         // (parameters points to the mainApp's GUI. linked in main.cpp)

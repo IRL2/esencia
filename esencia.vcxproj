@@ -836,6 +836,8 @@
     <None Include="bin\data\shaders\blur.vert" />
     <None Include="bin\data\shaders\blurHorizontal.frag" />
     <None Include="bin\data\shaders\blurVertical.frag" />
+    <None Include="bin\data\shaders\distortion.frag" />
+    <None Include="bin\data\shaders\distortion.vert" />
     <None Include="bin\data\shaders\particle.frag" />
     <None Include="bin\data\shaders\particle.vert" />
     <None Include="bin\data\shaders\particlesComputeShader.glsl" />
@@ -843,6 +845,8 @@
     <None Include="bin\data\shaders\shaderBlur.vert" />
     <None Include="bin\data\shaders\trail.frag" />
     <None Include="bin\data\shaders\trail.vert" />
+    <None Include="bin\data\shaders\video.frag" />
+    <None Include="bin\data\shaders\video.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ProjectExtensions>
