@@ -836,8 +836,8 @@
     <None Include="bin\data\shaders\blur.vert" />
     <None Include="bin\data\shaders\blurHorizontal.frag" />
     <None Include="bin\data\shaders\blurVertical.frag" />
-    <None Include="bin\data\shaders\distortion.frag" />
-    <None Include="bin\data\shaders\distortion.vert" />
+    <None Include="bin\data\shaders\feedback.frag" />
+    <None Include="bin\data\shaders\feedback.vert" />
     <None Include="bin\data\shaders\particle.frag" />
     <None Include="bin\data\shaders\particle.vert" />
     <None Include="bin\data\shaders\particlesComputeShader.glsl" />

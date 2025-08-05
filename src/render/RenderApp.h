@@ -25,7 +25,20 @@ class RenderApp : public ofBaseApp
         void renderTrailsGPU();
         void setupParticleBuffers();
 		void renderVideoWithShader();
-		void updateDistortionTexture();
+		//void updateDistortionTexture();
+
+        // New methods for feedback system
+        void setupFBOs();
+        void clearFBO(ofFbo& fbo);
+        void renderVideoPass();
+        void renderParticlesPass();
+        void renderCompositePass();
+        void updateFrameHistory();
+        void updateVideoFrameHistory();
+        void updateCompositeFrameHistory();
+        void updateTrails();
+        ofTexture& getPreviousFrame(int framesBack = 1);
+        ofTexture& getPreviousVideoFrame(int framesBack = 1);
 
         // PARAMETERS
         // (parameters points to the mainApp's GUI. linked in main.cpp)
@@ -55,6 +68,14 @@ class RenderApp : public ofBaseApp
         ofFbo fbo;
         ofFbo fboS;
         ofFbo trailFbo; 
+        // New FBO system for feedback
+        ofFbo videoFbo;           // Dedicated FBO for video rendering
+        ofFbo particlesFbo;       // Dedicated FBO for particles  
+        ofFbo compositeFbo;       // Final composite FBO
+
+        static const int MAX_FRAME_HISTORY = 4; // Store last 4 frames
+        std::vector<ofFbo> frameHistory;
+        int currentFrameIndex;
 
         ofShader shader;
         ofShader shaderBloom;

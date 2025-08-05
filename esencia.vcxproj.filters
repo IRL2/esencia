@@ -2548,10 +2548,10 @@
     <None Include="bin\data\shaders\video.vert">
       <Filter>src\render\shaders</Filter>
     </None>
-    <None Include="bin\data\shaders\distortion.frag">
+    <None Include="bin\data\shaders\feedback.frag">
       <Filter>src\render\shaders</Filter>
     </None>
-    <None Include="bin\data\shaders\distortion.vert">
+    <None Include="bin\data\shaders\feedback.vert">
       <Filter>src\render\shaders</Filter>
     </None>
   </ItemGroup>
