@@ -25,6 +25,8 @@ class RenderApp : public ofBaseApp
         void renderTrailsGPU();
         void setupParticleBuffers();
 		void renderVideoWithShader();
+		void renderVideoWithFeedback();     // NEW: Separated feedback rendering
+		void renderVideoStandard();        // NEW: Standard pass-through rendering
 		//void updateDistortionTexture();
 
         // New methods for feedback system

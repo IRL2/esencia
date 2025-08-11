@@ -123,6 +123,19 @@ struct RenderParameters : public ofxPresetsParametersBase {
     ofParameter<float> videopreviewVisibility = 0.0;
     ofParameter<ofColor> videoColor;
     
+    // FEEDBACK EFFECT CONTROL - ADD THIS
+    ofParameter<bool> useVideoFeedback = false; // NEW: Control for aura feedback effect
+    
+    // NEW: Warp effect parameters
+    ofParameter<bool> useWarpEffect = true;   // Switch between simple feedback and warp
+    ofParameter<float> warpVariance = 0.02f;
+    ofParameter<float> warpPropagation = 0.02f; 
+    ofParameter<float> warpPropagationPersistence = 0.95f;
+    ofParameter<float> warpSpreadX = 1.0f;
+    ofParameter<float> warpSpreadY = 1.0f;
+    ofParameter<float> warpDetail = 1.0f;
+    ofParameter<float> warpBrightPassThreshold = 0.0f;
+    
     // Enhanced rendering parameters
     ofParameter<bool> useEnhancedShaders = true;
     ofParameter<bool> useImprovedTrails = true;
@@ -144,6 +157,19 @@ struct RenderParameters : public ofxPresetsParametersBase {
 		parameterMap["fakeTrialsVisibility"] = &fakeTrialsVisibility;
 		parameterMap["videopreviewVisibility"] = &videopreviewVisibility;
 		parameterMap["videoColor"] = &videoColor;
+		
+		// FEEDBACK EFFECT CONTROL - ADD THIS TOO
+		parameterMap["useVideoFeedback"] = &useVideoFeedback; // NEW
+		
+		// NEW: Warp effect parameters
+		parameterMap["useWarpEffect"] = &useWarpEffect;
+		parameterMap["warpVariance"] = &warpVariance;
+		parameterMap["warpPropagation"] = &warpPropagation;
+		parameterMap["warpPropagationPersistence"] = &warpPropagationPersistence;
+		parameterMap["warpSpreadX"] = &warpSpreadX;
+		parameterMap["warpSpreadY"] = &warpSpreadY;
+		parameterMap["warpDetail"] = &warpDetail;
+		parameterMap["warpBrightPassThreshold"] = &warpBrightPassThreshold;
 		
 		// Enhanced parameters
 		parameterMap["useEnhancedShaders"] = &useEnhancedShaders;
@@ -186,6 +212,20 @@ struct SimulationParameters : public ofxPresetsParametersBase {
 		//parameterMap["lowFps"] = &lowFps;
 	}
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

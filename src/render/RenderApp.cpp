@@ -18,7 +18,13 @@ ofFbo compositeFbo;       // Final composite FBO
 ofFbo trailFbo;          // Existing trail FBO
 
 // Frame history system for feedback effects
-static const int MAX_FRAME_HISTORY = 4; // Store last 4 frames
+// NOTE: To completely remove feedback code, remove:
+// 1. videoFrameHistory vector and related code
+// 2. renderVideoWithFeedback() method and its call
+// 3. updateVideoFrameHistory() call (keep updateCompositeFrameHistory for other effects)
+// 4. useVideoFeedback parameter from EsenciaParameters.h and RenderPanel.h
+// 5. feedback.vert/frag shader files
+static const int MAX_FRAME_HISTORY = 10; // Store last 4 frames
 std::vector<ofFbo> frameHistory;
 std::vector<ofFbo> videoFrameHistory; // Separate history for video feedback
 int currentFrameIndex = 0;
@@ -176,7 +182,7 @@ void RenderApp::draw()
     ofSetCircleResolution(10);
     ofBackground(0);
 
-    // 1. Render video to dedicated FBO (using previous frame for feedback)
+    // 1. Render video to dedicated FBO (using previous frame for feedback if enabled)
     renderVideoPass();
 
     // 2. Update video frame history IMMEDIATELY after rendering current video
@@ -321,80 +327,92 @@ void RenderApp::renderVideoWithShader() {
     // Use disabled blending to preserve grayscale/blur values exactly as they are
     ofEnableBlendMode(OF_BLENDMODE_DISABLED);
 
-    // Check if we have feedback shader for feedback effect
-    if (feedbackShader.isLoaded()) {
-        // Use feedback effect: blend current video with previous video frame
-        
-        // Bind textures
-        video.getTexture().bind(0);
-        getPreviousVideoFrame(1).bind(1);  // Get previous video frame
-        
-        feedbackShader.begin();
-        
-        // Set uniforms for feedback shader
-        feedbackShader.setUniformTexture("currentFrame", video.getTexture(), 0);
-        feedbackShader.setUniformTexture("previousFrame", getPreviousVideoFrame(1), 1);
-        feedbackShader.setUniform1f("time", ofGetElapsedTimef());
-        feedbackShader.setUniform2f("resolution", videoRectangle.width, videoRectangle.height);
-        feedbackShader.setUniform1f("feedbackAmount", 0.9f); // Hardcoded feedback strength
-        
-        // Apply video color and alpha
-        feedbackShader.setUniform4f("videoColor",
-            parameters->videoColor.get().r / 255.0f,
-            parameters->videoColor.get().g / 255.0f,
-            parameters->videoColor.get().b / 255.0f,
-            parameters->videopreviewVisibility);
-
-
-        float auraExpansion = 100.0f; // pixels to expand in each direction
-        ofRectangle expandedRect = videoRectangle;
-        expandedRect.x -= auraExpansion;
-        expandedRect.y -= auraExpansion;
-        expandedRect.width += auraExpansion * 2;
-        expandedRect.height += auraExpansion * 2;
-        
-        ofSetColor(255, 255, 255, 255);
-        
-
-        video.draw(videoRectangle);
-        
-        // Also draw a faded version in the expanded area to seed the aura
-        ofSetColor(255, 255, 255, 30); // Very faint
-        ofEnableBlendMode(OF_BLENDMODE_ADD);
-        video.draw(expandedRect);
-        ofEnableBlendMode(OF_BLENDMODE_DISABLED);
-        ofSetColor(255, 255, 255, 255);
-
-        feedbackShader.end();
-        
-        // Unbind textures
-        getPreviousVideoFrame(1).unbind(1);
-        video.getTexture().unbind(0);
+    // SEPARATED FEEDBACK EFFECT - Check parameter control
+    if (parameters->useVideoFeedback && feedbackShader.isLoaded()) {
+        // === FEEDBACK RENDERING PATH ===
+        renderVideoWithFeedback();
     }
     else {
-        // Fallback to regular video shader (no feedback)
-        video.getTexture().bind(0);
-
-        videoShader.begin();
-
-        // Set color and alpha uniforms - existing parameter controls
-        videoShader.setUniform4f("videoColor",
-            parameters->videoColor.get().r / 255.0f,
-            parameters->videoColor.get().g / 255.0f,
-            parameters->videoColor.get().b / 255.0f,
-            parameters->videopreviewVisibility);
-
-        videoShader.setUniformTexture("tex0", video.getTexture(), 0);
-        videoShader.setUniform1f("time", ofGetElapsedTimef());
-        videoShader.setUniform2f("resolution", videoRectangle.width, videoRectangle.height);
-
-        // Draw the video rectangle with shader applied
-        ofSetColor(255, 255, 255, 255); // Ensure full white for proper texture rendering
-        video.draw(videoRectangle);
-
-        videoShader.end();
-        video.getTexture().unbind(0);
+        // === STANDARD RENDERING PATH (PASS-THROUGH) ===
+        renderVideoStandard();
     }
+}
+
+//--------------------------------------------------------------
+void RenderApp::renderVideoWithFeedback() {
+    // Feedback effect: blend current video with previous video frame
+    
+    // Bind textures
+    video.getTexture().bind(0);
+    getPreviousVideoFrame(1).bind(1);
+    
+    feedbackShader.begin();
+    
+    // Set uniforms for feedback shader
+    feedbackShader.setUniformTexture("currentFrame", video.getTexture(), 0);
+    feedbackShader.setUniformTexture("previousFrame", getPreviousVideoFrame(1), 1);
+    feedbackShader.setUniform1f("time", ofGetElapsedTimef());
+    feedbackShader.setUniform2f("resolution", ofGetWidth(), ofGetHeight());
+    feedbackShader.setUniform1f("feedbackAmount", 1.0f); // Hardcoded feedback strength
+    
+    // Pass video rectangle info to shader for proper coordinate mapping
+    feedbackShader.setUniform4f("videoRect", 
+        videoRectangle.x, videoRectangle.y, 
+        videoRectangle.width, videoRectangle.height);
+    
+    // Apply video color and alpha
+    feedbackShader.setUniform4f("videoColor",
+        parameters->videoColor.get().r / 255.0f,
+        parameters->videoColor.get().g / 255.0f,
+        parameters->videoColor.get().b / 255.0f,
+        parameters->videopreviewVisibility);
+
+    // NEW: Add warp parameters to the existing shader
+    feedbackShader.setUniform1i("useWarpEffect", parameters->useWarpEffect ? 1 : 0);
+    feedbackShader.setUniform1f("warpVariance", parameters->warpVariance);
+    feedbackShader.setUniform1f("warpPropagation", parameters->warpPropagation);
+    feedbackShader.setUniform1f("warpPropagationPersistence", parameters->warpPropagationPersistence);
+    feedbackShader.setUniform1f("warpSpreadX", parameters->warpSpreadX);
+    feedbackShader.setUniform1f("warpSpreadY", parameters->warpSpreadY);
+    feedbackShader.setUniform1f("warpDetail", parameters->warpDetail);
+    feedbackShader.setUniform1f("warpBrightPassThreshold", parameters->warpBrightPassThreshold);
+
+    // Draw video - GPU handles all warp effects now
+    ofSetColor(255, 255, 255, 255);
+    video.draw(videoRectangle);
+
+    feedbackShader.end();
+    
+    // Unbind textures
+    getPreviousVideoFrame(1).unbind(1);
+    video.getTexture().unbind(0);
+}
+
+//--------------------------------------------------------------
+void RenderApp::renderVideoStandard() {
+    // Standard video rendering without feedback (pass-through)
+    
+    video.getTexture().bind(0);
+
+    videoShader.begin();
+
+    // Set color and alpha uniforms - existing parameter controls
+    videoShader.setUniform4f("videoColor",
+        parameters->videoColor.get().r / 255.0f,
+        parameters->videoColor.get().g / 255.0f,
+        parameters->videoColor.get().b / 255.0f,
+        parameters->videopreviewVisibility);
+
+    videoShader.setUniformTexture("tex0", video.getTexture(), 0);
+    videoShader.setUniform1f("time", ofGetElapsedTimef());
+    videoShader.setUniform2f("resolution", videoRectangle.width, videoRectangle.height);
+
+    // Draw the video rectangle with standard shader
+    ofSetColor(255, 255, 255, 255);
+    video.draw(videoRectangle);
+
+    videoShader.end();
+    video.getTexture().unbind(0);
 }
 
 //--------------------------------------------------------------
