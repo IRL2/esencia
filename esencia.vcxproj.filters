@@ -2554,5 +2554,17 @@
     <None Include="bin\data\shaders\feedback.vert">
       <Filter>src\render\shaders</Filter>
     </None>
+    <None Include="bin\data\shaders\warp_apply.frag">
+      <Filter>src\render\shaders</Filter>
+    </None>
+    <None Include="bin\data\shaders\warp_apply.vert">
+      <Filter>src\render\shaders</Filter>
+    </None>
+    <None Include="bin\data\shaders\warp_update.frag">
+      <Filter>src\render\shaders</Filter>
+    </None>
+    <None Include="bin\data\shaders\warp_update.vert">
+      <Filter>src\render\shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

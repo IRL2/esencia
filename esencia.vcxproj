@@ -847,6 +847,10 @@
     <None Include="bin\data\shaders\trail.vert" />
     <None Include="bin\data\shaders\video.frag" />
     <None Include="bin\data\shaders\video.vert" />
+    <None Include="bin\data\shaders\warp_apply.frag" />
+    <None Include="bin\data\shaders\warp_apply.vert" />
+    <None Include="bin\data\shaders\warp_update.frag" />
+    <None Include="bin\data\shaders\warp_update.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ProjectExtensions>

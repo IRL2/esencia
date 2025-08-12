@@ -19,17 +19,16 @@ class RenderApp : public ofBaseApp
         void mouseMoved(int x, int y );
         void windowResized(int w, int h);
         
-        // Basic particle rendering methods
+        //  rendering methods
         void updateParticleSystem();
         void renderParticlesGPU();
         void renderTrailsGPU();
         void setupParticleBuffers();
 		void renderVideoWithShader();
-		void renderVideoWithFeedback();     // NEW: Separated feedback rendering
-		void renderVideoStandard();        // NEW: Standard pass-through rendering
+		void renderVideoWithFeedback(); 
+		void renderVideoStandard();
 		//void updateDistortionTexture();
 
-        // New methods for feedback system
         void setupFBOs();
         void clearFBO(ofFbo& fbo);
         void renderVideoPass();
@@ -39,7 +38,6 @@ class RenderApp : public ofBaseApp
         void updateVideoFrameHistory();
         void updateCompositeFrameHistory();
         void updateTrails();
-        ofTexture& getPreviousFrame(int framesBack = 1);
         ofTexture& getPreviousVideoFrame(int framesBack = 1);
 
         // PARAMETERS
@@ -55,12 +53,11 @@ class RenderApp : public ofBaseApp
         ofEvent<glm::vec2> viewportResizeEvent; // an event to send window size updates to the simulation
 
     private:
-        // Basic particle rendering system
+
         ofVbo particleVbo;
         ofShader particleShader;
         ofShader trailShader;
         
-        // Basic data structures
         std::vector<glm::vec3> particlePositions;
         std::vector<float> particleSizes;
 
@@ -71,14 +68,24 @@ class RenderApp : public ofBaseApp
         ofFbo fboS;
         ofFbo trailFbo; 
         // New FBO system for feedback
-        ofFbo videoFbo;           // Dedicated FBO for video rendering
-        ofFbo particlesFbo;       // Dedicated FBO for particles  
-        ofFbo compositeFbo;       // Final composite FBO
+        ofFbo videoFbo; 
+        ofFbo particlesFbo; 
+        ofFbo compositeFbo; 
 
-        static const int MAX_FRAME_HISTORY = 4; // Store last 4 frames
+        static const int MAX_FRAME_HISTORY = 4;
         std::vector<ofFbo> frameHistory;
         int currentFrameIndex;
 
         ofShader shader;
         ofShader shaderBloom;
+        ofShader feedbackShader;
+        
+        // Two-pass warp system
+        ofShader warpUpdateShader;
+        ofShader warpApplyShader;
+        ofFbo displacementFbo;  
+        ofFbo previousDisplacementFbo;   
+
+        void renderVideoWithWarpTwoPass();
+        void setupWarpFBOs();
 };

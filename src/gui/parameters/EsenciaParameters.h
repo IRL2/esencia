@@ -123,11 +123,8 @@ struct RenderParameters : public ofxPresetsParametersBase {
     ofParameter<float> videopreviewVisibility = 0.0;
     ofParameter<ofColor> videoColor;
     
-    // FEEDBACK EFFECT CONTROL - ADD THIS
-    ofParameter<bool> useVideoFeedback = false; // NEW: Control for aura feedback effect
-    
-    // NEW: Warp effect parameters
-    ofParameter<bool> useWarpEffect = true;   // Switch between simple feedback and warp
+    ofParameter<bool> useWarpEffect = true;
+    ofParameter<bool> useTwoPassWarp = true;
     ofParameter<float> warpVariance = 0.02f;
     ofParameter<float> warpPropagation = 0.02f; 
     ofParameter<float> warpPropagationPersistence = 0.95f;
@@ -136,7 +133,6 @@ struct RenderParameters : public ofxPresetsParametersBase {
     ofParameter<float> warpDetail = 1.0f;
     ofParameter<float> warpBrightPassThreshold = 0.0f;
     
-    // Enhanced rendering parameters
     ofParameter<bool> useEnhancedShaders = true;
     ofParameter<bool> useImprovedTrails = true;
     ofParameter<float> trailDecayRate = 1.0;
@@ -144,6 +140,7 @@ struct RenderParameters : public ofxPresetsParametersBase {
     ofParameter<bool> useMotionBlur = true;
     ofParameter<float> particleGlow = 1.0;
     ofParameter<bool> useColorVariation = true;
+
 
     RenderParameters() {
         groupName = "render";
@@ -158,10 +155,6 @@ struct RenderParameters : public ofxPresetsParametersBase {
 		parameterMap["videopreviewVisibility"] = &videopreviewVisibility;
 		parameterMap["videoColor"] = &videoColor;
 		
-		// FEEDBACK EFFECT CONTROL - ADD THIS TOO
-		parameterMap["useVideoFeedback"] = &useVideoFeedback; // NEW
-		
-		// NEW: Warp effect parameters
 		parameterMap["useWarpEffect"] = &useWarpEffect;
 		parameterMap["warpVariance"] = &warpVariance;
 		parameterMap["warpPropagation"] = &warpPropagation;
@@ -171,7 +164,6 @@ struct RenderParameters : public ofxPresetsParametersBase {
 		parameterMap["warpDetail"] = &warpDetail;
 		parameterMap["warpBrightPassThreshold"] = &warpBrightPassThreshold;
 		
-		// Enhanced parameters
 		parameterMap["useEnhancedShaders"] = &useEnhancedShaders;
 		parameterMap["useImprovedTrails"] = &useImprovedTrails;
 		parameterMap["trailDecayRate"] = &trailDecayRate;
@@ -179,6 +171,7 @@ struct RenderParameters : public ofxPresetsParametersBase {
 		parameterMap["useMotionBlur"] = &useMotionBlur;
 		parameterMap["particleGlow"] = &particleGlow;
 		parameterMap["useColorVariation"] = &useColorVariation;
+		parameterMap["useTwoPassWarp"] = &useTwoPassWarp;
 	}
 };
 
@@ -212,24 +205,3 @@ struct SimulationParameters : public ofxPresetsParametersBase {
 		//parameterMap["lowFps"] = &lowFps;
 	}
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

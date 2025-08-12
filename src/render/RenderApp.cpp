@@ -1,4 +1,4 @@
-#include "RenderApp.h"
+﻿#include "RenderApp.h"
 
 ofImage video;
 ofImage particleTexture;
@@ -9,24 +9,18 @@ ofVbo particleVbo;
 ofShader particleShader;
 ofShader trailShader;
 ofShader videoShader;
-ofShader feedbackShader; // New shader for feedback effects
+ofShader feedbackShader; 
 
-// Enhanced FBO system for feedback
-ofFbo videoFbo;           // Dedicated FBO for video rendering
-ofFbo particlesFbo;       // Dedicated FBO for particles
-ofFbo compositeFbo;       // Final composite FBO
-ofFbo trailFbo;          // Existing trail FBO
 
-// Frame history system for feedback effects
-// NOTE: To completely remove feedback code, remove:
-// 1. videoFrameHistory vector and related code
-// 2. renderVideoWithFeedback() method and its call
-// 3. updateVideoFrameHistory() call (keep updateCompositeFrameHistory for other effects)
-// 4. useVideoFeedback parameter from EsenciaParameters.h and RenderPanel.h
-// 5. feedback.vert/frag shader files
-static const int MAX_FRAME_HISTORY = 10; // Store last 4 frames
+ofFbo videoFbo;
+ofFbo particlesFbo;
+ofFbo compositeFbo;
+ofFbo trailFbo;
+
+
+static const int MAX_FRAME_HISTORY = 4;
 std::vector<ofFbo> frameHistory;
-std::vector<ofFbo> videoFrameHistory; // Separate history for video feedback
+std::vector<ofFbo> videoFrameHistory;
 int currentFrameIndex = 0;
 
 std::vector<glm::vec3> particlePositions;
@@ -78,7 +72,6 @@ void RenderApp::setup()
         ofLogNotice("RenderApp::setup()") << "Video shaders loaded successfully!";
     }
 
-    // Load feedback shader (optional - for future effects)
     bool feedbackShaderLoaded = feedbackShader.load("shaders/feedback.vert", "shaders/feedback.frag");
     if (!feedbackShaderLoaded) {
         ofLogWarning("RenderApp::setup()") << "Feedback shaders not found - feedback effects will be disabled";
@@ -87,7 +80,16 @@ void RenderApp::setup()
         ofLogNotice("RenderApp::setup()") << "Feedback shaders loaded successfully!";
     }
 
+
+    bool warpUpdateLoaded = warpUpdateShader.load("shaders/warp_update.vert", "shaders/warp_update.frag");
+    bool warpApplyLoaded = warpApplyShader.load("shaders/warp_apply.vert", "shaders/warp_apply.frag");
+    
+    if (!warpUpdateLoaded || !warpApplyLoaded) {
+        ofLogWarning("RenderApp::setup()") << "Two-pass warp shaders failed to load";
+    }
+    
     setupFBOs();
+    setupWarpFBOs(); 
 
     // allocate memory for particle data
     particlePositions.reserve(10000);
@@ -104,9 +106,9 @@ void RenderApp::setupFBOs() {
     videoFbo.allocate(w, h, GL_RGBA);
     particlesFbo.allocate(w, h, GL_RGBA);
     compositeFbo.allocate(w, h, GL_RGBA);
-    trailFbo.allocate(w, h, GL_RGBA32F_ARB); // Keep high precision for trails
+    trailFbo.allocate(w, h, GL_RGBA32F_ARB);
 
-    // Initialize frame history for feedback effects
+    // Initialize frame history 
     frameHistory.clear();
     frameHistory.resize(MAX_FRAME_HISTORY);
     videoFrameHistory.clear();
@@ -138,6 +140,23 @@ void RenderApp::clearFBO(ofFbo& fbo) {
     fbo.begin();
     ofClear(0, 0, 0, 0);
     fbo.end();
+}
+
+//--------------------------------------------------------------
+void RenderApp::setupWarpFBOs() {
+    int w = ofGetWidth();
+    int h = ofGetHeight();
+    
+    displacementFbo.allocate(w, h, GL_RG16F);
+    previousDisplacementFbo.allocate(w, h, GL_RG16F);
+    
+    displacementFbo.begin();
+    ofClear(0, 0, 0, 0);
+    displacementFbo.end();
+    
+    previousDisplacementFbo.begin();
+    ofClear(0, 0, 0, 0);
+    previousDisplacementFbo.end();
 }
 
 //--------------------------------------------------------------
@@ -182,11 +201,10 @@ void RenderApp::draw()
     ofSetCircleResolution(10);
     ofBackground(0);
 
-    // 1. Render video to dedicated FBO (using previous frame for feedback if enabled)
+    // 1. Render video to dedicated FBO
     renderVideoPass();
 
-    // 2. Update video frame history IMMEDIATELY after rendering current video
-    // This ensures the next frame will have this frame as "previous"
+    // 2. Update video frame history
     updateVideoFrameHistory();
 
     // 3. Render particles to dedicated FBO
@@ -195,14 +213,14 @@ void RenderApp::draw()
     // 4. Composite everything together
     renderCompositePass();
 
-    // 5. Store current composite frame in history for other effects
+    // 5. Store current composite frame 
     updateCompositeFrameHistory();
 
-    // 6. Draw final result to screen
+    // 6. Draw final result
     ofSetColor(255);
     compositeFbo.draw(0, 0);
 
-    // Draw the trail FBO to the screen using additive blending
+    // Draw the trail FBO
     if (parameters->useFaketrails) {
         ofEnableBlendMode(OF_BLENDMODE_ADD);
         ofSetColor(255);
@@ -218,7 +236,6 @@ void RenderApp::renderVideoPass() {
     videoFbo.begin();
     ofClear(0, 0, 0, 0);
 
-    // Ensure proper blend mode for video rendering
     ofEnableBlendMode(OF_BLENDMODE_DISABLED);
 
     renderVideoWithShader();
@@ -243,34 +260,29 @@ void RenderApp::renderCompositePass() {
     compositeFbo.begin();
     ofClear(0, 0, 0, 0);
 
-    // Draw video layer first with proper blending for grayscale/blur
     if (parameters->showVideoPreview) {
-        ofEnableBlendMode(OF_BLENDMODE_DISABLED); // Direct copy for video
+        ofEnableBlendMode(OF_BLENDMODE_DISABLED);
         ofSetColor(255, 255, 255, 255);
         videoFbo.draw(0, 0);
     }
 
-    // Draw particles layer with additive blending
     if (!particles->empty()) {
         ofEnableBlendMode(OF_BLENDMODE_ADD);
         ofSetColor(255, 255, 255, 255);
         particlesFbo.draw(0, 0);
     }
 
-    // TODO: Add feedback effects here using previous frames
-    // This is where you'll later add shader effects that use frameHistory textures
 
     compositeFbo.end();
 
-    ofEnableBlendMode(OF_BLENDMODE_ALPHA); // Reset to default
+    ofEnableBlendMode(OF_BLENDMODE_ALPHA); 
 }
 
 //--------------------------------------------------------------
 void RenderApp::updateCompositeFrameHistory() {
-    // Get the previous index since currentFrameIndex was already incremented
+    // Stores the final composite frame (video + particles combined)
     int prevIndex = (currentFrameIndex - 1 + MAX_FRAME_HISTORY) % MAX_FRAME_HISTORY;
     
-    // Copy current composite to frame history
     frameHistory[prevIndex].begin();
     ofClear(0, 0, 0, 0);
     ofSetColor(255);
@@ -280,7 +292,6 @@ void RenderApp::updateCompositeFrameHistory() {
 
 //--------------------------------------------------------------
 void RenderApp::updateFrameHistory() {
-    // This method now just calls both update methods for backward compatibility
     updateCompositeFrameHistory();
     updateVideoFrameHistory();
 }
@@ -301,19 +312,8 @@ void RenderApp::updateVideoFrameHistory() {
 }
 
 //--------------------------------------------------------------
-ofTexture& RenderApp::getPreviousFrame(int framesBack) {
-    // Get a frame from N frames ago (1 = last frame, 2 = two frames ago, etc.)
-    if (framesBack < 1 || framesBack > MAX_FRAME_HISTORY) {
-        framesBack = 1; // Default to last frame
-    }
-
-    int index = (currentFrameIndex - framesBack + MAX_FRAME_HISTORY) % MAX_FRAME_HISTORY;
-    return frameHistory[index].getTexture();
-}
-
-//--------------------------------------------------------------
 ofTexture& RenderApp::getPreviousVideoFrame(int framesBack) {
-    // Get a video frame from N frames ago (1 = last frame, 2 = two frames ago, etc.)
+    // get a video frame from N frames ago (1 = last frame, 2 = two frames ago, etc.)
     if (framesBack < 1 || framesBack > MAX_FRAME_HISTORY) {
         framesBack = 1; // Default to last frame
     }
@@ -324,12 +324,11 @@ ofTexture& RenderApp::getPreviousVideoFrame(int framesBack) {
 
 //--------------------------------------------------------------
 void RenderApp::renderVideoWithShader() {
-    // Use disabled blending to preserve grayscale/blur values exactly as they are
+    // use disabled blending to preserve grayscale/blur values exactly as they are
     ofEnableBlendMode(OF_BLENDMODE_DISABLED);
 
-    // SEPARATED FEEDBACK EFFECT - Check parameter control
-    if (parameters->useVideoFeedback && feedbackShader.isLoaded()) {
-        // === FEEDBACK RENDERING PATH ===
+    if (parameters->useWarpEffect && feedbackShader.isLoaded()) {
+        // === WARP EFFECT RENDERING PATH ===
         renderVideoWithFeedback();
     }
     else {
@@ -340,63 +339,176 @@ void RenderApp::renderVideoWithShader() {
 
 //--------------------------------------------------------------
 void RenderApp::renderVideoWithFeedback() {
-    // Feedback effect: blend current video with previous video frame
+    //single pass warping.displacement calculation and texture sampling occur in the same shader.
+    //uses the current frame and previous frame as input.
+    //calculates displacement on the fly and immediately applies it.
+
+    //to do: remove....
+    if (parameters->useTwoPassWarp && warpUpdateShader.isLoaded() && warpApplyShader.isLoaded()) {
+        renderVideoWithWarpTwoPass();
+    } else {
+        video.getTexture().bind(0);
+        getPreviousVideoFrame(1).bind(1);
+        
+        feedbackShader.begin();
+        
+
+        feedbackShader.setUniformTexture("currentFrame", video.getTexture(), 0);
+        feedbackShader.setUniformTexture("previousFrame", getPreviousVideoFrame(1), 1);
+        feedbackShader.setUniform1f("time", ofGetElapsedTimef());
+        feedbackShader.setUniform2f("resolution", ofGetWidth(), ofGetHeight());
+        feedbackShader.setUniform1f("feedbackAmount", 1.0f);
+        
+        // Pass video rectangle info to shader for proper coordinate mapping
+        feedbackShader.setUniform4f("videoRect", 
+            videoRectangle.x, videoRectangle.y, 
+            videoRectangle.width, videoRectangle.height);
+        
+        feedbackShader.setUniform4f("videoColor",
+            parameters->videoColor.get().r / 255.0f,
+            parameters->videoColor.get().g / 255.0f,
+            parameters->videoColor.get().b / 255.0f,
+            parameters->videopreviewVisibility);
+
+        feedbackShader.setUniform1f("warpVariance", parameters->warpVariance);
+        feedbackShader.setUniform1f("warpPropagation", parameters->warpPropagation);
+        feedbackShader.setUniform1f("warpPropagationPersistence", parameters->warpPropagationPersistence);
+        feedbackShader.setUniform1f("warpSpreadX", parameters->warpSpreadX);
+        feedbackShader.setUniform1f("warpSpreadY", parameters->warpSpreadY);
+        feedbackShader.setUniform1f("warpDetail", parameters->warpDetail);
+        feedbackShader.setUniform1f("warpBrightPassThreshold", parameters->warpBrightPassThreshold);
+
+        ofSetColor(255, 255, 255, 255);
+        video.draw(videoRectangle);
+
+        feedbackShader.end();
+        
+        getPreviousVideoFrame(1).unbind(1);
+        video.getTexture().unbind(0);
+    }
+}
+
+//--------------------------------------------------------------
+void RenderApp::renderVideoWithWarpTwoPass() {
+
+    //How it works (or should lol)
+    //Pass 1 (warp_update.vert / frag) for calculating and storing displacement vectors.
+    //takes current video frame and previous displacement as input,
+    //outputs displacement data to a dedicated FBO,
+    //focuses purely on displacement computation and propagation
+
+    //Pass 2 (warp_apply.vert / frag) is for applying the precalculated displacement.
+    // takes the original video frame and displacement texture as input,
+    // applies warping using the displacement data from pass 1,
+    // outputs the final warped video frame
+
+    if (!video.isAllocated() || video.getWidth() == 0 || video.getHeight() == 0) {
+        ofLogWarning("RenderApp::renderVideoWithWarpTwoPass") << "Video texture not properly allocated";
+        renderVideoStandard(); // Fallback to standard rendering
+        return;
+    }
+
+    // === PASS 1: Update Displacement ===
+    displacementFbo.begin();
+    ofClear(0, 0, 0, 0);
     
-    // Bind textures
+    ofViewport(0, 0, displacementFbo.getWidth(), displacementFbo.getHeight());
+    
+    // Bind textures for first pass
     video.getTexture().bind(0);
-    getPreviousVideoFrame(1).bind(1);
+    previousDisplacementFbo.getTexture().bind(1);
     
-    feedbackShader.begin();
+    warpUpdateShader.begin();
+    warpUpdateShader.setUniformTexture("externalInput", video.getTexture(), 0);
+    warpUpdateShader.setUniformTexture("currentDisplacement", previousDisplacementFbo.getTexture(), 1);
     
-    // Set uniforms for feedback shader
-    feedbackShader.setUniformTexture("currentFrame", video.getTexture(), 0);
-    feedbackShader.setUniformTexture("previousFrame", getPreviousVideoFrame(1), 1);
-    feedbackShader.setUniform1f("time", ofGetElapsedTimef());
-    feedbackShader.setUniform2f("resolution", ofGetWidth(), ofGetHeight());
-    feedbackShader.setUniform1f("feedbackAmount", 1.0f); // Hardcoded feedback strength
+    warpUpdateShader.setUniform1f("warpVariance", parameters->warpVariance);
+    warpUpdateShader.setUniform1f("warpPropagation", parameters->warpPropagation);
+    warpUpdateShader.setUniform1f("warpPropagationPersistence", parameters->warpPropagationPersistence);
+    warpUpdateShader.setUniform1f("warpSpreadX", parameters->warpSpreadX);
+    warpUpdateShader.setUniform1f("warpSpreadY", parameters->warpSpreadY);
+    warpUpdateShader.setUniform1f("warpDetail", parameters->warpDetail);
     
-    // Pass video rectangle info to shader for proper coordinate mapping
-    feedbackShader.setUniform4f("videoRect", 
-        videoRectangle.x, videoRectangle.y, 
-        videoRectangle.width, videoRectangle.height);
+    ofMesh fullscreenQuad;
+    fullscreenQuad.setMode(OF_PRIMITIVE_TRIANGLE_STRIP);
     
-    // Apply video color and alpha
-    feedbackShader.setUniform4f("videoColor",
+    // Add vertices with proper texture coordinates for fullscreen
+    fullscreenQuad.addVertex(ofVec3f(-1, -1, 0));
+    fullscreenQuad.addTexCoord(ofVec2f(0, 0));
+    
+    fullscreenQuad.addVertex(ofVec3f(1, -1, 0));
+    fullscreenQuad.addTexCoord(ofVec2f(1, 0));
+    
+    fullscreenQuad.addVertex(ofVec3f(-1, 1, 0));
+    fullscreenQuad.addTexCoord(ofVec2f(0, 1));
+    
+    fullscreenQuad.addVertex(ofVec3f(1, 1, 0));
+    fullscreenQuad.addTexCoord(ofVec2f(1, 1));
+    
+    // Disable depth testing and set proper matrices
+    ofPushMatrix();
+    ofSetMatrixMode(OF_MATRIX_PROJECTION);
+    ofPushMatrix();
+    ofLoadIdentityMatrix();
+    ofSetMatrixMode(OF_MATRIX_MODELVIEW);
+    ofPushMatrix();
+    ofLoadIdentityMatrix();
+    
+    fullscreenQuad.draw();
+    
+    // Restore matrices
+    ofPopMatrix();
+    ofSetMatrixMode(OF_MATRIX_PROJECTION);
+    ofPopMatrix();
+    ofSetMatrixMode(OF_MATRIX_MODELVIEW);
+    ofPopMatrix();
+    
+    warpUpdateShader.end();
+    
+    previousDisplacementFbo.getTexture().unbind(1);
+    video.getTexture().unbind(0);
+    displacementFbo.end();
+    
+    // Reset viewport
+    ofViewport(0, 0, ofGetWidth(), ofGetHeight());
+    
+    // === PASS 2: Apply Displacement ===
+    // Bind textures for second pass
+    video.getTexture().bind(0);
+    displacementFbo.getTexture().bind(1);
+    
+    warpApplyShader.begin();
+    warpApplyShader.setUniformTexture("sourceTexture", video.getTexture(), 0);
+    warpApplyShader.setUniformTexture("displacementTexture", displacementFbo.getTexture(), 1);
+    
+    warpApplyShader.setUniform4f("videoColor",
         parameters->videoColor.get().r / 255.0f,
         parameters->videoColor.get().g / 255.0f,
         parameters->videoColor.get().b / 255.0f,
         parameters->videopreviewVisibility);
-
-    // NEW: Add warp parameters to the existing shader
-    feedbackShader.setUniform1i("useWarpEffect", parameters->useWarpEffect ? 1 : 0);
-    feedbackShader.setUniform1f("warpVariance", parameters->warpVariance);
-    feedbackShader.setUniform1f("warpPropagation", parameters->warpPropagation);
-    feedbackShader.setUniform1f("warpPropagationPersistence", parameters->warpPropagationPersistence);
-    feedbackShader.setUniform1f("warpSpreadX", parameters->warpSpreadX);
-    feedbackShader.setUniform1f("warpSpreadY", parameters->warpSpreadY);
-    feedbackShader.setUniform1f("warpDetail", parameters->warpDetail);
-    feedbackShader.setUniform1f("warpBrightPassThreshold", parameters->warpBrightPassThreshold);
-
-    // Draw video - GPU handles all warp effects now
+    
+    warpApplyShader.setUniform1f("warpBrightPassThreshold", parameters->warpBrightPassThreshold);
+    
     ofSetColor(255, 255, 255, 255);
     video.draw(videoRectangle);
-
-    feedbackShader.end();
     
-    // Unbind textures
-    getPreviousVideoFrame(1).unbind(1);
+    warpApplyShader.end();
+    
+    displacementFbo.getTexture().unbind(1);
     video.getTexture().unbind(0);
+    
+    // === Swap displacement buffers for next frame ===
+    std::swap(displacementFbo, previousDisplacementFbo);
 }
 
-//--------------------------------------------------------------
+
 void RenderApp::renderVideoStandard() {
-    // Standard video rendering without feedback (pass-through)
-    
+    // Standard video rendering without warp (pass-through)
+
     video.getTexture().bind(0);
 
     videoShader.begin();
 
-    // Set color and alpha uniforms - existing parameter controls
     videoShader.setUniform4f("videoColor",
         parameters->videoColor.get().r / 255.0f,
         parameters->videoColor.get().g / 255.0f,
@@ -407,14 +519,12 @@ void RenderApp::renderVideoStandard() {
     videoShader.setUniform1f("time", ofGetElapsedTimef());
     videoShader.setUniform2f("resolution", videoRectangle.width, videoRectangle.height);
 
-    // Draw the video rectangle with standard shader
     ofSetColor(255, 255, 255, 255);
     video.draw(videoRectangle);
 
     videoShader.end();
     video.getTexture().unbind(0);
 }
-
 //--------------------------------------------------------------
 void RenderApp::renderParticlesGPU() {
     if (particles->empty()) return;
@@ -443,7 +553,7 @@ void RenderApp::renderParticlesGPU() {
     particleShader.end();
     particleTexture.unbind();
 
-    // Handle trails
+    // trails
     if (parameters->useFaketrails) {
         updateTrails();
     }
@@ -461,7 +571,6 @@ void RenderApp::updateTrails() {
     ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
     trailFbo.end();
 
-    // Add new trail particles
     trailFbo.begin();
     ofEnableBlendMode(OF_BLENDMODE_ADD);
 
@@ -519,8 +628,8 @@ void RenderApp::windowResized(int _width, int _height) {
     fbo.allocate(_width, _height);
     fboS.allocate(_width, _height);
 
-    // Reinitialize the entire FBO system
     setupFBOs();
+    setupWarpFBOs();
 
     glm::vec2 newSize = glm::vec2(_width, _height);
     parameters->windowSize.set(glm::vec2(_width, _height));
@@ -530,10 +639,4 @@ void RenderApp::windowResized(int _width, int _height) {
 void RenderApp::setupParticleBuffers() {
     particlePositions.reserve(10000);
     particleSizes.reserve(10000);
-}
-
-//--------------------------------------------------------------
-void RenderApp::renderTrailsGPU() {
-    // Trails are now handled within the new rendering pipeline
-    // This method can be used for additional trail effects if needed
 }
