@@ -6,16 +6,34 @@
 //#include "ofxOpenCv.h" // TODO: research on using a different datastructure to pass the frame segment and avoid loading opencv here
 #include "particles.h"
 
+struct CollisionData {
+    uint32_t particleA;
+    uint32_t particleB;
+    glm::vec2 positionA;
+    glm::vec2 positionB;
+    float distance;
+    float velocityMagnitude;
+    uint32_t valid;
+    uint32_t padding; // for alignment
+};
+
+struct CollisionBuffer {
+    uint32_t collisionCount;
+    uint32_t maxCollisions;
+    uint32_t frameNumber;
+    uint32_t padding;
+    std::vector<CollisionData> collisions;
+};
 
 class Simulator {
 public:
-	void setup(SimulationParameters* params, GuiApp* globalParams);
+    void setup(SimulationParameters* params, GuiApp* globalParams);
     void update();
     void updateWorldSize(int _width, int _height);
-    void recieveFrame(ofxCvGrayscaleImage &frame);
+    void recieveFrame(ofxCvGrayscaleImage& frame);
     void updateVideoRect(const ofRectangle& rect);
 
-	void keyReleased(ofKeyEventArgs& e);
+    void keyReleased(ofKeyEventArgs& e);
 
     ParticleSystem particles;
 
@@ -33,15 +51,19 @@ public:
     GLint ljCutoffLocation;
     GLint maxForceLocation;
     GLint depthFieldLocation;
+    GLint enableCollisionLoggingLocation;
 
+    static const size_t MAX_COLLISIONS_PER_FRAME = 1000;
 
 private:
     void setupComputeShader();
     void updateParticlesOnGPU();
     void updateDepthFieldTexture();
+    void setupCollisionBuffer();
+    void readCollisionData();
+    void logCollisions();
 
-
-	// listeners
+    // listeners
     void onRenderwindowResize(glm::vec2& worldSize);
     void onGUIChangeAmmount(float& value);
     void onGUIChangeRadius(int& value);
@@ -49,9 +71,11 @@ private:
     void onTemperatureChanged(float& value);
     void onCouplingChanged(float& value);
     void onDepthFieldScaleChanged(float& value);
+    void onCollisionLoggingChanged(bool& value);
     void applyBerendsenThermostat();
 
     GLuint ssboParticles;
+    GLuint ssboCollisions;
     GLuint computeShaderProgram;
     GLuint depthFieldTexture;
 
@@ -64,9 +88,9 @@ private:
     float ljCutoff = 150.0f;    // Interaction cutoff
     float maxForce = 10000.0f;  // Force clamping
 
-    ofxCvGrayscaleImage *currentDepthField;
+    ofxCvGrayscaleImage* currentDepthField;
 
-    ofRectangle videoRect = ofRectangle(0,0,-45,-45);
+    ofRectangle videoRect = ofRectangle(0, 0, -45, -45);
     float videoScaleX = 1.4;
     float videoScaleY = 1.4f;
     int sourceWidth = 640;  // camera resolution width
@@ -79,4 +103,7 @@ private:
     GuiApp* globalParameters;
 
     const float INV255 = 1.0f / 255.0f;
+
+    CollisionBuffer collisionBuffer;
+    uint32_t currentFrameNumber = 0;
 };

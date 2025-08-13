@@ -1,5 +1,7 @@
 #include "simulator.h"
 #include "ofLog.h"
+#include <iomanip>
+#include <algorithm>
 
 void Simulator::setup(SimulationParameters* params, GuiApp* globalParams) {
     parameters = params;
@@ -9,6 +11,7 @@ void Simulator::setup(SimulationParameters* params, GuiApp* globalParams) {
     particles.updateRadiuses(parameters->radius);
 
     setupComputeShader();
+    setupCollisionBuffer();
 
     glGenTextures(1, &depthFieldTexture);
     glBindTexture(GL_TEXTURE_2D, depthFieldTexture);
@@ -27,7 +30,8 @@ void Simulator::setup(SimulationParameters* params, GuiApp* globalParams) {
     parameters->targetTemperature.addListener(this, &Simulator::onTemperatureChanged);
     parameters->coupling.addListener(this, &Simulator::onCouplingChanged);
     parameters->depthFieldScale.addListener(this, &Simulator::onDepthFieldScaleChanged);
- 
+    parameters->enableCollisionLogging.addListener(this, &Simulator::onCollisionLoggingChanged);
+
 
     globalParameters->renderParameters.windowSize.addListener(this, &Simulator::onRenderwindowResize);
 
@@ -39,6 +43,29 @@ void Simulator::setup(SimulationParameters* params, GuiApp* globalParams) {
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
+void Simulator::setupCollisionBuffer() {
+    // Initialize collision buffer
+    collisionBuffer.maxCollisions = MAX_COLLISIONS_PER_FRAME;
+    collisionBuffer.collisionCount = 0;
+    collisionBuffer.frameNumber = 0;
+    collisionBuffer.padding = 0;
+    collisionBuffer.collisions.resize(MAX_COLLISIONS_PER_FRAME);
+
+    // Create GPU buffer
+    glGenBuffers(1, &ssboCollisions);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboCollisions);
+
+    // Calculate total buffer size: header (4 uints) + collision array
+    size_t headerSize = 4 * sizeof(uint32_t);
+    size_t collisionArraySize = MAX_COLLISIONS_PER_FRAME * sizeof(CollisionData);
+    size_t totalBufferSize = headerSize + collisionArraySize;
+
+    glBufferData(GL_SHADER_STORAGE_BUFFER, totalBufferSize, nullptr, GL_DYNAMIC_COPY);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssboCollisions);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    ofLogNotice("Simulator::setupCollisionBuffer") << "Collision buffer created with " << MAX_COLLISIONS_PER_FRAME << " max collisions";
+}
 
 void Simulator::setupComputeShader() {
     computeShaderProgram = glCreateProgram();
@@ -84,14 +111,30 @@ void Simulator::setupComputeShader() {
     ljCutoffLocation = glGetUniformLocation(computeShaderProgram, "ljCutoff");
     maxForceLocation = glGetUniformLocation(computeShaderProgram, "maxForce");
     depthFieldLocation = glGetUniformLocation(computeShaderProgram, "depthField");
+    enableCollisionLoggingLocation = glGetUniformLocation(computeShaderProgram, "enableCollisionLogging");
 }
 
 void Simulator::update() {
+    currentFrameNumber++;
     updateParticlesOnGPU();
+    if (parameters->enableCollisionLogging) {
+        readCollisionData();
+        logCollisions();
+    }
 }
 
 
 void Simulator::updateParticlesOnGPU() {
+    // Reset collision counter for this frame
+    if (parameters->enableCollisionLogging) {
+        collisionBuffer.collisionCount = 0;
+        collisionBuffer.frameNumber = currentFrameNumber;
+
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboCollisions);
+        glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, 4 * sizeof(uint32_t), &collisionBuffer);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    }
+
     glUseProgram(computeShaderProgram);
 
     glUniform1f(deltaTimeLocation, 0.01f);
@@ -106,17 +149,21 @@ void Simulator::updateParticlesOnGPU() {
     glUniform1f(ljEpsilonLocation, ljEpsilon);
     glUniform1f(ljCutoffLocation, ljCutoff);
     glUniform1f(maxForceLocation, maxForce);
+    glUniform1i(enableCollisionLoggingLocation, parameters->enableCollisionLogging ? 1 : 0);
 
     // Bind depth field texture
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, depthFieldTexture);
     glUniform1i(depthFieldLocation, 0);
 
-    // Bind particle buffer and dispatch compute shader
+    // Bind particle buffer and collision buffer
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssboParticles);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssboCollisions);
+
     glDispatchCompute((particles.active.size() + 255) / 256, 1, 1);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
+    // Read back particle data
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboParticles);
     Particle* ptr = (Particle*)glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
     memcpy(particles.active.data(), ptr, particles.active.size() * sizeof(Particle));
@@ -124,14 +171,86 @@ void Simulator::updateParticlesOnGPU() {
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
+void Simulator::readCollisionData() {
+    // Read back collision data from GPU
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboCollisions);
+
+    // First read the header to get collision count
+    uint32_t* headerPtr = (uint32_t*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, 4 * sizeof(uint32_t), GL_MAP_READ_BIT);
+    if (headerPtr) {
+        collisionBuffer.collisionCount = headerPtr[0];
+        collisionBuffer.maxCollisions = headerPtr[1];
+        collisionBuffer.frameNumber = headerPtr[2];
+        glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
+        // If there are collisions, read the collision data
+        if (collisionBuffer.collisionCount > 0) {
+            uint32_t actualCollisions = std::min(collisionBuffer.collisionCount, static_cast<uint32_t>(MAX_COLLISIONS_PER_FRAME));
+
+            size_t headerSize = 4 * sizeof(uint32_t);
+            size_t collisionDataSize = actualCollisions * sizeof(CollisionData);
+
+            CollisionData* collisionPtr = (CollisionData*)glMapBufferRange(
+                GL_SHADER_STORAGE_BUFFER,
+                headerSize,
+                collisionDataSize,
+                GL_MAP_READ_BIT
+            );
+
+            if (collisionPtr) {
+                // Copy collision data
+                for (uint32_t i = 0; i < actualCollisions; i++) {
+                    collisionBuffer.collisions[i] = collisionPtr[i];
+                }
+                glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+            }
+        }
+    }
+
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+}
+
+void Simulator::logCollisions() {
+    if (collisionBuffer.collisionCount == 0) return;
+
+    uint32_t actualCollisions = std::min(collisionBuffer.collisionCount, static_cast<uint32_t>(MAX_COLLISIONS_PER_FRAME));
+
+    ofLogNotice("Collision Detection") << "Frame " << collisionBuffer.frameNumber
+        << ": " << actualCollisions << " collisions detected";
+
+    // Log details for each collision (limit to first 10 to avoid spam)
+    uint32_t logLimit = std::min(actualCollisions, static_cast<uint32_t>(10));
+    for (uint32_t i = 0; i < logLimit; i++) {
+        const CollisionData& collision = collisionBuffer.collisions[i];
+        if (collision.valid) {
+            ofLogNotice("Collision Details") << "  Collision " << (i + 1)
+                << ": Particles " << collision.particleA << " & " << collision.particleB
+                << " | Distance: " << std::fixed << std::setprecision(2) << collision.distance
+                << " | Velocity Magnitude: " << std::fixed << std::setprecision(2) << collision.velocityMagnitude
+                << " | Pos A: (" << std::fixed << std::setprecision(1) << collision.positionA.x << ", " << collision.positionA.y << ")"
+                << " | Pos B: (" << std::fixed << std::setprecision(1) << collision.positionB.x << ", " << collision.positionB.y << ")";
+        }
+    }
+
+    if (actualCollisions > 10) {
+        ofLogNotice("Collision Details") << "  ... and " << (actualCollisions - 10) << " more collisions (details omitted)";
+    }
+
+    if (collisionBuffer.collisionCount > MAX_COLLISIONS_PER_FRAME) {
+        ofLogWarning("Collision Detection") << "Buffer overflow: " << collisionBuffer.collisionCount
+            << " collisions detected, but only " << MAX_COLLISIONS_PER_FRAME << " recorded";
+    }
+}
+
+//std::vector<Particle>& Simulator::getParticles() {
+//    return particles;
+//}
 
 void Simulator::updateVideoRect(const ofRectangle& rect) {
     videoRect = rect;
     videoScaleX = videoRect.width / sourceWidth;
     videoScaleY = videoRect.height / sourceHeight;
 }
-
-
 
 void Simulator::onGUIChangeAmmount(float& value) {
     particles.resize(value);
@@ -141,8 +260,6 @@ void Simulator::onGUIChangeAmmount(float& value) {
     glBufferData(GL_SHADER_STORAGE_BUFFER, particles.active.size() * sizeof(Particle), particles.active.data(), GL_DYNAMIC_COPY);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
-
-
 
 void Simulator::onRenderwindowResize(glm::vec2& worldSize) {
     updateWorldSize(worldSize.x, worldSize.y);
@@ -155,7 +272,6 @@ void Simulator::updateWorldSize(int _width, int _height) {
     parameters->worldSize.set(glm::vec2(_width, _height));
     updateVideoRect(ofRectangle(0, 0, _width, _height));
 }
-
 
 void Simulator::updateDepthFieldTexture() {
     if (!hasDepthField) return;
@@ -184,13 +300,12 @@ void Simulator::updateDepthFieldTexture() {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Simulator::recieveFrame(ofxCvGrayscaleImage & frame) {
+void Simulator::recieveFrame(ofxCvGrayscaleImage& frame) {
     if (frame.getWidth() == 0 || frame.getHeight() == 0) return;
     currentDepthField = &frame;
     hasDepthField = true;
     updateDepthFieldTexture();
 }
-
 
 void Simulator::onGUIChangeRadius(int& value) {
     particles.updateRadiuses((int)value);
@@ -215,14 +330,23 @@ void Simulator::onDepthFieldScaleChanged(float& value) {
     depthFieldScale = value;
 }
 
+void Simulator::onCollisionLoggingChanged(bool& value) {
+    ofLogNotice("Simulator") << "Collision logging " << (value ? "enabled" : "disabled") << " via GUI";
+}
+
 void Simulator::applyBerendsenThermostat() {
     // Placeholder for Berendsen thermostat function
 }
 
-//std::vector<Particle>& Simulator::getParticles() {
-//    return particles;
-//}
-
 void Simulator::keyReleased(ofKeyEventArgs& e) {
-    //
+    int key = e.keycode;
+    switch (key) {
+    case 'c':
+    case 'C':
+        parameters->enableCollisionLogging = !parameters->enableCollisionLogging;
+        ofLogNotice("Simulator") << "Collision logging " << (parameters->enableCollisionLogging ? "enabled" : "disabled") << " via keyboard";
+        break;
+    default:
+        break;
+    }
 }
