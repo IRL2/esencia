@@ -44,12 +44,19 @@ void Simulator::setup(SimulationParameters* params, GuiApp* globalParams) {
 }
 
 void Simulator::setupCollisionBuffer() {
-    // Initialize collision buffer
+    // Initialize internal collision buffer for GPU operations
     collisionBuffer.maxCollisions = MAX_COLLISIONS_PER_FRAME;
     collisionBuffer.collisionCount = 0;
     collisionBuffer.frameNumber = 0;
     collisionBuffer.padding = 0;
     collisionBuffer.collisions.resize(MAX_COLLISIONS_PER_FRAME);
+
+    // Initialize public collision data (for external access)
+    collisionData.maxCollisions = MAX_COLLISIONS_PER_FRAME;
+    collisionData.collisionCount = 0;
+    collisionData.frameNumber = 0;
+    collisionData.padding = 0;
+    collisionData.collisions.resize(MAX_COLLISIONS_PER_FRAME);
 
     // Create GPU buffer
     glGenBuffers(1, &ssboCollisions);
@@ -119,10 +126,10 @@ void Simulator::update() {
     updateParticlesOnGPU();
     if (parameters->enableCollisionLogging) {
         readCollisionData();
-        logCollisions();
+        // Copy internal collision data to public collision data for external access
+        collisionData = collisionBuffer;
     }
 }
-
 
 void Simulator::updateParticlesOnGPU() {
     // Reset collision counter for this frame
@@ -160,7 +167,7 @@ void Simulator::updateParticlesOnGPU() {
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssboParticles);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssboCollisions);
 
-    glDispatchCompute((particles.active.size() + 255) / 256, 1, 1);
+    glDispatchCompute((particles.active.size() + 511) / 512, 1, 1);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
     // Read back particle data
@@ -209,42 +216,6 @@ void Simulator::readCollisionData() {
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
-
-void Simulator::logCollisions() {
-    if (collisionBuffer.collisionCount == 0) return;
-
-    uint32_t actualCollisions = std::min(collisionBuffer.collisionCount, static_cast<uint32_t>(MAX_COLLISIONS_PER_FRAME));
-
-    ofLogNotice("Collision Detection") << "Frame " << collisionBuffer.frameNumber
-        << ": " << actualCollisions << " collisions detected";
-
-    // Log details for each collision (limit to first 10 to avoid spam)
-    uint32_t logLimit = std::min(actualCollisions, static_cast<uint32_t>(10));
-    for (uint32_t i = 0; i < logLimit; i++) {
-        const CollisionData& collision = collisionBuffer.collisions[i];
-        if (collision.valid) {
-            ofLogNotice("Collision Details") << "  Collision " << (i + 1)
-                << ": Particles " << collision.particleA << " & " << collision.particleB
-                << " | Distance: " << std::fixed << std::setprecision(2) << collision.distance
-                << " | Velocity Magnitude: " << std::fixed << std::setprecision(2) << collision.velocityMagnitude
-                << " | Pos A: (" << std::fixed << std::setprecision(1) << collision.positionA.x << ", " << collision.positionA.y << ")"
-                << " | Pos B: (" << std::fixed << std::setprecision(1) << collision.positionB.x << ", " << collision.positionB.y << ")";
-        }
-    }
-
-    if (actualCollisions > 10) {
-        ofLogNotice("Collision Details") << "  ... and " << (actualCollisions - 10) << " more collisions (details omitted)";
-    }
-
-    if (collisionBuffer.collisionCount > MAX_COLLISIONS_PER_FRAME) {
-        ofLogWarning("Collision Detection") << "Buffer overflow: " << collisionBuffer.collisionCount
-            << " collisions detected, but only " << MAX_COLLISIONS_PER_FRAME << " recorded";
-    }
-}
-
-//std::vector<Particle>& Simulator::getParticles() {
-//    return particles;
-//}
 
 void Simulator::updateVideoRect(const ofRectangle& rect) {
     videoRect = rect;

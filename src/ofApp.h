@@ -4,6 +4,7 @@
 #include "gui/GuiApp.h"
 #include "camera/Camera.h"
 #include "simulation/simulator.h"
+#include "audio/AudioApp.h"
 
 class ofApp : public ofBaseApp
 {
@@ -23,5 +24,6 @@ public:
     GuiApp gui;
     Camera camera;
     Simulator simulator;
+    AudioApp audioApp;
 };
 

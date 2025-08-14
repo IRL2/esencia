@@ -10,6 +10,7 @@ void ofApp::setup(){
 
     gui.setup();
     
+    audioApp.setup();
 
     // to-do: pass camera parameters though setup
     camera.setup(&gui.cameraParameters);
@@ -25,6 +26,8 @@ void ofApp::update(){
     simulator.recieveFrame(camera.segment);
 
     simulator.update();
+    
+    audioApp.update();
 }
 
 //--------------------------------------------------------------

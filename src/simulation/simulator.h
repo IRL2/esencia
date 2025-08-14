@@ -36,6 +36,8 @@ public:
     void keyReleased(ofKeyEventArgs& e);
 
     ParticleSystem particles;
+    
+    CollisionBuffer collisionData;
 
     GLint deltaTimeLocation;
     GLint worldSizeLocation;
@@ -53,7 +55,7 @@ public:
     GLint depthFieldLocation;
     GLint enableCollisionLoggingLocation;
 
-    static const size_t MAX_COLLISIONS_PER_FRAME = 1000;
+    static const size_t MAX_COLLISIONS_PER_FRAME = 1024;
 
 private:
     void setupComputeShader();
@@ -61,7 +63,6 @@ private:
     void updateDepthFieldTexture();
     void setupCollisionBuffer();
     void readCollisionData();
-    void logCollisions();
 
     // listeners
     void onRenderwindowResize(glm::vec2& worldSize);
@@ -104,6 +105,7 @@ private:
 
     const float INV255 = 1.0f / 255.0f;
 
+    // Internal collision buffer for GPU operations
     CollisionBuffer collisionBuffer;
     uint32_t currentFrameNumber = 0;
 };

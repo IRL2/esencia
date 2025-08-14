@@ -1,6 +1,6 @@
 #version 430
 
-layout(local_size_x = 256) in;
+layout(local_size_x = 512) in;
 
 struct Particle {
     //int index;
@@ -68,7 +68,9 @@ void main() {
         float minDist = p.radius + other.radius; // Minimum interaction distance
 
         // Check for collision (when particles are very close or overlapping)
-		bool isCollision = (dist > 0.0 && dist <= minDist * 1.1); // Allow a small margin for numerical stability
+        // Only check collisions for first 512 particles
+        bool isCollision = (dist > 0.0 && dist <= minDist * 1.1); // Allow a small margin for numerical stability
+        bool shouldLogCollision = (index < 512u && i < 512u); // Only log collisions between first 512 particles
 
         // Lennard-Jones potential
         if (dist > 0.0 && dist < ljCutoff) {
@@ -85,8 +87,8 @@ void main() {
             vec2 dir = normalize(diff); // diff = p - other
             totalLJForce += dir * ljForceMag;
 
-            // Log collision if enabled and detected
-            if (enableCollisionLogging && isCollision && index < i) { // Only log once per pair (index < i prevents duplicates)
+
+            if (enableCollisionLogging && isCollision && shouldLogCollision && index < i) { // Only log once per pair (index < i prevents duplicates)
                 uint currentCollisionIndex = atomicAdd(collisionCount, 1);
                 if (currentCollisionIndex < maxCollisions) {
                     collisions[currentCollisionIndex].particleA = index;

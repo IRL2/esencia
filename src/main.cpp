@@ -42,6 +42,9 @@ int main()
     renderApp->particles = &(mainApp->simulator.particles.active);
     renderApp->simulator = &(mainApp->simulator);
 
+    // this is the connection between the simulator and the audio app
+    mainApp->audioApp.collisionData = &(mainApp->simulator.collisionData);
+
     // ** note that parameters are not defined and exposed by its system (class) as the oF common way
     //    all params are defined on the GUI class in GUI ofApp, then linked to each system
 	//    this is because parameter are shared between systems, so it make sense to have them in a single common place (the gui)
