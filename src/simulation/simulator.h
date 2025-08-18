@@ -5,6 +5,7 @@
 #include "../gui/GuiApp.h"
 //#include "ofxOpenCv.h" // TODO: research on using a different datastructure to pass the frame segment and avoid loading opencv here
 #include "particles.h"
+#include <unordered_set>
 
 struct CollisionData {
     uint32_t particleA;
@@ -25,6 +26,25 @@ struct CollisionBuffer {
     std::vector<CollisionData> collisions;
 };
 
+// Cluster analysis structures
+struct ClusterStats {
+    uint32_t groupIndex;           // Unique cluster ID
+    uint32_t particleCount;        // Number of particles in cluster
+    glm::vec2 centerPosition;      // Spatial center of cluster
+    float spatialSpread;           // Standard deviation of particle positions
+    glm::vec2 averageVelocity;     // Average velocity of cluster
+    float velocitySpread;          // Standard deviation of velocities
+    uint32_t frameNumber;          // Frame when this cluster was detected
+};
+
+struct ClusterAnalysisData {
+    uint32_t clusterCount;         // Number of clusters found
+    uint32_t frameNumber;          // Current frame number
+    uint32_t minClusterSize;       // Minimum particles to consider a cluster
+    uint32_t maxClusters;          // Maximum number of clusters we can store
+    std::vector<ClusterStats> clusters;
+};
+
 class Simulator {
 public:
     void setup(SimulationParameters* params, GuiApp* globalParams);
@@ -38,6 +58,7 @@ public:
     ParticleSystem particles;
     
     CollisionBuffer collisionData;
+    ClusterAnalysisData clusterData;
 
     GLint deltaTimeLocation;
     GLint worldSizeLocation;
@@ -56,6 +77,8 @@ public:
     GLint enableCollisionLoggingLocation;
 
     static const size_t MAX_COLLISIONS_PER_FRAME = 1024;
+    static const size_t MAX_CLUSTERS_PER_FRAME = 50; // Reasonable max clusters
+    static const uint32_t MIN_CLUSTER_SIZE = 5;      // Reduced for testing - was 10
 
 private:
     void setupComputeShader();
@@ -63,6 +86,14 @@ private:
     void updateDepthFieldTexture();
     void setupCollisionBuffer();
     void readCollisionData();
+    
+    // Cluster analysis methods
+    void setupClusterAnalysis();
+    void analyzeParticleClusters();
+    void performUnionFind(std::vector<uint32_t>& parent, std::vector<uint32_t>& rank);
+    uint32_t findRoot(std::vector<uint32_t>& parent, uint32_t particle);
+    void unionSets(std::vector<uint32_t>& parent, std::vector<uint32_t>& rank, uint32_t a, uint32_t b);
+    void calculateClusterStatistics(const std::vector<uint32_t>& parent, const std::vector<std::unordered_set<uint32_t>>& clusterMembers);
 
     // listeners
     void onRenderwindowResize(glm::vec2& worldSize);
@@ -108,4 +139,8 @@ private:
     // Internal collision buffer for GPU operations
     CollisionBuffer collisionBuffer;
     uint32_t currentFrameNumber = 0;
+    
+    // Cluster analysis settings
+    bool enableClusterAnalysis = true;
+    float clusterConnectionDistance = 50.0f;
 };

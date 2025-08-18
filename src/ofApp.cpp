@@ -16,6 +16,9 @@ void ofApp::setup(){
     camera.setup(&gui.cameraParameters);
 
     simulator.setup(&gui.simulationParameters, &gui);
+    
+    // Connect cluster analysis data to AudioApp
+    audioApp.clusterData = &simulator.clusterData;
 }
 //--------------------------------------------------------------
 void ofApp::update(){

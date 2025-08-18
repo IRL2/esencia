@@ -12,6 +12,7 @@ void Simulator::setup(SimulationParameters* params, GuiApp* globalParams) {
 
     setupComputeShader();
     setupCollisionBuffer();
+    setupClusterAnalysis();
 
     glGenTextures(1, &depthFieldTexture);
     glBindTexture(GL_TEXTURE_2D, depthFieldTexture);
@@ -121,6 +122,17 @@ void Simulator::setupComputeShader() {
     enableCollisionLoggingLocation = glGetUniformLocation(computeShaderProgram, "enableCollisionLogging");
 }
 
+void Simulator::setupClusterAnalysis() {
+    clusterData.clusterCount = 0;
+    clusterData.frameNumber = 0;
+    clusterData.minClusterSize = MIN_CLUSTER_SIZE;
+    clusterData.maxClusters = MAX_CLUSTERS_PER_FRAME;
+    clusterData.clusters.resize(MAX_CLUSTERS_PER_FRAME);
+    
+    ofLogNotice("Simulator::setupClusterAnalysis") << "Cluster analysis initialized with min size: " << MIN_CLUSTER_SIZE 
+              << ", connection distance: " << clusterConnectionDistance;
+}
+
 void Simulator::update() {
     currentFrameNumber++;
     updateParticlesOnGPU();
@@ -128,6 +140,11 @@ void Simulator::update() {
         readCollisionData();
         // Copy internal collision data to public collision data for external access
         collisionData = collisionBuffer;
+    }
+    
+    // Perform cluster analysis if enabled (independent of collision logging)
+    if (enableClusterAnalysis) {
+        analyzeParticleClusters();
     }
 }
 
@@ -317,7 +334,183 @@ void Simulator::keyReleased(ofKeyEventArgs& e) {
         parameters->enableCollisionLogging = !parameters->enableCollisionLogging;
         ofLogNotice("Simulator") << "Collision logging " << (parameters->enableCollisionLogging ? "enabled" : "disabled") << " via keyboard";
         break;
+    case 'k':
+    case 'K':
+        enableClusterAnalysis = !enableClusterAnalysis;
+        ofLogNotice("Simulator") << "Cluster analysis " << (enableClusterAnalysis ? "enabled" : "disabled") << " via keyboard";
+        break;
+    case 'n':
+    case 'N':
+        clusterConnectionDistance += 10.0f;
+        ofLogNotice("Simulator") << "Cluster connection distance increased to " << clusterConnectionDistance;
+        break;
+    case 'm':
+    case 'M':
+        clusterConnectionDistance = std::max(10.0f, clusterConnectionDistance - 10.0f);
+        ofLogNotice("Simulator") << "Cluster connection distance decreased to " << clusterConnectionDistance;
+        break;
     default:
         break;
     }
+}
+
+void Simulator::analyzeParticleClusters() {
+    // Disjoint Set (Union-Find Data Structure)
+    const uint32_t maxParticlesForAnalysis = 512; // Limit analysis to first 512 particles
+    const uint32_t particleCount = std::min(static_cast<uint32_t>(particles.active.size()), maxParticlesForAnalysis);
+    
+    if (particleCount < MIN_CLUSTER_SIZE) {
+        clusterData.clusterCount = 0;
+        return;
+    }
+    
+    //// Debug logging
+    //if (currentFrameNumber % 60 == 0) { // Log every 2 seconds at 30fps
+    //    ofLogNotice("Simulator::ClusterDebug") << "Frame " << currentFrameNumber 
+    //              << ": Analyzing " << particleCount << " particles with connection distance " << clusterConnectionDistance;
+    //}
+    
+    // Initialize Union-Find data structures
+    std::vector<uint32_t> parent(particleCount);
+    std::vector<uint32_t> rank(particleCount, 0);
+    
+    // Initialize parent array - each particle is its own parent initially
+    for (uint32_t i = 0; i < particleCount; i++) {
+        parent[i] = i;
+    }
+    
+    // Process collisions to build connected components
+    performUnionFind(parent, rank);
+    
+    // Group particles by their root parent to form clusters
+    std::vector<std::unordered_set<uint32_t>> clusterMembers;
+    std::vector<uint32_t> rootToClusterIndex(particleCount, UINT32_MAX);
+    
+    // Find all unique roots and create cluster groups
+    for (uint32_t i = 0; i < particleCount; i++) {
+        uint32_t root = findRoot(parent, i);
+        
+        if (rootToClusterIndex[root] == UINT32_MAX) {
+            rootToClusterIndex[root] = static_cast<uint32_t>(clusterMembers.size());
+            clusterMembers.emplace_back();
+        }
+        
+        clusterMembers[rootToClusterIndex[root]].insert(i);
+    }
+    
+    //// Debug: Log all cluster sizes before filtering
+    //if (currentFrameNumber % 60 == 0 && clusterMembers.size() > 0) {
+    //    ofLogNotice("Simulator::ClusterDebug") << "Found " << clusterMembers.size() << " raw clusters. Sizes: ";
+    //    for (size_t i = 0; i < std::min(clusterMembers.size(), size_t(10)); i++) {
+    //        ofLogNotice("Simulator::ClusterDebug") << "  Cluster " << i << ": " << clusterMembers[i].size() << " particles";
+    //    }
+    //}
+    
+    // Filter clusters by minimum size and calculate statistics
+    calculateClusterStatistics(parent, clusterMembers);
+}
+
+void Simulator::performUnionFind(std::vector<uint32_t>& parent, std::vector<uint32_t>& rank) {
+    // Distance-based clustering for nearby particles (primary method)
+    const uint32_t maxParticles = static_cast<uint32_t>(parent.size());
+    const float connectionThresholdSq = clusterConnectionDistance * clusterConnectionDistance;
+    uint32_t connectionsFound = 0;
+    
+    for (uint32_t i = 0; i < maxParticles; i++) {
+        for (uint32_t j = i + 1; j < maxParticles; j++) {
+            const Particle& p1 = particles.active[i];
+            const Particle& p2 = particles.active[j];
+            
+            glm::vec2 diff = p1.position - p2.position;
+            float distanceSq = glm::dot(diff, diff);
+            
+            // Use cluster connection distance as the only threshold
+            if (distanceSq <= connectionThresholdSq) {
+                unionSets(parent, rank, i, j);
+                connectionsFound++;
+            }
+        }
+    }
+    
+    if (currentFrameNumber % 60 == 0) {
+        ofLogNotice("Simulator::ClusterDebug") << "Found " << connectionsFound << " particle connections using distance-based clustering only";
+    }
+}
+
+uint32_t Simulator::findRoot(std::vector<uint32_t>& parent, uint32_t particle) {
+    if (parent[particle] != particle) {
+        parent[particle] = findRoot(parent, parent[particle]); // Path compression
+    }
+    return parent[particle];
+}
+
+void Simulator::unionSets(std::vector<uint32_t>& parent, std::vector<uint32_t>& rank, uint32_t a, uint32_t b) {
+    uint32_t rootA = findRoot(parent, a);
+    uint32_t rootB = findRoot(parent, b);
+    
+    if (rootA != rootB) {
+        // Union by rank for better performance
+        if (rank[rootA] < rank[rootB]) {
+            parent[rootA] = rootB;
+        } else if (rank[rootA] > rank[rootB]) {
+            parent[rootB] = rootA;
+        } else {
+            parent[rootB] = rootA;
+            rank[rootA]++;
+        }
+    }
+}
+
+void Simulator::calculateClusterStatistics(const std::vector<uint32_t>& parent, const std::vector<std::unordered_set<uint32_t>>& clusterMembers) {
+    clusterData.frameNumber = currentFrameNumber;
+    clusterData.clusterCount = 0;
+    
+    uint32_t clusterIndex = 0;
+    
+    for (const auto& cluster : clusterMembers) {
+        // Only consider clusters with minimum required size
+        if (cluster.size() >= MIN_CLUSTER_SIZE && clusterIndex < MAX_CLUSTERS_PER_FRAME) {
+            ClusterStats& stats = clusterData.clusters[clusterIndex];
+            
+            stats.groupIndex = clusterIndex;
+            stats.particleCount = static_cast<uint32_t>(cluster.size());
+            stats.frameNumber = currentFrameNumber;
+            
+            // Calculate center position and average velocity
+            glm::vec2 totalPosition(0.0f);
+            glm::vec2 totalVelocity(0.0f);
+            
+            for (uint32_t particleId : cluster) {
+                const Particle& particle = particles.active[particleId];
+                totalPosition += particle.position;
+                totalVelocity += particle.velocity;
+            }
+            
+            stats.centerPosition = totalPosition / static_cast<float>(cluster.size());
+            stats.averageVelocity = totalVelocity / static_cast<float>(cluster.size());
+            
+            // Calculate spatial spread (standard deviation of positions)
+            float spatialVariance = 0.0f;
+            float velocityVariance = 0.0f;
+            
+            for (uint32_t particleId : cluster) {
+                const Particle& particle = particles.active[particleId];
+                
+                glm::vec2 positionDiff = particle.position - stats.centerPosition;
+                spatialVariance += glm::dot(positionDiff, positionDiff);
+                
+                glm::vec2 velocityDiff = particle.velocity - stats.averageVelocity;
+                velocityVariance += glm::dot(velocityDiff, velocityDiff);
+            }
+            
+            stats.spatialSpread = std::sqrt(spatialVariance / static_cast<float>(cluster.size()));
+            stats.velocitySpread = std::sqrt(velocityVariance / static_cast<float>(cluster.size()));
+            
+            clusterIndex++;
+        }
+    }
+    
+    clusterData.clusterCount = clusterIndex;
+    
+ 
 }
