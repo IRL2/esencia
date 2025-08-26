@@ -152,6 +152,7 @@
     <ClCompile Include="..\..\..\addons\ofxOrbbec\src\ofxOrbbecCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\addons\ofxPresets\src\ofxSEasing.h" />
     <ClInclude Include="src\gui\SystemUsage.h" />
     <ClInclude Include="src\ofApp.h" />
     <ClInclude Include="src\camera\Camera.h" />
@@ -169,7 +170,6 @@
     <ClInclude Include="src\render\RenderApp.h" />
     <ClInclude Include="src\simulation\particles.h" />
     <ClInclude Include="src\simulation\simulator.h" />
-    <ClInclude Include="..\..\..\addons\ofxEasing\src\ofxEasing.h" />
     <ClInclude Include="..\..\..\addons\ofxGuiExtended\src\containers\ofxGuiContainer.h" />
     <ClInclude Include="..\..\..\addons\ofxGuiExtended\src\containers\ofxGuiGroup.h" />
     <ClInclude Include="..\..\..\addons\ofxGuiExtended\src\containers\ofxGuiMenu.h" />

@@ -165,12 +165,6 @@
     <Filter Include="addons">
       <UniqueIdentifier>{FD921593--26E-C-44-4D-A-4F6-2C3016C4F51F}</UniqueIdentifier>
     </Filter>
-    <Filter Include="addons\ofxEasing">
-      <UniqueIdentifier>{C69DC4F7--F9B-6-44-DD-B-BAF-D79E17BBD85C}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="addons\ofxEasing\src">
-      <UniqueIdentifier>{C9C166EB--A6F-8-44-AC-9-4D4-DC3213912EB8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="addons\ofxGuiExtended">
       <UniqueIdentifier>{4D4688E1--223-4-48-7E-9-4D6-4663A99FC096}</UniqueIdentifier>
     </Filter>
@@ -550,9 +544,6 @@
     </ClInclude>
     <ClInclude Include="src\simulation\simulator.h">
       <Filter>src\simulation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\addons\ofxEasing\src\ofxEasing.h">
-      <Filter>addons\ofxEasing\src</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\addons\ofxGuiExtended\src\containers\ofxGuiContainer.h">
       <Filter>addons\ofxGuiExtended\src\containers</Filter>
@@ -2506,6 +2497,9 @@
     </ClInclude>
     <ClInclude Include="src\gui\SystemUsage.h">
       <Filter>src\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxPresets\src\ofxSEasing.h">
+      <Filter>addons\ofxPresets\src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

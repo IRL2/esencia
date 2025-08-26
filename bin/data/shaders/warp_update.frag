@@ -8,12 +8,15 @@ uniform float warpPropagationPersistence;
 uniform float warpSpreadX;
 uniform float warpSpreadY;
 uniform float warpDetail;
+uniform float zoom; // 1.0 = no zoom, >1.0 = zoom in, <1.0 = zoom out
 
 in vec2 vTexCoord;
 out vec2 fragColor;  // Output displacement as RG
 
 void main() {
-    vec2 scaledCoord = vTexCoord * warpDetail;
+    vec2 centeredCoord = (vTexCoord - 0.5) / zoom + 0.5;
+    vec2 scaledCoord = centeredCoord * warpDetail;
+
     vec2 texelSize = 1.0 / textureSize(externalInput, 0);
     
     vec2 left = vec2(scaledCoord.x - warpSpreadX * texelSize.x, scaledCoord.y);
@@ -49,7 +52,7 @@ void main() {
 
     // combine and clamp..
     vec2 finalDisplacement = newDisplacement + propDisplacement;
-    finalDisplacement = clamp(finalDisplacement, vec2(-10.0), vec2(10.0));
+    finalDisplacement = clamp(finalDisplacement, vec2(-1.0), vec2(1.0));
 
     fragColor = finalDisplacement;
 }

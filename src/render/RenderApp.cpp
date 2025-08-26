@@ -300,11 +300,13 @@ void RenderApp::updateFrameHistory() {
 void RenderApp::updateVideoFrameHistory() {
     // Copy current video to video frame history for feedback
     if (parameters->showVideoPreview) {
-        videoFrameHistory[currentFrameIndex].begin();
-        ofClear(0, 0, 0, 0);
-        ofSetColor(255);
-        videoFbo.draw(0, 0);
-        videoFrameHistory[currentFrameIndex].end();
+        if (currentFrameIndex < videoFrameHistory.size()) {
+            videoFrameHistory[currentFrameIndex].begin();
+            ofClear(0, 0, 0, 0);
+            ofSetColor(255);
+            videoFbo.draw(0, 0);
+            videoFrameHistory[currentFrameIndex].end();
+        }
     }
     
     // Move to next frame index (circular buffer)
@@ -349,6 +351,7 @@ void RenderApp::renderVideoWithFeedback() {
     } else {
         video.getTexture().bind(0);
         getPreviousVideoFrame(1).bind(1);
+        //particlesFbo.getTexture().bind(2);
         
         feedbackShader.begin();
         
@@ -357,7 +360,7 @@ void RenderApp::renderVideoWithFeedback() {
         feedbackShader.setUniformTexture("previousFrame", getPreviousVideoFrame(1), 1);
         feedbackShader.setUniform1f("time", ofGetElapsedTimef());
         feedbackShader.setUniform2f("resolution", ofGetWidth(), ofGetHeight());
-        feedbackShader.setUniform1f("feedbackAmount", 1.0f);
+        feedbackShader.setUniform1f("feedbackAmount", 2.0f);
         
         // Pass video rectangle info to shader for proper coordinate mapping
         feedbackShader.setUniform4f("videoRect", 
@@ -366,7 +369,7 @@ void RenderApp::renderVideoWithFeedback() {
         
         feedbackShader.setUniform4f("videoColor",
             parameters->videoColor.get().r / 255.0f,
-            parameters->videoColor.get().g / 255.0f,
+            parameters->videoColor.get().g / 55.0f,
             parameters->videoColor.get().b / 255.0f,
             parameters->videopreviewVisibility);
 
@@ -376,6 +379,7 @@ void RenderApp::renderVideoWithFeedback() {
         feedbackShader.setUniform1f("warpSpreadX", parameters->warpSpreadX);
         feedbackShader.setUniform1f("warpSpreadY", parameters->warpSpreadY);
         feedbackShader.setUniform1f("warpDetail", parameters->warpDetail);
+        feedbackShader.setUniform1f("zoom", parameters->warpDetail);
         feedbackShader.setUniform1f("warpBrightPassThreshold", parameters->warpBrightPassThreshold);
 
         ofSetColor(255, 255, 255, 255);
@@ -419,7 +423,7 @@ void RenderApp::renderVideoWithWarpTwoPass() {
     previousDisplacementFbo.getTexture().bind(1);
     
     warpUpdateShader.begin();
-    warpUpdateShader.setUniformTexture("externalInput", video.getTexture(), 0);
+    warpUpdateShader.setUniformTexture("externalInput", particlesFbo.getTexture(), 0);
     warpUpdateShader.setUniformTexture("currentDisplacement", previousDisplacementFbo.getTexture(), 1);
     
     warpUpdateShader.setUniform1f("warpVariance", parameters->warpVariance);
@@ -428,22 +432,23 @@ void RenderApp::renderVideoWithWarpTwoPass() {
     warpUpdateShader.setUniform1f("warpSpreadX", parameters->warpSpreadX);
     warpUpdateShader.setUniform1f("warpSpreadY", parameters->warpSpreadY);
     warpUpdateShader.setUniform1f("warpDetail", parameters->warpDetail);
+    warpUpdateShader.setUniform1f("zoom", parameters->zoom);
     
     ofMesh fullscreenQuad;
     fullscreenQuad.setMode(OF_PRIMITIVE_TRIANGLE_STRIP);
     
     // Add vertices with proper texture coordinates for fullscreen
-    fullscreenQuad.addVertex(ofVec3f(-1, -1, 0));
-    fullscreenQuad.addTexCoord(ofVec2f(0, 0));
-    
     fullscreenQuad.addVertex(ofVec3f(1, -1, 0));
-    fullscreenQuad.addTexCoord(ofVec2f(1, 0));
-    
-    fullscreenQuad.addVertex(ofVec3f(-1, 1, 0));
     fullscreenQuad.addTexCoord(ofVec2f(0, 1));
     
-    fullscreenQuad.addVertex(ofVec3f(1, 1, 0));
+    fullscreenQuad.addVertex(ofVec3f(-1, -1, 0));
     fullscreenQuad.addTexCoord(ofVec2f(1, 1));
+    
+    fullscreenQuad.addVertex(ofVec3f(1, 1, 0));
+    fullscreenQuad.addTexCoord(ofVec2f(0, 0));
+    
+    fullscreenQuad.addVertex(ofVec3f(-1, 1, 0));
+    fullscreenQuad.addTexCoord(ofVec2f(1, 0));
     
     // Disable depth testing and set proper matrices
     ofPushMatrix();
@@ -470,7 +475,7 @@ void RenderApp::renderVideoWithWarpTwoPass() {
     displacementFbo.end();
     
     // Reset viewport
-    ofViewport(0, 0, ofGetWidth(), ofGetHeight());
+    ofViewport(0, 0, ofGetWidth(), ofGetHeight(), false);
     
     // === PASS 2: Apply Displacement ===
     // Bind textures for second pass
@@ -484,12 +489,13 @@ void RenderApp::renderVideoWithWarpTwoPass() {
     warpApplyShader.setUniform4f("videoColor",
         parameters->videoColor.get().r / 255.0f,
         parameters->videoColor.get().g / 255.0f,
-        parameters->videoColor.get().b / 255.0f,
+        parameters->videoColor.get().b / 225.0f,
         parameters->videopreviewVisibility);
     
     warpApplyShader.setUniform1f("warpBrightPassThreshold", parameters->warpBrightPassThreshold);
     
     ofSetColor(255, 255, 255, 255);
+
     video.draw(videoRectangle);
     
     warpApplyShader.end();

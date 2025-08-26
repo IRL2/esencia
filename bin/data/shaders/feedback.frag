@@ -16,13 +16,17 @@ uniform float warpSpreadX;
 uniform float warpSpreadY;
 uniform float warpDetail;
 uniform float warpBrightPassThreshold;
+uniform float zoom; // 1.0 = no zoom, >1.0 = zoom in, <1.0 = zoom out
 
 in vec2 vTexCoord;
 out vec4 fragColor;
 
 // function to calculate warp displacement based on current and previous frames
 vec2 calculateWarpDisplacement(vec2 texCoord) {
-    vec2 scaledCoord = texCoord * warpDetail;
+    vec2 centeredCoord = (vTexCoord - 0.5) / zoom + 0.5;
+    vec2 scaledCoord = centeredCoord * warpDetail;
+    // vec2 scaledCoord = texCoord * warpDetail;
+
     vec2 texelSize = 1.0 / textureSize(currentFrame, 0);
     
     vec2 spreadX = vec2(warpSpreadX * texelSize.x, 0.0);
@@ -61,7 +65,7 @@ vec2 calculateWarpDisplacement(vec2 texCoord) {
         ((prev_Left + prev_Right + prev_Top + prev_Bottom) * warpPropagation * 0.25)
     );
     
-    vec2 finalDisplacement = newDisplacement + propagatedDisplacement * 0.1;
+    vec2 finalDisplacement = newDisplacement + propagatedDisplacement * 0.2;
     
     finalDisplacement = clamp(finalDisplacement, vec2(-2.0), vec2(2.0));
     

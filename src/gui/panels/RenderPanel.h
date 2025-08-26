@@ -17,7 +17,7 @@ class RenderPanel : public EsenciaPanelBase {
 
     const float TRAILS_VISIBILITY_INITIAL = 0.7; // 0.95 // 0.95
     const float TRAILS_VISIBILITY_MIN = 0.0; // 1 // 0.0
-    const float TRAILS_VISIBILITY_MAX = 0.7; // 0.7 // 0.3
+    const float TRAILS_VISIBILITY_MAX = 1.0; // 0.7 // 0.3
 
     const ofColor VIDEO_COLOR = ofColor::white;
 
@@ -55,6 +55,7 @@ public:
         warpGroup->add(params.warpSpreadX.set("spread X", 1.0f, -10.1f, 10.0f), ofJson({ {"precision", 2} }));
         warpGroup->add(params.warpSpreadY.set("spread Y", 1.0f, -10.1f, 10.0f), ofJson({ {"precision", 2} }));
         warpGroup->add(params.warpDetail.set("detail", 1.0f, 0.1f, 4.0f), ofJson({ {"precision", 2} }));
+        warpGroup->add(params.zoom.set("zoom", 1.0f, -1.0f, 2.0f), ofJson({ {"precision", 2} }));
         warpGroup->add(params.warpBrightPassThreshold.set("brightness", 0.0f, 0.0f, 1.0f), ofJson({ {"precision", 3} }));
         warpGroup->minimize(); // Start collapsed for cleaner interface
         

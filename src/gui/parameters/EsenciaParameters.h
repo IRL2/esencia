@@ -131,6 +131,7 @@ struct RenderParameters : public ofxPresetsParametersBase {
     ofParameter<float> warpSpreadX = 1.0f;
     ofParameter<float> warpSpreadY = 1.0f;
     ofParameter<float> warpDetail = 1.0f;
+    ofParameter<float> zoom = 1.0f;
     ofParameter<float> warpBrightPassThreshold = 0.0f;
     
     ofParameter<bool> useEnhancedShaders = true;
@@ -161,7 +162,8 @@ struct RenderParameters : public ofxPresetsParametersBase {
 		parameterMap["warpPropagationPersistence"] = &warpPropagationPersistence;
 		parameterMap["warpSpreadX"] = &warpSpreadX;
 		parameterMap["warpSpreadY"] = &warpSpreadY;
-		parameterMap["warpDetail"] = &warpDetail;
+        parameterMap["warpDetail"] = &warpDetail;
+        parameterMap["zoom"] = &zoom;
 		parameterMap["warpBrightPassThreshold"] = &warpBrightPassThreshold;
 		
 		parameterMap["useEnhancedShaders"] = &useEnhancedShaders;
