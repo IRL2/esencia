@@ -123,16 +123,6 @@ struct RenderParameters : public ofxPresetsParametersBase {
     ofParameter<float> videopreviewVisibility = 0.0;
     ofParameter<ofColor> videoColor;
     
-    ofParameter<bool> useWarpEffect = true;
-    ofParameter<bool> useTwoPassWarp = true;
-    ofParameter<float> warpVariance = 0.02f;
-    ofParameter<float> warpPropagation = 0.02f; 
-    ofParameter<float> warpPropagationPersistence = 0.95f;
-    ofParameter<float> warpSpreadX = 1.0f;
-    ofParameter<float> warpSpreadY = 1.0f;
-    ofParameter<float> warpDetail = 1.0f;
-    ofParameter<float> warpBrightPassThreshold = 0.0f;
-    
     ofParameter<bool> useEnhancedShaders = true;
     ofParameter<bool> useImprovedTrails = true;
     ofParameter<float> trailDecayRate = 1.0;
@@ -155,15 +145,6 @@ struct RenderParameters : public ofxPresetsParametersBase {
 		parameterMap["videopreviewVisibility"] = &videopreviewVisibility;
 		parameterMap["videoColor"] = &videoColor;
 		
-		parameterMap["useWarpEffect"] = &useWarpEffect;
-		parameterMap["warpVariance"] = &warpVariance;
-		parameterMap["warpPropagation"] = &warpPropagation;
-		parameterMap["warpPropagationPersistence"] = &warpPropagationPersistence;
-		parameterMap["warpSpreadX"] = &warpSpreadX;
-		parameterMap["warpSpreadY"] = &warpSpreadY;
-		parameterMap["warpDetail"] = &warpDetail;
-		parameterMap["warpBrightPassThreshold"] = &warpBrightPassThreshold;
-		
 		parameterMap["useEnhancedShaders"] = &useEnhancedShaders;
 		parameterMap["useImprovedTrails"] = &useImprovedTrails;
 		parameterMap["trailDecayRate"] = &trailDecayRate;
@@ -171,7 +152,6 @@ struct RenderParameters : public ofxPresetsParametersBase {
 		parameterMap["useMotionBlur"] = &useMotionBlur;
 		parameterMap["particleGlow"] = &particleGlow;
 		parameterMap["useColorVariation"] = &useColorVariation;
-		parameterMap["useTwoPassWarp"] = &useTwoPassWarp;
 	}
 };
 

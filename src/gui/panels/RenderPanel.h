@@ -45,18 +45,6 @@ public:
         
         vp->add(params.videoColor.set("color", VIDEO_COLOR))->minimize();
         
-        // NEW: Add warp effect controls
-        ofxGuiGroup* warpGroup = vp->addGroup("warp effects");
-        warpGroup->add(params.useWarpEffect.set("use warp effect", true));
-        warpGroup->add(params.useTwoPassWarp.set("two pass warp", true));
-        warpGroup->add(params.warpVariance.set("variance", 0.02f, -100.0f, 100.1f), ofJson({ {"precision", 3} }));
-        warpGroup->add(params.warpPropagation.set("propagation", 0.02f, -10.0f, 10.1f), ofJson({ {"precision", 3} }));
-        warpGroup->add(params.warpPropagationPersistence.set("persistence", 0.95f, -10.8f, 10.0f), ofJson({ {"precision", 3} }));
-        warpGroup->add(params.warpSpreadX.set("spread X", 1.0f, -10.1f, 10.0f), ofJson({ {"precision", 2} }));
-        warpGroup->add(params.warpSpreadY.set("spread Y", 1.0f, -10.1f, 10.0f), ofJson({ {"precision", 2} }));
-        warpGroup->add(params.warpDetail.set("detail", 1.0f, 0.1f, 4.0f), ofJson({ {"precision", 2} }));
-        warpGroup->add(params.warpBrightPassThreshold.set("brightness", 0.0f, 0.0f, 1.0f), ofJson({ {"precision", 3} }));
-        warpGroup->minimize(); // Start collapsed for cleaner interface
         
         // trails
         ofxGuiGroup* ofTrialsPanel = panel->addGroup("trails");

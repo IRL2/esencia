@@ -25,9 +25,7 @@ class RenderApp : public ofBaseApp
         void renderTrailsGPU();
         void setupParticleBuffers();
 		void renderVideoWithShader();
-		void renderVideoWithFeedback(); 
 		void renderVideoStandard();
-		//void updateDistortionTexture();
 
         void setupFBOs();
         void clearFBO(ofFbo& fbo);
@@ -78,14 +76,4 @@ class RenderApp : public ofBaseApp
 
         ofShader shader;
         ofShader shaderBloom;
-        ofShader feedbackShader;
-        
-        // Two-pass warp system
-        ofShader warpUpdateShader;
-        ofShader warpApplyShader;
-        ofFbo displacementFbo;  
-        ofFbo previousDisplacementFbo;   
-
-        void renderVideoWithWarpTwoPass();
-        void setupWarpFBOs();
 };
