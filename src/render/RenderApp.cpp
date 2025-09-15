@@ -1,4 +1,4 @@
-#include "RenderApp.h"
+﻿#include "RenderApp.h"
 
 ofImage video;
 ofImage particleTexture;
@@ -7,6 +7,16 @@ ofRectangle videoRectangle;
 
 ofVbo particleVbo;
 ofShader particleShader;
+ofShader trailShader;
+ofShader videoShader; 
+
+
+ofFbo videoFbo;
+ofFbo particlesFbo;
+ofFbo compositeFbo;
+ofFbo trailFbo;
+
+
 std::vector<glm::vec3> particlePositions;
 std::vector<float> particleSizes;
 
@@ -20,28 +30,75 @@ void RenderApp::setup()
 
     windowResized(ofGetWidth(), ofGetHeight());
 
-    shader.load("shaders\\shaderBlur");
-
-	// Load the particle texture    
-	bool textureLoaded = particleTexture.load("images/particle.png");
-	if (!textureLoaded) {
-		ofLogError("RenderApp::setup()") << "Failed to load particle texture!";
-	}   else
-	{
-		ofLogNotice("RenderApp::setup()") << "Particle texture loaded successfully!";
-	}
+    // Load the particle texture    
+    bool textureLoaded = particleTexture.load("images/particle.png");
+    if (!textureLoaded) {
+        ofLogError("RenderApp::setup()") << "Failed to load particle texture!";
+    }
+    else
+    {
+        ofLogNotice("RenderApp::setup()") << "Particle texture loaded successfully!";
+    }
 
     bool shaderLoaded = particleShader.load("shaders/particle.vert", "shaders/particle.frag");
     if (!shaderLoaded) {
         ofLogError("RenderApp::setup()") << "Failed to load particle shaders!";
-	}
-	else {
-		ofLogNotice("RenderApp::setup()") << "Particle shaders loaded successfully!";
-	}
+    }
+    else {
+        ofLogNotice("RenderApp::setup()") << "Particle shaders loaded successfully!";
+    }
 
+    // Load the trail shader
+    bool trailShaderLoaded = trailShader.load("shaders/trail.vert", "shaders/trail.frag");
+    if (!trailShaderLoaded) {
+        ofLogError("RenderApp::setup()") << "Failed to load trail shaders!";
+    }
+    else {
+        ofLogNotice("RenderApp::setup()") << "Trail shaders loaded successfully!";
+    }
+
+    // Load the video shader
+    bool videoShaderLoaded = videoShader.load("shaders/video.vert", "shaders/video.frag");
+    if (!videoShaderLoaded) {
+        ofLogError("RenderApp::setup()") << "Failed to load video shaders!";
+    }
+    else {
+        ofLogNotice("RenderApp::setup()") << "Video shaders loaded successfully!";
+    }
+
+    setupFBOs();
+    
     // allocate memory for particle data
     particlePositions.reserve(10000);
     particleSizes.reserve(10000);
+}
+
+//--------------------------------------------------------------
+void RenderApp::setupFBOs() {
+    int w = ofGetWidth();
+    int h = ofGetHeight();
+
+    // Use GL_RGBA for better compatibility with grayscale/blurred video data
+    // GL_RGBA32F_ARB can sometimes cause precision issues with intermediate alpha values
+    videoFbo.allocate(w, h, GL_RGBA);
+    particlesFbo.allocate(w, h, GL_RGBA);
+    compositeFbo.allocate(w, h, GL_RGBA);
+    trailFbo.allocate(w, h, GL_RGBA32F_ARB);
+
+    // Clear all FBOs
+    clearFBO(videoFbo);
+    clearFBO(particlesFbo);
+    clearFBO(compositeFbo);
+    clearFBO(trailFbo);
+
+
+}
+
+//--------------------------------------------------------------
+void RenderApp::clearFBO(ofFbo& fbo) {
+    fbo.begin();
+    ofClear(0, 0, 0, 0);
+    fbo.end();
 }
 
 //--------------------------------------------------------------
@@ -58,11 +115,11 @@ void RenderApp::update()
         simulator->updateVideoRect(videoRectangle);
     }
 
-    updateParticleBuffers();
+    updateParticleSystem();
 }
 
 //--------------------------------------------------------------
-void RenderApp::updateParticleBuffers() {
+void RenderApp::updateParticleSystem() {
     if (particles->empty()) return;
 
     particlePositions.clear();
@@ -83,68 +140,126 @@ void RenderApp::updateParticleBuffers() {
 //--------------------------------------------------------------
 void RenderApp::draw()
 {
-    ofSetCircleResolution(10);
     ofBackground(0);
 
-    fbo.begin();
-    // solid background or trail
-    if (parameters->useFaketrails) {
-        ofSetColor(0, 0, 0, (int)((1 - parameters->fakeTrialsVisibility) * 255));
-        ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
-    }
-    else {
-        ofBackground(0);
-    }
+    // 1. Render video to dedicated FBO
+    renderVideoPass();
 
-    // video
-    if (parameters->showVideoPreview) {
-        ofEnableBlendMode(OF_BLENDMODE_ALPHA);
-        ofSetColor(parameters->videoColor, (int)(parameters->videopreviewVisibility * 255));
-        video.draw(videoRectangle);
-    }
+    // 2. Render particles to dedicated FBO
+    renderParticlesPass();
 
-    // draw particles
-    renderParticlesGPU();
+    // 3. Composite everything together
+    renderCompositePass();
 
-    fbo.end();
-
-    // shader effects
+    // 4. Draw final result
     ofSetColor(255);
-    if (parameters->useShaders) {
-        fboS.begin();
-        shader.begin();
-        shader.setUniform1f("blurAmnt", 3);
-        shader.setUniform1f("texwidth", ofGetWidth());
-        shader.setUniform1f("texheight", ofGetHeight());
-        fbo.draw(0, 0);
-        shader.end();
-        fboS.end();
+    compositeFbo.draw(0, 0);
 
-        fboS.draw(0, 0);
-    }
-    else {
-        fbo.draw(0, 0);
+    // Draw the trail FBO
+    if (parameters->useFaketrails) {
+        ofEnableBlendMode(OF_BLENDMODE_ADD);
+        ofSetColor(255);
+        trailFbo.draw(0, 0);
+        ofEnableBlendMode(OF_BLENDMODE_ALPHA);
     }
 }
 
+//--------------------------------------------------------------
+void RenderApp::renderVideoPass() {
+    if (!parameters->showVideoPreview) return;
+
+    videoFbo.begin();
+    ofClear(0, 0, 0, 0);
+
+    ofEnableBlendMode(OF_BLENDMODE_DISABLED);
+
+    renderVideoWithShader();
+
+    videoFbo.end();
+}
+
+//--------------------------------------------------------------
+void RenderApp::renderParticlesPass() {
+    if (particles->empty()) return;
+
+    particlesFbo.begin();
+    ofClear(0, 0, 0, 0);
+
+    renderParticlesGPU();
+
+    particlesFbo.end();
+}
+
+//--------------------------------------------------------------
+void RenderApp::renderCompositePass() {
+    compositeFbo.begin();
+    ofClear(0, 0, 0, 0);
+
+    if (parameters->showVideoPreview) {
+        ofEnableBlendMode(OF_BLENDMODE_DISABLED);
+        ofSetColor(255, 255, 255, 255);
+        videoFbo.draw(0, 0);
+    }
+
+    if (!particles->empty()) {
+        ofEnableBlendMode(OF_BLENDMODE_ADD);
+        ofSetColor(255, 255, 255, 255);
+        particlesFbo.draw(0, 0);
+    }
+
+
+    compositeFbo.end();
+
+    ofEnableBlendMode(OF_BLENDMODE_ALPHA); 
+}
+
+//--------------------------------------------------------------
+void RenderApp::renderVideoWithShader() {
+    // use disabled blending to preserve grayscale/blur values exactly as they are
+    ofEnableBlendMode(OF_BLENDMODE_DISABLED);
+
+    renderVideoStandard();
+}
+
+void RenderApp::renderVideoStandard() {
+    // Standard video rendering without warp (pass-through)
+
+    video.getTexture().bind(0);
+
+    videoShader.begin();
+
+    videoShader.setUniform4f("videoColor",
+        parameters->videoColor.get().r / 255.0f,
+        parameters->videoColor.get().g / 255.0f,
+        parameters->videoColor.get().b / 255.0f,
+        parameters->videopreviewVisibility);
+
+    videoShader.setUniformTexture("tex0", video.getTexture(), 0);
+    videoShader.setUniform1f("time", ofGetElapsedTimef());
+    videoShader.setUniform2f("resolution", videoRectangle.width, videoRectangle.height);
+
+    ofSetColor(255, 255, 255, 255);
+    video.draw(videoRectangle);
+
+    videoShader.end();
+    video.getTexture().unbind(0);
+}
 //--------------------------------------------------------------
 void RenderApp::renderParticlesGPU() {
     if (particles->empty()) return;
 
     ofEnableBlendMode(OF_BLENDMODE_ADD);
 
-    //shaders for point sprite rendering
+    // Render main particles
     particleTexture.bind();
     particleShader.begin();
 
-    // set uniforms
     particleShader.setUniform4f("color",
         parameters->color.get().r / 255.0f,
         parameters->color.get().g / 255.0f,
         parameters->color.get().b / 255.0f,
         parameters->color.get().a / 255.0f);
 
-    // draw all particles in a single call
     glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
     glEnable(GL_POINT_SPRITE);
     glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
@@ -157,8 +272,50 @@ void RenderApp::renderParticlesGPU() {
     particleShader.end();
     particleTexture.unbind();
 
-    // reset blend mode
+    // trails
+    if (parameters->useFaketrails) {
+        updateTrails();
+    }
+
     ofEnableBlendMode(OF_BLENDMODE_ALPHA);
+}
+
+//--------------------------------------------------------------
+void RenderApp::updateTrails() {
+    // Fade the trail FBO
+    float fadeAmount = (1.0f - parameters->fakeTrialsVisibility) * 40.0f;
+    trailFbo.begin();
+    ofEnableBlendMode(OF_BLENDMODE_ALPHA);
+    ofSetColor(0, 0, 0, (int)fadeAmount);
+    ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
+    trailFbo.end();
+
+    trailFbo.begin();
+    ofEnableBlendMode(OF_BLENDMODE_ADD);
+
+    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+    glEnable(GL_POINT_SPRITE);
+    glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
+
+    particleTexture.bind();
+    trailShader.begin();
+    trailShader.setUniformTexture("particleTexture", particleTexture, 0);
+    trailShader.setUniform4f("color",
+        parameters->color.get().r / 255.0f,
+        parameters->color.get().g / 255.0f,
+        parameters->color.get().b / 255.0f,
+        parameters->color.get().a / 255.0f);
+    trailShader.setUniform1f("fadeFactor", 1.0f);
+
+    particleVbo.draw(GL_POINTS, 0, particlePositions.size());
+
+    trailShader.end();
+    particleTexture.unbind();
+
+    glDisable(GL_POINT_SPRITE);
+    glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
+
+    trailFbo.end();
 }
 
 //--------------------------------------------------------------
@@ -170,8 +327,7 @@ void RenderApp::keyReleased(ofKeyEventArgs& e)
     case 'F':
     {
         ofToggleFullscreen();
-        fbo.allocate(ofGetWidth(), ofGetHeight());
-        fboS.allocate(ofGetWidth(), ofGetHeight());
+        windowResized(ofGetWidth(), ofGetHeight());
         break;
     }
     default: break;
@@ -187,9 +343,18 @@ void RenderApp::mouseMoved(int x, int y) {
 void RenderApp::windowResized(int _width, int _height) {
     ofLogNotice("RenderApp::windowResized()") << "window resized to: " << _width << "," << _height;
 
+    // Update main FBOs
     fbo.allocate(_width, _height);
     fboS.allocate(_width, _height);
 
+    setupFBOs();
+
     glm::vec2 newSize = glm::vec2(_width, _height);
     parameters->windowSize.set(glm::vec2(_width, _height));
+}
+
+//--------------------------------------------------------------
+void RenderApp::setupParticleBuffers() {
+    particlePositions.reserve(10000);
+    particleSizes.reserve(10000);
 }

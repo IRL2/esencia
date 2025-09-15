@@ -114,26 +114,45 @@ struct RenderParameters : public ofxPresetsParametersBase {
     ofParameter<int> size = 3;
     ofParameter<ofColor> color;
     ofParameter<glm::vec2> windowSize;
-    ofParameter<bool> useShaders = true;
+    ofParameter<bool> useShaders = false;
     ofParameter<bool> useFaketrails = true;
     ofParameter<bool> showVideoPreview = true;
     ofParameter<float> fakeTrialsVisibility = 0.0;
     ofParameter<float> videopreviewVisibility = 0.0;
     ofParameter<ofColor> videoColor;
+    
+    ofParameter<bool> useEnhancedShaders = true;
+    ofParameter<bool> useImprovedTrails = true;
+    ofParameter<float> trailDecayRate = 1.0;
+    ofParameter<float> motionBlurStrength = 0.5;
+    ofParameter<bool> useMotionBlur = true;
+    ofParameter<float> particleGlow = 1.0;
+    ofParameter<bool> useColorVariation = true;
+
 
     RenderParameters() {
         groupName = "render";
 
-        parameterMap["size"] = &size;
-        parameterMap["color"] = &color;
-        parameterMap["windowSize"] = &windowSize;
-        parameterMap["useShaders"] = &useShaders;
-        parameterMap["useFaketrails"] = &useFaketrails;
-        parameterMap["showVideoPreview"] = &showVideoPreview;
-        parameterMap["fakeTrialsVisibility"] = &fakeTrialsVisibility;
-        parameterMap["videopreviewVisibility"] = &videopreviewVisibility;
-        parameterMap["videoColor"] = &videoColor;
-    }
+
+		parameterMap["size"] = &size;
+		parameterMap["color"] = &color;
+		parameterMap["windowSize"] = &windowSize;
+		parameterMap["useShaders"] = &useShaders;
+		parameterMap["useFaketrails"] = &useFaketrails;
+		parameterMap["showVideoPreview"] = &showVideoPreview;
+		parameterMap["fakeTrialsVisibility"] = &fakeTrialsVisibility;
+		parameterMap["videopreviewVisibility"] = &videopreviewVisibility;
+		parameterMap["videoColor"] = &videoColor;
+		
+		parameterMap["useEnhancedShaders"] = &useEnhancedShaders;
+		parameterMap["useImprovedTrails"] = &useImprovedTrails;
+		parameterMap["trailDecayRate"] = &trailDecayRate;
+		parameterMap["motionBlurStrength"] = &motionBlurStrength;
+		parameterMap["useMotionBlur"] = &useMotionBlur;
+		parameterMap["particleGlow"] = &particleGlow;
+		parameterMap["useColorVariation"] = &useColorVariation;
+	}
+
 };
 
 
@@ -168,7 +187,3 @@ struct SimulationParameters : public ofxPresetsParametersBase {
         //parameterMap["lowFps"] = &lowFps;
     }
 };
-
-
-
-
