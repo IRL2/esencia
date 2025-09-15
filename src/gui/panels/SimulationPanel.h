@@ -24,7 +24,7 @@ class SimulationPanel : public EsenciaPanelBase {
 	const float SLIDERS_HEIGHT = 70;
 
 	const ofRectangle PANEL_RECT = ofRectangle(25, 1, 8, 0);
-	const ofColor &BG_COLOR = ofColor(180, 180, 180, 100);
+	const ofColor &BG_COLOR = ofColor(180, 180, 180, 80);
 
 
 public:
@@ -44,11 +44,11 @@ public:
 			TEMPERATURE_INIT, TEMPERATURE_MIN, TEMPERATURE_MAX),
 			ofJson({{"height", SLIDERS_HEIGHT}, {"precision", 0} }));
 
-		p->add(params.coupling.set("Berendsen\nthermostat\ncoupling", 
+		p->add(params.coupling.set("Berendsen thermostat\ncoupling", 
 			THERMOSTAT_INIT, THERMOSTAT_MIN, THERMOSTAT_MAX),
 			ofJson({{"height", SLIDERS_HEIGHT}, {"precision", 3}}));
 
-		p->add(params.depthFieldScale.set("depth\nfield\nscale",
+		p->add(params.depthFieldScale.set("depth field\nscale",
 			DEPTH_INIT, DEPTH_MIN, DEPTH_MAX),
 			ofJson({{"height", SLIDERS_HEIGHT}, {"precision", 0}}));
 

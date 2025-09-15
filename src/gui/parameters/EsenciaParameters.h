@@ -29,7 +29,7 @@ public:
     // should be moved to the corresponding panel
     ofParameter<bool> startBackgroundReference = true;
     ofParameter<bool> saveDebugImages = false;
-    
+
     ofParameter<bool> recordTestingVideo = false;
     ofParameter<bool> useMask = false;
 
@@ -88,11 +88,11 @@ struct PresetsParameters : public ofxPresetsParametersBase {
     ofParameter<float> transitionDuration = { 0.0 };
     ofParameter<float> presetDuration = { 0.0 };
     ofParameter<std::string> sequence;
-	ofParameter<int> sequenceIndex = { 0 };
+    ofParameter<int> sequenceIndex = { 0 };
 
 
     PresetsParameters() {
-		groupName = "presets";
+        groupName = "presets";
 
         parameterMap["sequence"] = &sequence;
         //parameterMap["transitionDuration"] = &transitionDuration;
@@ -102,8 +102,6 @@ struct PresetsParameters : public ofxPresetsParametersBase {
         // TODO: should we move the PresetManager setup to the GuiApp?
     }
 };
-
-
 
 
 
@@ -135,6 +133,7 @@ struct RenderParameters : public ofxPresetsParametersBase {
     RenderParameters() {
         groupName = "render";
 
+
 		parameterMap["size"] = &size;
 		parameterMap["color"] = &color;
 		parameterMap["windowSize"] = &windowSize;
@@ -153,6 +152,7 @@ struct RenderParameters : public ofxPresetsParametersBase {
 		parameterMap["particleGlow"] = &particleGlow;
 		parameterMap["useColorVariation"] = &useColorVariation;
 	}
+
 };
 
 
@@ -171,17 +171,19 @@ struct SimulationParameters : public ofxPresetsParametersBase {
     ofParameter<bool> applyThermostat;
     ofParameter<glm::vec2> worldSize;
     ofParameter<bool> lowFps;
+    ofParameter<bool> enableCollisionLogging = false;
 
     SimulationParameters() {
-		groupName = "simulation";
+        groupName = "simulation";
 
-		parameterMap["amount"] = &amount;
-		parameterMap["radius"] = &radius;
-		parameterMap["targetTemperature"] = &targetTemperature;
-		parameterMap["coupling"] = &coupling;
-		parameterMap["applyThermostat"] = &applyThermostat;
-		parameterMap["depthFieldScale"] = &depthFieldScale;
-		//parameterMap["worldSize"] = &worldSize;
-		//parameterMap["lowFps"] = &lowFps;
-	}
+        parameterMap["amount"] = &amount;
+        parameterMap["radius"] = &radius;
+        parameterMap["targetTemperature"] = &targetTemperature;
+        parameterMap["coupling"] = &coupling;
+        parameterMap["applyThermostat"] = &applyThermostat;
+        parameterMap["depthFieldScale"] = &depthFieldScale;
+        parameterMap["enableCollisionLogging"] = &enableCollisionLogging;
+        //parameterMap["worldSize"] = &worldSize;
+        //parameterMap["lowFps"] = &lowFps;
+    }
 };
