@@ -106,6 +106,7 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\audio\AudioApp.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
     <ClCompile Include="src\camera\Camera.cpp" />
@@ -152,6 +153,7 @@
     <ClCompile Include="..\..\..\addons\ofxOrbbec\src\ofxOrbbecCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\audio\AudioApp.h" />
     <ClInclude Include="src\gui\SystemUsage.h" />
     <ClInclude Include="src\ofApp.h" />
     <ClInclude Include="src\camera\Camera.h" />
@@ -841,6 +843,10 @@
     <None Include="bin\data\shaders\particlesComputeShader.glsl" />
     <None Include="bin\data\shaders\shaderBlur.frag" />
     <None Include="bin\data\shaders\shaderBlur.vert" />
+    <None Include="bin\data\shaders\trail.frag" />
+    <None Include="bin\data\shaders\trail.vert" />
+    <None Include="bin\data\shaders\video.frag" />
+    <None Include="bin\data\shaders\video.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ProjectExtensions>

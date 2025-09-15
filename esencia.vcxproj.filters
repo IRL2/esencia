@@ -139,6 +139,9 @@
     <ClCompile Include="..\..\..\addons\ofxOrbbec\src\ofxOrbbecCamera.cpp">
       <Filter>addons\ofxOrbbec\src</Filter>
     </ClCompile>
+    <ClCompile Include="src\audio\AudioApp.cpp">
+      <Filter>src\audio</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -497,6 +500,9 @@
     </Filter>
     <Filter Include="src\render\shaders">
       <UniqueIdentifier>{c42447cf-8613-4d7a-b008-a872c3c9f956}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\audio">
+      <UniqueIdentifier>{8b6f5bf8-e3d9-4891-9109-0dfe162c1aba}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -2507,6 +2513,9 @@
     <ClInclude Include="src\gui\SystemUsage.h">
       <Filter>src\gui</Filter>
     </ClInclude>
+    <ClInclude Include="src\audio\AudioApp.h">
+      <Filter>src\audio</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="icon.rc" />
@@ -2534,6 +2543,18 @@
       <Filter>src\render\shaders</Filter>
     </None>
     <None Include="bin\data\shaders\particle.vert">
+      <Filter>src\render\shaders</Filter>
+    </None>
+    <None Include="bin\data\shaders\trail.frag">
+      <Filter>src\render\shaders</Filter>
+    </None>
+    <None Include="bin\data\shaders\trail.vert">
+      <Filter>src\render\shaders</Filter>
+    </None>
+    <None Include="bin\data\shaders\video.frag">
+      <Filter>src\render\shaders</Filter>
+    </None>
+    <None Include="bin\data\shaders\video.vert">
       <Filter>src\render\shaders</Filter>
     </None>
   </ItemGroup>

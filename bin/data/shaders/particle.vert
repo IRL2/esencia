@@ -6,5 +6,6 @@ in float instanceSize; // Attribute 1: particle size
 
 void main() {
     gl_Position = modelViewProjectionMatrix * position;
-    gl_PointSize = instanceSize;
+    // Make particles larger to accommodate the glow effect
+    gl_PointSize = instanceSize * 1.8;
 }

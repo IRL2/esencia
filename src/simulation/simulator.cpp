@@ -1,5 +1,7 @@
 #include "simulator.h"
 #include "ofLog.h"
+#include <iomanip>
+#include <algorithm>
 
 void Simulator::setup(SimulationParameters* params, GuiApp* globalParams) {
     parameters = params;
@@ -9,6 +11,8 @@ void Simulator::setup(SimulationParameters* params, GuiApp* globalParams) {
     particles.updateRadiuses(parameters->radius);
 
     setupComputeShader();
+    setupCollisionBuffer();
+    setupClusterAnalysis();
 
     glGenTextures(1, &depthFieldTexture);
     glBindTexture(GL_TEXTURE_2D, depthFieldTexture);
@@ -27,7 +31,8 @@ void Simulator::setup(SimulationParameters* params, GuiApp* globalParams) {
     parameters->targetTemperature.addListener(this, &Simulator::onTemperatureChanged);
     parameters->coupling.addListener(this, &Simulator::onCouplingChanged);
     parameters->depthFieldScale.addListener(this, &Simulator::onDepthFieldScaleChanged);
- 
+    parameters->enableCollisionLogging.addListener(this, &Simulator::onCollisionLoggingChanged);
+
 
     globalParameters->renderParameters.windowSize.addListener(this, &Simulator::onRenderwindowResize);
 
@@ -39,6 +44,36 @@ void Simulator::setup(SimulationParameters* params, GuiApp* globalParams) {
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
+void Simulator::setupCollisionBuffer() {
+    // Initialize internal collision buffer for GPU operations
+    collisionBuffer.maxCollisions = MAX_COLLISIONS_PER_FRAME;
+    collisionBuffer.collisionCount = 0;
+    collisionBuffer.frameNumber = 0;
+    collisionBuffer.padding = 0;
+    collisionBuffer.collisions.resize(MAX_COLLISIONS_PER_FRAME);
+
+    // Initialize public collision data (for external access)
+    collisionData.maxCollisions = MAX_COLLISIONS_PER_FRAME;
+    collisionData.collisionCount = 0;
+    collisionData.frameNumber = 0;
+    collisionData.padding = 0;
+    collisionData.collisions.resize(MAX_COLLISIONS_PER_FRAME);
+
+    // Create GPU buffer
+    glGenBuffers(1, &ssboCollisions);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboCollisions);
+
+    // Calculate total buffer size: header (4 uints) + collision array
+    size_t headerSize = 4 * sizeof(uint32_t);
+    size_t collisionArraySize = MAX_COLLISIONS_PER_FRAME * sizeof(CollisionData);
+    size_t totalBufferSize = headerSize + collisionArraySize;
+
+    glBufferData(GL_SHADER_STORAGE_BUFFER, totalBufferSize, nullptr, GL_DYNAMIC_COPY);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssboCollisions);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    ofLogNotice("Simulator::setupCollisionBuffer") << "Collision buffer created with " << MAX_COLLISIONS_PER_FRAME << " max collisions";
+}
 
 void Simulator::setupComputeShader() {
     computeShaderProgram = glCreateProgram();
@@ -84,14 +119,46 @@ void Simulator::setupComputeShader() {
     ljCutoffLocation = glGetUniformLocation(computeShaderProgram, "ljCutoff");
     maxForceLocation = glGetUniformLocation(computeShaderProgram, "maxForce");
     depthFieldLocation = glGetUniformLocation(computeShaderProgram, "depthField");
+    enableCollisionLoggingLocation = glGetUniformLocation(computeShaderProgram, "enableCollisionLogging");
+}
+
+void Simulator::setupClusterAnalysis() {
+    clusterData.clusterCount = 0;
+    clusterData.frameNumber = 0;
+    clusterData.minClusterSize = MIN_CLUSTER_SIZE;
+    clusterData.maxClusters = MAX_CLUSTERS_PER_FRAME;
+    clusterData.clusters.resize(MAX_CLUSTERS_PER_FRAME);
+    
+    ofLogNotice("Simulator::setupClusterAnalysis") << "Cluster analysis initialized with min size: " << MIN_CLUSTER_SIZE 
+              << ", connection distance: " << clusterConnectionDistance;
 }
 
 void Simulator::update() {
+    currentFrameNumber++;
     updateParticlesOnGPU();
+    if (parameters->enableCollisionLogging) {
+        readCollisionData();
+        // Copy internal collision data to public collision data for external access
+        collisionData = collisionBuffer;
+    }
+    
+    // Perform cluster analysis if enabled (independent of collision logging)
+    if (enableClusterAnalysis) {
+        analyzeParticleClusters();
+    }
 }
 
-
 void Simulator::updateParticlesOnGPU() {
+    // Reset collision counter for this frame
+    if (parameters->enableCollisionLogging) {
+        collisionBuffer.collisionCount = 0;
+        collisionBuffer.frameNumber = currentFrameNumber;
+
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboCollisions);
+        glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, 4 * sizeof(uint32_t), &collisionBuffer);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    }
+
     glUseProgram(computeShaderProgram);
 
     glUniform1f(deltaTimeLocation, 0.01f);
@@ -106,17 +173,21 @@ void Simulator::updateParticlesOnGPU() {
     glUniform1f(ljEpsilonLocation, ljEpsilon);
     glUniform1f(ljCutoffLocation, ljCutoff);
     glUniform1f(maxForceLocation, maxForce);
+    glUniform1i(enableCollisionLoggingLocation, parameters->enableCollisionLogging ? 1 : 0);
 
     // Bind depth field texture
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, depthFieldTexture);
     glUniform1i(depthFieldLocation, 0);
 
-    // Bind particle buffer and dispatch compute shader
+    // Bind particle buffer and collision buffer
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssboParticles);
-    glDispatchCompute((particles.active.size() + 255) / 256, 1, 1);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssboCollisions);
+
+    glDispatchCompute((particles.active.size() + 511) / 512, 1, 1);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
+    // Read back particle data
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboParticles);
     Particle* ptr = (Particle*)glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
     memcpy(particles.active.data(), ptr, particles.active.size() * sizeof(Particle));
@@ -124,14 +195,50 @@ void Simulator::updateParticlesOnGPU() {
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
+void Simulator::readCollisionData() {
+    // Read back collision data from GPU
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboCollisions);
+
+    // First read the header to get collision count
+    uint32_t* headerPtr = (uint32_t*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, 4 * sizeof(uint32_t), GL_MAP_READ_BIT);
+    if (headerPtr) {
+        collisionBuffer.collisionCount = headerPtr[0];
+        collisionBuffer.maxCollisions = headerPtr[1];
+        collisionBuffer.frameNumber = headerPtr[2];
+        glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
+        // If there are collisions, read the collision data
+        if (collisionBuffer.collisionCount > 0) {
+            uint32_t actualCollisions = std::min(collisionBuffer.collisionCount, static_cast<uint32_t>(MAX_COLLISIONS_PER_FRAME));
+
+            size_t headerSize = 4 * sizeof(uint32_t);
+            size_t collisionDataSize = actualCollisions * sizeof(CollisionData);
+
+            CollisionData* collisionPtr = (CollisionData*)glMapBufferRange(
+                GL_SHADER_STORAGE_BUFFER,
+                headerSize,
+                collisionDataSize,
+                GL_MAP_READ_BIT
+            );
+
+            if (collisionPtr) {
+                // Copy collision data
+                for (uint32_t i = 0; i < actualCollisions; i++) {
+                    collisionBuffer.collisions[i] = collisionPtr[i];
+                }
+                glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+            }
+        }
+    }
+
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+}
 
 void Simulator::updateVideoRect(const ofRectangle& rect) {
     videoRect = rect;
     videoScaleX = videoRect.width / sourceWidth;
     videoScaleY = videoRect.height / sourceHeight;
 }
-
-
 
 void Simulator::onGUIChangeAmmount(float& value) {
     particles.resize(value);
@@ -141,8 +248,6 @@ void Simulator::onGUIChangeAmmount(float& value) {
     glBufferData(GL_SHADER_STORAGE_BUFFER, particles.active.size() * sizeof(Particle), particles.active.data(), GL_DYNAMIC_COPY);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
-
-
 
 void Simulator::onRenderwindowResize(glm::vec2& worldSize) {
     updateWorldSize(worldSize.x, worldSize.y);
@@ -155,7 +260,6 @@ void Simulator::updateWorldSize(int _width, int _height) {
     parameters->worldSize.set(glm::vec2(_width, _height));
     updateVideoRect(ofRectangle(0, 0, _width, _height));
 }
-
 
 void Simulator::updateDepthFieldTexture() {
     if (!hasDepthField) return;
@@ -184,13 +288,12 @@ void Simulator::updateDepthFieldTexture() {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Simulator::recieveFrame(ofxCvGrayscaleImage & frame) {
+void Simulator::recieveFrame(ofxCvGrayscaleImage& frame) {
     if (frame.getWidth() == 0 || frame.getHeight() == 0) return;
     currentDepthField = &frame;
     hasDepthField = true;
     updateDepthFieldTexture();
 }
-
 
 void Simulator::onGUIChangeRadius(int& value) {
     particles.updateRadiuses((int)value);
@@ -215,14 +318,199 @@ void Simulator::onDepthFieldScaleChanged(float& value) {
     depthFieldScale = value;
 }
 
+void Simulator::onCollisionLoggingChanged(bool& value) {
+    ofLogNotice("Simulator") << "Collision logging " << (value ? "enabled" : "disabled") << " via GUI";
+}
+
 void Simulator::applyBerendsenThermostat() {
     // Placeholder for Berendsen thermostat function
 }
 
-//std::vector<Particle>& Simulator::getParticles() {
-//    return particles;
-//}
-
 void Simulator::keyReleased(ofKeyEventArgs& e) {
-    //
+    int key = e.keycode;
+    switch (key) {
+    case 'c':
+    case 'C':
+        parameters->enableCollisionLogging = !parameters->enableCollisionLogging;
+        ofLogNotice("Simulator") << "Collision logging " << (parameters->enableCollisionLogging ? "enabled" : "disabled") << " via keyboard";
+        break;
+    case 'k':
+    case 'K':
+        enableClusterAnalysis = !enableClusterAnalysis;
+        ofLogNotice("Simulator") << "Cluster analysis " << (enableClusterAnalysis ? "enabled" : "disabled") << " via keyboard";
+        break;
+    case 'n':
+    case 'N':
+        clusterConnectionDistance += 10.0f;
+        ofLogNotice("Simulator") << "Cluster connection distance increased to " << clusterConnectionDistance;
+        break;
+    case 'm':
+    case 'M':
+        clusterConnectionDistance = std::max(10.0f, clusterConnectionDistance - 10.0f);
+        ofLogNotice("Simulator") << "Cluster connection distance decreased to " << clusterConnectionDistance;
+        break;
+    default:
+        break;
+    }
+}
+
+void Simulator::analyzeParticleClusters() {
+    // Disjoint Set (Union-Find Data Structure)
+    const uint32_t maxParticlesForAnalysis = 512; // Limit analysis to first 512 particles
+    const uint32_t particleCount = std::min(static_cast<uint32_t>(particles.active.size()), maxParticlesForAnalysis);
+    
+    if (particleCount < MIN_CLUSTER_SIZE) {
+        clusterData.clusterCount = 0;
+        return;
+    }
+    
+    //// Debug logging
+    //if (currentFrameNumber % 60 == 0) { // Log every 2 seconds at 30fps
+    //    ofLogNotice("Simulator::ClusterDebug") << "Frame " << currentFrameNumber 
+    //              << ": Analyzing " << particleCount << " particles with connection distance " << clusterConnectionDistance;
+    //}
+    
+    // Initialize Union-Find data structures
+    std::vector<uint32_t> parent(particleCount);
+    std::vector<uint32_t> rank(particleCount, 0);
+    
+    // Initialize parent array - each particle is its own parent initially
+    for (uint32_t i = 0; i < particleCount; i++) {
+        parent[i] = i;
+    }
+    
+    // Process collisions to build connected components
+    performUnionFind(parent, rank);
+    
+    // Group particles by their root parent to form clusters
+    std::vector<std::unordered_set<uint32_t>> clusterMembers;
+    std::vector<uint32_t> rootToClusterIndex(particleCount, UINT32_MAX);
+    
+    // Find all unique roots and create cluster groups
+    for (uint32_t i = 0; i < particleCount; i++) {
+        uint32_t root = findRoot(parent, i);
+        
+        if (rootToClusterIndex[root] == UINT32_MAX) {
+            rootToClusterIndex[root] = static_cast<uint32_t>(clusterMembers.size());
+            clusterMembers.emplace_back();
+        }
+        
+        clusterMembers[rootToClusterIndex[root]].insert(i);
+    }
+    
+    //// Debug: Log all cluster sizes before filtering
+    //if (currentFrameNumber % 60 == 0 && clusterMembers.size() > 0) {
+    //    ofLogNotice("Simulator::ClusterDebug") << "Found " << clusterMembers.size() << " raw clusters. Sizes: ";
+    //    for (size_t i = 0; i < std::min(clusterMembers.size(), size_t(10)); i++) {
+    //        ofLogNotice("Simulator::ClusterDebug") << "  Cluster " << i << ": " << clusterMembers[i].size() << " particles";
+    //    }
+    //}
+    
+    // Filter clusters by minimum size and calculate statistics
+    calculateClusterStatistics(parent, clusterMembers);
+}
+
+void Simulator::performUnionFind(std::vector<uint32_t>& parent, std::vector<uint32_t>& rank) {
+    // Distance-based clustering for nearby particles (primary method)
+    const uint32_t maxParticles = static_cast<uint32_t>(parent.size());
+    const float connectionThresholdSq = clusterConnectionDistance * clusterConnectionDistance;
+    uint32_t connectionsFound = 0;
+    
+    for (uint32_t i = 0; i < maxParticles; i++) {
+        for (uint32_t j = i + 1; j < maxParticles; j++) {
+            const Particle& p1 = particles.active[i];
+            const Particle& p2 = particles.active[j];
+            
+            glm::vec2 diff = p1.position - p2.position;
+            float distanceSq = glm::dot(diff, diff);
+            
+            // Use cluster connection distance as the only threshold
+            if (distanceSq <= connectionThresholdSq) {
+                unionSets(parent, rank, i, j);
+                connectionsFound++;
+            }
+        }
+    }
+    
+    if (currentFrameNumber % 60 == 0) {
+        ofLogNotice("Simulator::ClusterDebug") << "Found " << connectionsFound << " particle connections using distance-based clustering only";
+    }
+}
+
+uint32_t Simulator::findRoot(std::vector<uint32_t>& parent, uint32_t particle) {
+    if (parent[particle] != particle) {
+        parent[particle] = findRoot(parent, parent[particle]); // Path compression
+    }
+    return parent[particle];
+}
+
+void Simulator::unionSets(std::vector<uint32_t>& parent, std::vector<uint32_t>& rank, uint32_t a, uint32_t b) {
+    uint32_t rootA = findRoot(parent, a);
+    uint32_t rootB = findRoot(parent, b);
+    
+    if (rootA != rootB) {
+        // Union by rank for better performance
+        if (rank[rootA] < rank[rootB]) {
+            parent[rootA] = rootB;
+        } else if (rank[rootA] > rank[rootB]) {
+            parent[rootB] = rootA;
+        } else {
+            parent[rootB] = rootA;
+            rank[rootA]++;
+        }
+    }
+}
+
+void Simulator::calculateClusterStatistics(const std::vector<uint32_t>& parent, const std::vector<std::unordered_set<uint32_t>>& clusterMembers) {
+    clusterData.frameNumber = currentFrameNumber;
+    clusterData.clusterCount = 0;
+    
+    uint32_t clusterIndex = 0;
+    
+    for (const auto& cluster : clusterMembers) {
+        // Only consider clusters with minimum required size
+        if (cluster.size() >= MIN_CLUSTER_SIZE && clusterIndex < MAX_CLUSTERS_PER_FRAME) {
+            ClusterStats& stats = clusterData.clusters[clusterIndex];
+            
+            stats.groupIndex = clusterIndex;
+            stats.particleCount = static_cast<uint32_t>(cluster.size());
+            stats.frameNumber = currentFrameNumber;
+            
+            // Calculate center position and average velocity
+            glm::vec2 totalPosition(0.0f);
+            glm::vec2 totalVelocity(0.0f);
+            
+            for (uint32_t particleId : cluster) {
+                const Particle& particle = particles.active[particleId];
+                totalPosition += particle.position;
+                totalVelocity += particle.velocity;
+            }
+            
+            stats.centerPosition = totalPosition / static_cast<float>(cluster.size());
+            stats.averageVelocity = totalVelocity / static_cast<float>(cluster.size());
+            
+            // Calculate spatial spread (standard deviation of positions)
+            float spatialVariance = 0.0f;
+            float velocityVariance = 0.0f;
+            
+            for (uint32_t particleId : cluster) {
+                const Particle& particle = particles.active[particleId];
+                
+                glm::vec2 positionDiff = particle.position - stats.centerPosition;
+                spatialVariance += glm::dot(positionDiff, positionDiff);
+                
+                glm::vec2 velocityDiff = particle.velocity - stats.averageVelocity;
+                velocityVariance += glm::dot(velocityDiff, velocityDiff);
+            }
+            
+            stats.spatialSpread = std::sqrt(spatialVariance / static_cast<float>(cluster.size()));
+            stats.velocitySpread = std::sqrt(velocityVariance / static_cast<float>(cluster.size()));
+            
+            clusterIndex++;
+        }
+    }
+    
+    clusterData.clusterCount = clusterIndex;
+    
+ 
 }

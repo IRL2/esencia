@@ -10,11 +10,15 @@ void ofApp::setup(){
 
     gui.setup();
     
+    audioApp.setup();
 
     // to-do: pass camera parameters though setup
     camera.setup(&gui.cameraParameters);
 
     simulator.setup(&gui.simulationParameters, &gui);
+    
+    // Connect cluster analysis data to AudioApp
+    audioApp.clusterData = &simulator.clusterData;
 }
 //--------------------------------------------------------------
 void ofApp::update(){
@@ -25,6 +29,8 @@ void ofApp::update(){
     simulator.recieveFrame(camera.segment);
 
     simulator.update();
+    
+    audioApp.update();
 }
 
 //--------------------------------------------------------------

@@ -13,10 +13,17 @@
     },
     "render": {
         "color": 9274056,
-        "fakeTrialsVisibility": 0.9102678298950195,
+        "fakeTrialsVisibility": 0.5718749761581421,
+        "motionBlurStrength": 0.5,
+        "particleGlow": 1.0,
         "showVideoPreview": true,
         "size": 3,
+        "trailDecayRate": 1.0,
+        "useColorVariation": true,
+        "useEnhancedShaders": true,
         "useFaketrails": true,
+        "useImprovedTrails": true,
+        "useMotionBlur": true,
         "useShaders": true,
         "videoColor": 16777215,
         "videopreviewVisibility": 0.2991071343421936
@@ -25,7 +32,7 @@
         "amount": 451.0777893066406,
         "applyThermostat": true,
         "coupling": 0.8111607432365417,
-        "depthFieldScale": -34000.0,
+        "depthFieldScale": -103303.5703125,
         "radius": 8,
         "targetTemperature": 8513.392578125
     }
