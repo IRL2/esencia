@@ -38,7 +38,7 @@ void GuiApp::update()
 {
     presetsPanel.update();
 
-	float colorProgress = ofxeasing::map_clamp(bgChangeFrequency++, 0, bgChangeDuration, 0, 1, &ofxeasing::linear::easeInOut);
+	float colorProgress = ofxSEeasing::map_clamp(bgChangeFrequency++, 0, bgChangeDuration, 0, 1, &ofxSEeasing::easeInOutQuad);
     if (bgChangeFrequency == bgChangeDuration) bgChangeFrequency = 0;
 
     if (colorProgress == 0) {
