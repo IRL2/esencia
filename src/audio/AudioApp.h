@@ -4,6 +4,11 @@
 #include <vector>
 #include <iomanip>
 
+// sound system
+#include "ofxPDSP.h"
+#include "AudioSampler.hpp"
+#include "AudioOscillator.hpp"
+
 // Forward declarations
 struct CollisionData;
 struct CollisionBuffer;
@@ -32,4 +37,13 @@ private:
     uint32_t lastProcessedClusterFrame = 0;
     bool audioEnabled = true;
     bool clusterAnalysisEnabled = true;
+
+
+    // sound modules and instruments
+    pdsp::Engine   engine;
+
+    AudioSampler     sampler1;
+    AudioOscillator  oscillator1;
+
+    pdsp::Scope mainScope;
 };

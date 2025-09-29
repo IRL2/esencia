@@ -431,10 +431,12 @@ void Simulator::performUnionFind(std::vector<uint32_t>& parent, std::vector<uint
             }
         }
     }
-    
+
+#ifdef _DEBUG
     if (currentFrameNumber % 60 == 0) {
         ofLogNotice("Simulator::ClusterDebug") << "Found " << connectionsFound << " particle connections using distance-based clustering only";
     }
+#endif
 }
 
 uint32_t Simulator::findRoot(std::vector<uint32_t>& parent, uint32_t particle) {
