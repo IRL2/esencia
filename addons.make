@@ -1,5 +1,8 @@
-ofxEasing
+ofxAudioFile
 ofxGuiExtended
+ofxMidi
 ofxOpenCv
 ofxOrbbec
+ofxOsc
+ofxPDSP
 ofxPresets

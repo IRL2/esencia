@@ -15,6 +15,7 @@
 #include "panels/VideoProcessingPanel.h"
 #include "panels/PresetsPanel.h"
 #include "panels/SequencePanel.h"
+#include "panels/AudioPanel.h"
 
 
 #include "ofxPresets.h"
@@ -48,6 +49,8 @@ public:
 
     PresetsParameters presetsParameters;
 
+    SonificationParameters sonificationParameters;
+
 private:
     ParticlesPanel particlesPanel;
         
@@ -64,6 +67,8 @@ private:
     PresetsPanel presetsPanel;
 
 	SequencePanel sequencePanel;
+
+    AudioPanel audioPanel;
      
 
     ofFbo fbo;  // for the extra layers behind the GUI (lines, background, etc)

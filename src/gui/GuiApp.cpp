@@ -28,7 +28,7 @@ void GuiApp::setup()
     renderPanel.setup(gui, renderParameters);
 	sequencePanel.setup(gui, &presetsParameters, presetManager);
     presetsPanel.setup(gui, &presetsParameters, presetManager, simulationParameters, cameraParameters, renderParameters);
-
+    audioPanel.setup(gui, &sonificationParameters);
 
     //parameters->previewRender.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
 
@@ -68,6 +68,7 @@ void GuiApp::draw()
     EsenciaPanelBase::drawLineBetween(particlesPanel, simulationPanel);
     EsenciaPanelBase::drawLineBetween(simulationPanel, renderPanel);
     EsenciaPanelBase::drawLineBetween(presetsPanel, sequencePanel);
+    EsenciaPanelBase::drawLineBetween(simulationPanel, audioPanel);
 
     fbo.end();
     fbo.draw(0,0);

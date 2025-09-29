@@ -187,3 +187,54 @@ struct SimulationParameters : public ofxPresetsParametersBase {
         //parameterMap["lowFps"] = &lowFps;
     }
 };
+
+
+
+
+
+
+
+
+
+/// <summary>
+/// The SonificationParameters struct contains all the parameters that are used to configure the simulation.
+/// </summary>
+struct SonificationParameters : public ofxPresetsParametersBase {
+    ofParameter<int> maxCollisionSampling;
+    ofParameter<int> maxClustersSampling;
+    ofParameter<int> maxClusterParticlesSampling;
+
+    ofParameter<float> collisions;
+    ofParameter<float> clusters;
+    ofParameter<float> clusterParticles;
+
+    ofParameter<float> mainVolume;
+
+    ofParameter<float> eqTrebble;
+    ofParameter<float> eqBass;
+
+    ofParameter<float> oscillator1Volume;
+    ofParameter<float> oscillator2Volume;
+
+    ofParameter<float> samper1Volume;
+    ofParameter<float> samper2Volume;
+
+    //ofParameter<string> sampler1File;
+    //ofParameter<string> sampler2File;
+
+    SonificationParameters() {
+        groupName = "sonification";
+
+         parameterMap["mainVolume"] = &mainVolume;
+        parameterMap["eqTrebble"] = &eqTrebble;
+        parameterMap["eqBass"] = &eqBass;
+        parameterMap["oscillator1Volume"] = &oscillator1Volume;
+        parameterMap["oscillator2Volume"] = &oscillator2Volume;
+        parameterMap["sampler1Volume"] = &samper1Volume;
+        parameterMap["sampler2Volume"] = &samper2Volume;
+        //parameterMap["sampler1File"] = &sampler1File;
+        //parameterMap["sampler2File"] = &sampler2File;
+    }
+};
+
+
