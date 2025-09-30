@@ -9,6 +9,8 @@ const int PANELS_CIRCLE_RESOLUTION = 8;
 const int PANELS_BEZIER_PADDING = 40;
 const int PANELS_BEZIER_RESOLUTION = 10;
 const int PANELS_TRIANGLE_SIZE = 4;
+const int FLOW_DOT_COUNT = 3;
+const int FLOW_DOT_SIZE = 2;
 
 class EsenciaPanelBase {
 
@@ -67,20 +69,23 @@ public:
         ofSetColor(ofColor::paleTurquoise, 200);
 		ofDrawArrow(destinationArrowStart, destinationArrowEnd, PANELS_TRIANGLE_SIZE);
 
-        ofSetColor(ofColor::khaki, 200);
         ofPolyline l;
         l.addVertex(originCircleX, originCircleY);
         l.bezierTo(bezierCX1, bezierCY1,
                    bezierCX2, bezierCY2,
                    bezierX, bezierY,
                    PANELS_BEZIER_RESOLUTION);
-        l.draw();
 
-        // Draw a 3x3 rectangle moving along the Bezier line
-        float percent = fmod((oy + ofGetElapsedTimef()) / 5, 1.0f); // Get a percentage value that loops from 0 to 1
-        ofVec3f rectPos = l.getPointAtPercent(percent);
-        ofSetColor(ofColor::paleTurquoise, 180);
-        ofDrawRectangle(rectPos.x - 1.5f, rectPos.y - 1.5f, 3, 3);
+        ofSetColor(ofColor::paleTurquoise, 200);
+        for (int i=1; i<=FLOW_DOT_COUNT; i++) {
+            // Draw a small rectangle moving along the connection line
+            float percent = fmod((oy + ofGetElapsedTimef() + i) / 5, 1.0f); // Get a percentage value that loops from 0 to 1
+            ofVec3f rectPos = l.getPointAtPercent(percent);
+            ofDrawRectangle(rectPos.x - 1.0f, rectPos.y - 1.0f, FLOW_DOT_SIZE, FLOW_DOT_SIZE);
+        }
+
+        ofSetColor(ofColor::khaki, 200);
+        l.draw();
 
         ofPopMatrix();
     }

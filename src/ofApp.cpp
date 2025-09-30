@@ -10,7 +10,7 @@ void ofApp::setup(){
 
     gui.setup();
     
-    audioApp.setup();
+    audioApp.setup(&gui.sonificationParameters, &gui);
 
     // to-do: pass camera parameters though setup
     camera.setup(&gui.cameraParameters);

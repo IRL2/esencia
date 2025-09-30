@@ -205,8 +205,14 @@ struct SonificationParameters : public ofxPresetsParametersBase {
     ofParameter<int> maxClusterParticlesSampling;
 
     ofParameter<float> collisions;
+    ofParameter<float> collisionRate;
+    
     ofParameter<float> clusters;
     ofParameter<float> clusterParticles;
+    ofParameter<float> avgClusterSize;
+    ofParameter<float> clusterSizeRate;
+
+    ofParameter<float> avgClusterVelocity;
 
     ofParameter<float> mainVolume;
 
@@ -225,7 +231,7 @@ struct SonificationParameters : public ofxPresetsParametersBase {
     SonificationParameters() {
         groupName = "sonification";
 
-         parameterMap["mainVolume"] = &mainVolume;
+        parameterMap["mainVolume"] = &mainVolume;
         parameterMap["eqTrebble"] = &eqTrebble;
         parameterMap["eqBass"] = &eqBass;
         parameterMap["oscillator1Volume"] = &oscillator1Volume;

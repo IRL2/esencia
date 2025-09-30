@@ -26,7 +26,6 @@ public:
         triggers >> env >> amp.in_mod();
 
         triggers >> sampler >> lowcut >> reverb >> verbGain >> amp;
-        //>> amp;
 
         timeControl >> reverb.in_time();
         densityControl >> reverb.in_density();
@@ -82,7 +81,12 @@ public:
     }
 
     void play(float pitch, float volume) {
-        ofLog() << "play";
+        //if (sampler.meter_position() > 0.0f && sampler.meter_position() < 0.99f) {
+            //0.0 >> sampler.in_start(); // reset position if we are at the end of the sample
+            //return;
+        //}
+
+        ofLog() << "trigger audio sampler with pitch " << pitch  << " and volume " << volume;
         pitch >> sampler.in_pitch();
         volume >> amp.in_mod();
         trig.trigger(0.5f); // default volume envelop

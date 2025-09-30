@@ -15,7 +15,7 @@ public:
     
 
 private:
-    pdsp::Engine   engine;
+    pdsp::Engine   audioEngine;
 
     pdsp::Function  rseq;
     pdsp::Function  dseq;

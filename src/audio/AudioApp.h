@@ -9,6 +9,9 @@
 #include "AudioSampler.hpp"
 #include "AudioOscillator.hpp"
 
+#include "EsenciaParameters.h"
+#include "GuiApp.h"
+
 // Forward declarations
 struct CollisionData;
 struct CollisionBuffer;
@@ -17,7 +20,7 @@ struct ClusterAnalysisData;
 
 class AudioApp {
 public:
-    void setup();
+    void setup(SonificationParameters* params, GuiApp* gui);
     void update();
     
 
@@ -31,7 +34,13 @@ public:
     CollisionBuffer* collisionData = nullptr;
     ClusterAnalysisData* clusterData = nullptr;
 
+
 private:
+
+    SonificationParameters* parameters = nullptr;
+    GuiApp* allParameters = nullptr;
+
+    const bool DEBUG = false;
 
     uint32_t lastProcessedFrame = 0;
     uint32_t lastProcessedClusterFrame = 0;
@@ -40,7 +49,7 @@ private:
 
 
     // sound modules and instruments
-    pdsp::Engine   engine;
+    pdsp::Engine   audioEngine;
 
     AudioSampler     sampler1;
     AudioOscillator  oscillator1;

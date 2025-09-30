@@ -1,24 +1,28 @@
 #include "AudioApp.h"
 #include "../simulation/simulator.h"
 
-void AudioApp::setup() {
+void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
     ofLogNotice("AudioApp::setup") << "Audio application initialized";
+
+    parameters = params;
+    allParameters = allParams;
     
     audioEnabled = true;
     clusterAnalysisEnabled = true;
     lastProcessedFrame = 0;
     lastProcessedClusterFrame = 0;
 
+    audioEngine.listDevices();
+    audioEngine.setDeviceID(0); /// <----- ID of the system's output device
+    audioEngine.setup(44100, 512, 3);
 
+    ofFileDialogResult openFileResult = ofSystemLoadDialog("select an audio sample");
 
-    sampler1.out("0") >> engine.audio_out(0);
-    sampler1.out("1") >> engine.audio_out(1);
+    sampler1.load(openFileResult.getPath());
 
-    sampler1.load("sounds/omnichord1.wav");
+    sampler1.out("signal") >> audioEngine.audio_out(0);
+    //sampler1.out("1") >> engine.audio_out(1);
 
-    engine.listDevices();
-    engine.setDeviceID(0); /// <----- ID of the system's output device
-    engine.setup(44100, 512, 3);
 }
 
 void AudioApp::update() {
@@ -50,7 +54,7 @@ void AudioApp::update() {
 void AudioApp::logClusterDetails(const ClusterAnalysisData& clusterData) {
     if (clusterData.clusterCount == 0) return;
 
-#ifdef _DEBUG
+#ifdef this->DEBUG
     ofLogNotice("AudioApp::ClusterData") << "Frame " << clusterData.frameNumber
         << ": Processing " << clusterData.clusterCount << " clusters for audio analysis";
 #endif
@@ -60,7 +64,7 @@ void AudioApp::logClusterDetails(const ClusterAnalysisData& clusterData) {
     for (uint32_t i = 0; i < logLimit; i++) {
         const ClusterStats& cluster = clusterData.clusters[i];
 
-#ifdef _DEBUG
+#ifdef this->DEBUG
         ofLogNotice("AudioApp::ClusterDetails") << "  Cluster " << (cluster.groupIndex + 1)
             << ": " << cluster.particleCount << " particles"
             << " | Center: (" << std::fixed << std::setprecision(1) 
@@ -72,7 +76,7 @@ void AudioApp::logClusterDetails(const ClusterAnalysisData& clusterData) {
 #endif
     }
 
-#ifdef _DEBUG
+#ifdef this->DEBUG
     if (clusterData.clusterCount > 5) {
         ofLogNotice("AudioApp::ClusterDetails") << "  ... and " << (clusterData.clusterCount - 5) << " more clusters";
     }
@@ -111,7 +115,7 @@ void AudioApp::processClusterStatistics(const ClusterAnalysisData& clusterData) 
         float averageSpatialSpread = totalSpatialSpread / static_cast<float>(clusterData.clusterCount);
         float averageVelocityMagnitude = totalVelocityMagnitude / static_cast<float>(clusterData.clusterCount);
 
-#ifdef _DEBUG
+#ifdef this->DEBUG
         // Log aggregate statistics for audio processing
         ofLogNotice("AudioApp::ClusterStatistics") << "Frame " << clusterData.frameNumber << " Audio Processing:"
             << " | Clusters: " << clusterData.clusterCount
@@ -125,9 +129,23 @@ void AudioApp::processClusterStatistics(const ClusterAnalysisData& clusterData) 
         for (uint32_t i = 0; i < clusterData.clusterCount; i++) {
             const ClusterStats& cluster = clusterData.clusters[i];
             
+            if (sampler1.meter_position() > 0.0f && sampler1.meter_position() < 0.99f) {
+
+            }
+
+            sampler1.play(clusterData.clusterCount, cluster.particleCount);
+
+
 			// placeholder for audio processing logic
         }
     }
+
+    parameters->clusters.set((float)clusterData.clusterCount);
+    parameters->clusterParticles.set((float)totalParticlesInClusters);
+    parameters->avgClusterSize.set(averageClusterSize);
+    parameters->avgClusterVelocity.set(totalVelocityMagnitude / static_cast<float>(clusterData.clusterCount));
+    parameters->clusterSizeRate.set(totalParticlesInClusters / allParameters->simulationParameters.amount);
+    parameters->collisionRate.set(parameters->collisions.get() / allParameters->simulationParameters.amount);
 }
 
 void AudioApp::logCollisionDetails(const CollisionBuffer& collisionData) {
@@ -135,17 +153,17 @@ void AudioApp::logCollisionDetails(const CollisionBuffer& collisionData) {
 
     uint32_t actualCollisions = std::min(collisionData.collisionCount, static_cast<uint32_t>(1000));
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
     ofLogNotice("AudioApp::CollisionData") << "Frame " << collisionData.frameNumber
         << ": Processing " << actualCollisions << " collisions for audio";
-#endif
+//#endif
 
     // Log details for each collision (limit to first 10 to avoid spam)
     uint32_t logLimit = std::min(actualCollisions, static_cast<uint32_t>(10));
     for (uint32_t i = 0; i < logLimit; i++) {
         const CollisionData& collision = collisionData.collisions[i];
         if (collision.valid) {
-#ifdef _DEBUG
+#ifdef this->DEBUG
             ofLogNotice("AudioApp::CollisionDetails") << "  Audio Processing Collision " << (i + 1)
                 << ": Particles " << collision.particleA << " & " << collision.particleB
                 << " | Distance: " << std::fixed << std::setprecision(2) << collision.distance
@@ -156,16 +174,19 @@ void AudioApp::logCollisionDetails(const CollisionBuffer& collisionData) {
         }
     }
 
-#ifdef _DEBUG
+#ifdef this->DEBUG
     if (actualCollisions > 10) {
         ofLogNotice("AudioApp::CollisionDetails") << "  ... and " << (actualCollisions - 10) << " more collisions being processed for audio";
     }
 #endif
 
+    parameters->collisions.set((float)actualCollisions);
 }
 
 void AudioApp::processCollisionsForAudio(const CollisionBuffer& collisionData) {
-    if (!audioEnabled || collisionData.collisionCount == 0) return;
+    //if (!audioEnabled || collisionData.collisionCount == 0) return;
     
+    //ofLog() << collisionData.collisions.size();
+    //parameters->collisions.set((float)collisionData.collisions.size());
     // Placeholder for audio processing logic
 }

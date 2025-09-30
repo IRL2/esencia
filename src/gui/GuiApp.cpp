@@ -28,7 +28,7 @@ void GuiApp::setup()
     renderPanel.setup(gui, renderParameters);
 	sequencePanel.setup(gui, &presetsParameters, presetManager);
     presetsPanel.setup(gui, &presetsParameters, presetManager, simulationParameters, cameraParameters, renderParameters);
-    audioPanel.setup(gui, &sonificationParameters);
+    audioPanel.setup(gui, &sonificationParameters, &simulationParameters);
 
     //parameters->previewRender.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
 
