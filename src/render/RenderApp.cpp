@@ -29,6 +29,8 @@ void RenderApp::setup()
     ofEnableAlphaBlending();
 
     windowResized(ofGetWidth(), ofGetHeight());
+    SetWindowPos(ofGetWin32Window(), HWND_DESKTOP, ofGetViewportWidth() - ofGetWidth(), 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+    ShowWindow(GetConsoleWindow(), SW_MINIMIZE);
 
     // Load the particle texture    
     bool textureLoaded = particleTexture.load("images/particle.png");

@@ -52,7 +52,9 @@ private:
     pdsp::Engine   audioEngine;
 
     AudioSampler     sampler1;
+    AudioSampler     sampler2;
     AudioOscillator  oscillator1;
+    AudioOscillator  oscillator2;
 
     pdsp::Scope mainScope;
 };

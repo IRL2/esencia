@@ -4143,4 +4143,9 @@
   <ItemGroup>
     <ResourceCompile Include="icon.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="bin\data\shaders\particlesComputeShader.glsl">
+      <Filter>src\simulation</Filter>
+    </None>
+  </ItemGroup>
 </Project>

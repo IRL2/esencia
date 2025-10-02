@@ -171,7 +171,7 @@ struct SimulationParameters : public ofxPresetsParametersBase {
     ofParameter<bool> applyThermostat;
     ofParameter<glm::vec2> worldSize;
     ofParameter<bool> lowFps;
-    ofParameter<bool> enableCollisionLogging = false;
+    ofParameter<bool> enableCollisionLogging = true;
 
     SimulationParameters() {
         groupName = "simulation";

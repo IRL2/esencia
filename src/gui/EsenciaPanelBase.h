@@ -27,12 +27,14 @@ public:
         //panel->setHeight(rect.height * 30);
     }
 
-    static void drawLineBetween(EsenciaPanelBase& a, EsenciaPanelBase& b)
+    static void drawLineBetween(EsenciaPanelBase& a, EsenciaPanelBase& b, int offsetIn  = 0, int offsetOut = 0)
     {
         int ox = a.panel->getPosition().x + a.panel->getWidth() + PANELS_CIRCLE_RADIUS;
         int oy = a.panel->getPosition().y + a.panel->getHeight() - PANELS_CIRCLE_OFFSET;
+        oy -= offsetOut * (PANELS_CIRCLE_RADIUS * 3);
         int dx = b.panel->getPosition().x - PANELS_CIRCLE_RADIUS;
         int dy = b.panel->getPosition().y + PANELS_CIRCLE_OFFSET;
+        dy += offsetIn * (PANELS_CIRCLE_RADIUS * 3);
 
 		int originCircleX = ox - PANELS_CIRCLE_RADIUS;
 		int originCircleY = oy - PANELS_CIRCLE_RADIUS;
@@ -76,15 +78,16 @@ public:
                    bezierX, bezierY,
                    PANELS_BEZIER_RESOLUTION);
 
-        ofSetColor(ofColor::paleTurquoise, 200);
+        //ofSetColor(ofColor::paleTurquoise, 200);
+        ofSetColor(a.panel->getBackgroundColor(), 200);
         for (int i=1; i<=FLOW_DOT_COUNT; i++) {
             // Draw a small rectangle moving along the connection line
-            float percent = fmod((oy + ofGetElapsedTimef() + i) / 5, 1.0f); // Get a percentage value that loops from 0 to 1
+            float percent = fmod((oy + ofGetElapsedTimef() + i) / 4, 1.0f); // Get a percentage value that loops from 0 to 1
             ofVec3f rectPos = l.getPointAtPercent(percent);
             ofDrawRectangle(rectPos.x - 1.0f, rectPos.y - 1.0f, FLOW_DOT_SIZE, FLOW_DOT_SIZE);
         }
 
-        ofSetColor(ofColor::khaki, 200);
+        ofSetColor(ofColor::khaki, 180);
         l.draw();
 
         ofPopMatrix();

@@ -16,11 +16,23 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
     audioEngine.setDeviceID(0); /// <----- ID of the system's output device
     audioEngine.setup(44100, 512, 3);
 
-    ofFileDialogResult openFileResult = ofSystemLoadDialog("select an audio sample");
+    ofFileDialogResult openFileResult1 = ofSystemLoadDialog("select an audio sample for clusters");
 
-    sampler1.load(openFileResult.getPath());
+    sampler1.load(openFileResult1.getPath());
+
+    ofFileDialogResult openFileResult2 = ofSystemLoadDialog("select an audio sample for collisions");
+
+    sampler2.load(openFileResult2.getPath());
+
+    sampler1.setReverb(1, 0.5, 0.2, 0.5, 3000, 0.01);
+    sampler1.setDelay(0.0f, 0.0f);
+
+    sampler2.setReverb(0.5, 0., 1.0, 0., 0., 0., 0.);
+    sampler2.setDelay(2.0f, 0.5f);
+    sampler2.setAHR(300., 0., 2000.);
 
     sampler1.out("signal") >> audioEngine.audio_out(0);
+    sampler2.out("signal") >> audioEngine.audio_out(1);
     //sampler1.out("1") >> engine.audio_out(1);
 
 }
@@ -128,16 +140,33 @@ void AudioApp::processClusterStatistics(const ClusterAnalysisData& clusterData) 
         
         for (uint32_t i = 0; i < clusterData.clusterCount; i++) {
             const ClusterStats& cluster = clusterData.clusters[i];
-            
-            if (sampler1.meter_position() > 0.0f && sampler1.meter_position() < 0.99f) {
-
-            }
-
-            sampler1.play(clusterData.clusterCount, cluster.particleCount);
-
-
 			// placeholder for audio processing logic
         }
+
+
+
+        // 
+        if (sampler1.meter_position() > 0.0f && sampler1.meter_position() < 1.0) {
+            float resonanceTime = ofMap(parameters->clusters * parameters->collisionRate, 0.0, parameters->clusters, 0, 4);
+            sampler1.timeControl.set(resonanceTime);
+            sampler1.modAmountControl.set(parameters->collisionRate * 2.0);
+            //sampler1.pitchControl.set(ofMap(parameters->clusters, 1, 5, 0.3f, 1.5f));
+        }
+        else {
+
+            //sampler1.play(parameters->clusterSizeRate + 0.5f, ofClamp(parameters->clusters / 10, 0.7, 1.0));
+            //float pitch = ofMap(parameters->collisionRate * parameters->clusters, 0.0, parameters->clusters, 0.2, 1.0);
+            sampler1.play(1.0, 1.0);
+        }
+
+        //
+
+        // silent hill
+        //sampler1.play(clusterData.clusterCount, cluster.particleCount);
+
+        // melodic silent hill
+        //sampler1.play(clusterData.clusterCount / 10, parameters->avgClusterSize);
+
     }
 
     parameters->clusters.set((float)clusterData.clusterCount);
@@ -153,10 +182,10 @@ void AudioApp::logCollisionDetails(const CollisionBuffer& collisionData) {
 
     uint32_t actualCollisions = std::min(collisionData.collisionCount, static_cast<uint32_t>(1000));
 
-//#ifdef _DEBUG
+#ifdef _DEBUG
     ofLogNotice("AudioApp::CollisionData") << "Frame " << collisionData.frameNumber
         << ": Processing " << actualCollisions << " collisions for audio";
-//#endif
+#endif
 
     // Log details for each collision (limit to first 10 to avoid spam)
     uint32_t logLimit = std::min(actualCollisions, static_cast<uint32_t>(10));
@@ -184,9 +213,14 @@ void AudioApp::logCollisionDetails(const CollisionBuffer& collisionData) {
 }
 
 void AudioApp::processCollisionsForAudio(const CollisionBuffer& collisionData) {
-    //if (!audioEnabled || collisionData.collisionCount == 0) return;
-    
-    //ofLog() << collisionData.collisions.size();
-    //parameters->collisions.set((float)collisionData.collisions.size());
-    // Placeholder for audio processing logic
+    if (!audioEnabled || collisionData.collisionCount == 0) return;
+
+    float triggerPhase = ofMap(parameters->collisionRate/2, 0.0, 0.5, 1.0, 0.2);
+    if (sampler2.meter_position() > 0.0f && sampler2.meter_position() < triggerPhase) {
+    }
+    else {
+        float pitch = ofMap(parameters->collisionRate / 2, 0.0, 0.5, -5.0, 5.0);
+        float volum = ofMap(parameters->clusterSizeRate, 0.0, 1.0, 1.0, 0.4);
+        sampler2.play(pitch, volum);
+    }
 }

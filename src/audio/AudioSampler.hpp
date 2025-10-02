@@ -22,10 +22,16 @@ public:
         env.enableDBTriggering(-24.0f, 0.0f);
         setAHR(0.0f, 0.0f, 2000.0f); // all the samples used here are shorter than this
 
+        //modLFO >> trig;
+
+        //modLFO.in_freq();
+
         trig >> triggers;
         triggers >> env >> amp.in_mod();
 
         triggers >> sampler >> lowcut >> reverb >> verbGain >> amp;
+
+        sampler >> delay >> verbGain >> amp;
 
         timeControl >> reverb.in_time();
         densityControl >> reverb.in_density();
@@ -34,6 +40,13 @@ public:
         modFreqControl >> reverb.in_mod_freq();
         modAmountControl >> reverb.in_mod_amount();
 
+        pitchControl >> sampler.in_pitch();
+
+        delayTimeControl * 600.0f >> delay.in_time();
+        delayFeedbackControl >> delay.in_feedback();
+        delayDampControl >> delay.in_damping();
+
+        verbGain.set("reverb gain", 9, -48, 12);
         lowCutControl.set("low cut freq", 100, 20, 1000);
         timeControl.set("rt60", 3.33f, 0.05f, 20.0f);
         densityControl.set("density", 0.5f, 0.0f, 1.0f);
@@ -41,6 +54,10 @@ public:
         hiCutControl.set("high cut freq", 5000, 3000, 20000);
         modFreqControl.set("mod speed (hz)", 0.2f, 0.01f, 1.25f);
         modAmountControl.set("mod depth (ms)", 0.8f, 0.0f, 3.0f);
+
+        delayTimeControl.set("delay time", 0.3f, 0.0f, 10.0f);
+        delayFeedbackControl.set("delay feedback", 0.3f, 0.0f, 0.95f);
+        delayDampControl.set("delay damp", 0.5f, 0.0f, 1.0f);
     }
 
     void load(string path, bool setHoldTime = false) {
@@ -70,18 +87,23 @@ public:
         env.set(attack, hold, release);
     }
 
-    void setReverb(float density, float time, float damping, float hiCut, float modFreq, float modAmount, float verbLevel) {
+    void setReverb(float gain, float density, float time, float damping, float hiCut, float modFreq, float modAmount = NULL) {
+        verbGain.set(gain);
         densityControl.set(density);
         timeControl.set(time);
         dampingControl.set(damping);
         hiCutControl.set(hiCut);
         modFreqControl.set(modFreq);
-        modAmountControl.set(modAmount);
-        verbGain.set(verbLevel);
+        modAmount ? modAmountControl.set(modAmount) : true;
+    }
+
+    void setDelay(float time, float feedback) {
+        delayTimeControl.set(time);
+        delayFeedbackControl.set(feedback);
     }
 
     void play(float pitch, float volume) {
-        //if (sampler.meter_position() > 0.0f && sampler.meter_position() < 0.99f) {
+         //if (sampler.meter_position() > 0.0f && sampler.meter_position() < 0.99f) {
             //0.0 >> sampler.in_start(); // reset position if we are at the end of the sample
             //return;
         //}
@@ -89,7 +111,7 @@ public:
         ofLog() << "trigger audio sampler with pitch " << pitch  << " and volume " << volume;
         pitch >> sampler.in_pitch();
         volume >> amp.in_mod();
-        trig.trigger(0.5f); // default volume envelop
+        trig.trigger(1.0f); // default volume envelop
     }
 
 
@@ -105,6 +127,8 @@ public:
     pdsp::Parameter     lowCutControl;
     pdsp::ParameterGain	verbGain;
 
+    pdsp::Parameter     pitchControl;
+
 
     pdsp::BasiVerb reverb;
     pdsp::PatchNode     triggers;
@@ -115,4 +139,10 @@ public:
 
     pdsp::SampleBuffer sample;
 
+    pdsp::LFO          modLFO;
+
+    pdsp::Delay        delay;
+    pdsp::Parameter    delayTimeControl;
+    pdsp::Parameter    delayFeedbackControl;
+    pdsp::Parameter    delayDampControl;
 };
