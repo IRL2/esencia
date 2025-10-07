@@ -11,7 +11,7 @@ int main()
 
     // render window
     settings.setSize(27*30, 27*30);
-    settings.setPosition(glm::vec2(36*30,50));
+    settings.setPosition(glm::vec2(47*30,60));
     settings.resizable = true;
     settings.setGLVersion(3, 2);
     auto renderWindow = ofCreateWindow(settings);
@@ -21,7 +21,7 @@ int main()
 
     // gui window
     settings.setSize(45*30, 33*30);
-    settings.setPosition(glm::vec2(0,30));
+    settings.setPosition(glm::vec2(30,60));
     settings.resizable = true;
     auto mainWindow = ofCreateWindow(settings);
     shared_ptr<ofApp> mainApp(new ofApp);

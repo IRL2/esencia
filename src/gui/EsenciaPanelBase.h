@@ -8,7 +8,8 @@ const int PANELS_CIRCLE_OFFSET = PANELS_CIRCLE_RADIUS;
 const int PANELS_CIRCLE_RESOLUTION = 8;
 const int PANELS_BEZIER_PADDING = 40;
 const int PANELS_BEZIER_RESOLUTION = 10;
-const int PANELS_TRIANGLE_SIZE = 4;
+const int PANELS_TRIANGLE_SIZE = 5;
+const int PANELS_TRIANGLE_SIZE_S = 3;
 const int FLOW_DOT_COUNT = 3;
 const int FLOW_DOT_SIZE = 2;
 
@@ -59,38 +60,50 @@ public:
 			}
 		}
 
-        ofPushMatrix();
+        ofPushView();
 
-        // origin glyph
-        ofSetColor(ofColor::paleGoldenRod, 200);
+        // origin glyph (circle)
+        ofSetColor(ofColor::paleGoldenRod, 220);
 		ofSetCircleResolution(PANELS_CIRCLE_RESOLUTION);
-        ofFill();
+        ofNoFill();
         ofDrawCircle(originCircleX, originCircleY, PANELS_CIRCLE_RADIUS);
+        ofFill();
+        ofDrawCircle(originCircleX, originCircleY, PANELS_CIRCLE_RADIUS - 2);
 
-        // destination glyph
+        // destination glyph (arrow)
         ofSetColor(ofColor::paleTurquoise, 200);
-		ofDrawArrow(destinationArrowStart, destinationArrowEnd, PANELS_TRIANGLE_SIZE);
+        ofFill();
+        ofLine(destinationArrowStart.x-1, destinationArrowEnd.y - PANELS_TRIANGLE_SIZE_S, destinationArrowStart.x + PANELS_TRIANGLE_SIZE-1, destinationArrowEnd.y);
+        ofLine(destinationArrowStart.x-1, destinationArrowEnd.y + PANELS_TRIANGLE_SIZE_S, destinationArrowStart.x + PANELS_TRIANGLE_SIZE-1, destinationArrowEnd.y);
+        ofLine(destinationArrowStart.x + PANELS_TRIANGLE_SIZE_S-1, destinationArrowEnd.y - PANELS_TRIANGLE_SIZE, destinationArrowStart.x + PANELS_TRIANGLE_SIZE_S + PANELS_TRIANGLE_SIZE, destinationArrowEnd.y);
+        ofLine(destinationArrowStart.x + PANELS_TRIANGLE_SIZE_S-1, destinationArrowEnd.y + PANELS_TRIANGLE_SIZE, destinationArrowStart.x + PANELS_TRIANGLE_SIZE_S + PANELS_TRIANGLE_SIZE, destinationArrowEnd.y);
+        //ofDrawArrow(destinationArrowStart, destinationArrowEnd, PANELS_TRIANGLE_SIZE);  // original circle
 
+        // the actual line
         ofPolyline l;
+        l.begin();
         l.addVertex(originCircleX, originCircleY);
         l.bezierTo(bezierCX1, bezierCY1,
                    bezierCX2, bezierCY2,
                    bezierX, bezierY,
                    PANELS_BEZIER_RESOLUTION);
+        l.end();
+        //ofSetColor(ofColor::khaki, 180);
+        ofSetColor(a.panel->getBackgroundColor() * ofColor::gray, 200);
+        l.draw();
 
-        //ofSetColor(ofColor::paleTurquoise, 200);
-        ofSetColor(a.panel->getBackgroundColor(), 200);
+        // moving dots along the line to simulate flow
+        //ofSetColor(ofColor::paleTurquoise, 200); // standard color
+        ofSetColor(a.panel->getBackgroundColor(), 180);
+        ofNoFill();
         for (int i=1; i<=FLOW_DOT_COUNT; i++) {
             // Draw a small rectangle moving along the connection line
-            float percent = fmod((oy + ofGetElapsedTimef() + i) / 4, 1.0f); // Get a percentage value that loops from 0 to 1
+            float percent = fmod((oy + ofGetElapsedTimef() + i) / 3, 1.0f); // Get a percentage value that loops from 0 to 1
             ofVec3f rectPos = l.getPointAtPercent(percent);
             ofDrawRectangle(rectPos.x - 1.0f, rectPos.y - 1.0f, FLOW_DOT_SIZE, FLOW_DOT_SIZE);
         }
 
-        ofSetColor(ofColor::khaki, 180);
-        l.draw();
-
-        ofPopMatrix();
+        ofPopView();
     }
 
 };

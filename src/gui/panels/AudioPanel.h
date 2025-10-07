@@ -37,6 +37,15 @@ public:
 		p->add<ofxGuiValuePlotter>(params->avgClusterSize.set("avg cluster size", 0, 0, 100), ofJson({ {"precision", 1} }));
         p->add<ofxGuiValuePlotter>(params->clusterSizeRate.set("particles in clusters %", 0, 0, 1), ofJson({ {"precision", 2} }));
 
+
+        p->add(params->masterVolume.set("main volume", 0.5, 0.0, 1.0), ofJson({ {"precision", 1} }));
+		p->add(params->polysynthVolume.set("polysynth volume", 0.5, 0.0, 1.0), ofJson({ {"precision", 1} }));
+		p->add(params->samplerplayerVolume.set("sampler1 volume", 0.5, 0.0, 1.0), ofJson({ {"precision", 1} }));
+        p->add(params->datasynthVolume.set("sampler2 volume", 0.5, 0.0, 1.0), ofJson({ {"precision", 1} }));
+
+		//p->add(params->eqTrebble.set("eq trebble", 0.5, 0.0, 1.0), ofJson({ {"precision", 2} }));
+        //p->add(params->eqBass.set("eq bass", 0.5, 0.0, 1.0), ofJson({ {"precision", 2} }));
+
 		ofAddListener(ofEvents().update, this, &AudioPanel::update);
 
 		configVisuals(PANEL_RECT, BG_COLOR);

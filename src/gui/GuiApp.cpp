@@ -72,6 +72,8 @@ void GuiApp::draw()
 
     fbo.end();
     fbo.draw(0,0);
+
+    // panels draw themselves automatically on draw() (they had a draw event listener added during setup)
 }
 
 

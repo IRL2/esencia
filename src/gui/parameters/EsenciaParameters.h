@@ -200,6 +200,12 @@ struct SimulationParameters : public ofxPresetsParametersBase {
 /// The SonificationParameters struct contains all the parameters that are used to configure the simulation.
 /// </summary>
 struct SonificationParameters : public ofxPresetsParametersBase {
+    ofParameter<float> masterVolume;
+    ofParameter<float> polysynthVolume;
+    ofParameter<float> datasynthVolume;
+    ofParameter<float> samplerplayerVolume;
+
+
     ofParameter<int> maxCollisionSampling;
     ofParameter<int> maxClustersSampling;
     ofParameter<int> maxClusterParticlesSampling;
@@ -214,16 +220,10 @@ struct SonificationParameters : public ofxPresetsParametersBase {
 
     ofParameter<float> avgClusterVelocity;
 
-    ofParameter<float> mainVolume;
-
     ofParameter<float> eqTrebble;
     ofParameter<float> eqBass;
 
-    ofParameter<float> oscillator1Volume;
-    ofParameter<float> oscillator2Volume;
 
-    ofParameter<float> samper1Volume;
-    ofParameter<float> samper2Volume;
 
     //ofParameter<string> sampler1File;
     //ofParameter<string> sampler2File;
@@ -231,15 +231,13 @@ struct SonificationParameters : public ofxPresetsParametersBase {
     SonificationParameters() {
         groupName = "sonification";
 
-        parameterMap["mainVolume"] = &mainVolume;
+        parameterMap["masterVolume"] = &masterVolume;
         parameterMap["eqTrebble"] = &eqTrebble;
         parameterMap["eqBass"] = &eqBass;
-        parameterMap["oscillator1Volume"] = &oscillator1Volume;
-        parameterMap["oscillator2Volume"] = &oscillator2Volume;
-        parameterMap["sampler1Volume"] = &samper1Volume;
-        parameterMap["sampler2Volume"] = &samper2Volume;
-        //parameterMap["sampler1File"] = &sampler1File;
-        //parameterMap["sampler2File"] = &sampler2File;
+        parameterMap["masterVolume"] = &masterVolume;
+        parameterMap["polysynthVolume"] = &polysynthVolume;
+        parameterMap["datasynthVolume"] = &datasynthVolume;
+        parameterMap["samplerplayerVolume"] = &samplerplayerVolume;
     }
 };
 

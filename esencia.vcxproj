@@ -338,6 +338,8 @@
   <ItemGroup>
     <ClInclude Include="src\audio\AudioOscillator.hpp" />
     <ClInclude Include="src\audio\AudioSampler.hpp" />
+    <ClInclude Include="src\audio\DataSynth.hpp" />
+    <ClInclude Include="src\audio\PolySynth.hpp" />
     <ClInclude Include="src\audio\SoundManager.h" />
     <ClInclude Include="src\gui\panels\AudioPanel.h" />
     <ClInclude Include="src\ofApp.h" />

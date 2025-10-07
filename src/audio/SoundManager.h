@@ -3,6 +3,8 @@
 #include "ofxPDSP.h"
 #include "AudioSampler.hpp"
 #include "AudioOscillator.hpp"
+#include "PolySynth.hpp"
+#include "DataSynth.hpp"
 
 class SoundManager {
 
@@ -17,13 +19,11 @@ public:
 private:
     pdsp::Engine   audioEngine;
 
-    pdsp::Function  rseq;
-    pdsp::Function  dseq;
+    PolySynth      polysynth;
+    DataSynth      datasynth;
 
-    AudioSampler     sampler1;
-    AudioOscillator  oscillator1;
+    AudioSampler     audiosampler;
+    AudioOscillator  oscillator;
 
     pdsp::Scope mainScope;
-    //pdsp::Scope sample1Scope;
-    //pdsp::Scope oscillator1Scope;
 };

@@ -5,7 +5,7 @@
         "enableClipping": true,
         "fillHolesOnPolygons": false,
         "floodfillHoles": false,
-        "gaussianBlur": 15,
+        "gaussianBlur": 9,
         "nConsidered": 8,
         "polygonTolerance": 1.0,
         "showPolygons": false,
@@ -13,7 +13,8 @@
     },
     "render": {
         "color": 5079752,
-        "fakeTrialsVisibility": 0.6031249761581421,
+        "color_alpha": 255,
+        "fakeTrialsVisibility": 0.5705357193946838,
         "motionBlurStrength": 0.5,
         "particleGlow": 1.0,
         "showVideoPreview": true,
@@ -26,14 +27,16 @@
         "useMotionBlur": true,
         "useShaders": false,
         "videoColor": 16777215,
+        "videoColor_alpha": 255,
         "videopreviewVisibility": 0.30000001192092896
     },
     "simulation": {
-        "amount": 100.0,
+        "amount": 329.62274169921875,
         "applyThermostat": true,
-        "coupling": 0.5,
-        "depthFieldScale": -80000.0,
-        "radius": 3,
-        "targetTemperature": 25000.0
+        "coupling": 1.0,
+        "depthFieldScale": -115869.5625,
+        "enableCollisionLogging": true,
+        "radius": 2,
+        "targetTemperature": 4945.65234375
     }
 }

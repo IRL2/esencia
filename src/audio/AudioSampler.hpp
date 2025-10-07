@@ -33,6 +33,10 @@ public:
 
         sampler >> delay >> verbGain >> amp;
 
+        volume >> amp.in_mod();
+
+        amp >> fader; // output
+
         timeControl >> reverb.in_time();
         densityControl >> reverb.in_density();
         dampingControl >> reverb.in_damping();
@@ -58,6 +62,8 @@ public:
         delayTimeControl.set("delay time", 0.3f, 0.0f, 10.0f);
         delayFeedbackControl.set("delay feedback", 0.3f, 0.0f, 0.95f);
         delayDampControl.set("delay damp", 0.5f, 0.0f, 1.0f);
+
+        fader.set("gain", -12, -48, 12);
     }
 
     void load(string path, bool setHoldTime = false) {
@@ -72,7 +78,8 @@ public:
     }
 
     void gain(float dBvalue) {
-        sampler* dB(dBvalue) >> amp;
+        sampler* dB(dBvalue) >> amp.in_mod();
+        ofLog() << "gain changed to " << dBvalue;
     }
 
     float meter_env() const {
@@ -111,11 +118,14 @@ public:
         ofLog() << "trigger audio sampler with pitch " << pitch  << " and volume " << volume;
         pitch >> sampler.in_pitch();
         volume >> amp.in_mod();
+        this->volume.set (volume);
         trig.trigger(1.0f); // default volume envelop
     }
 
 
     pdsp::TriggerControl trig;
+
+    pdsp::ParameterAmp   volume;
 
     ofParameterGroup parameters;
     pdsp::Parameter     timeControl;
@@ -145,4 +155,6 @@ public:
     pdsp::Parameter    delayTimeControl;
     pdsp::Parameter    delayFeedbackControl;
     pdsp::Parameter    delayDampControl;
+
+    pdsp::ParameterGain fader;
 };

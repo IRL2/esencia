@@ -21,7 +21,7 @@ class RenderPanel : public EsenciaPanelBase {
 
     const ofColor VIDEO_COLOR = ofColor::white;
 
-    const ofRectangle PANEL_RECT = ofRectangle(25, 12, 8, 0);
+    const ofRectangle PANEL_RECT = ofRectangle(25, 15, 8, 0);
     const ofColor& BG_COLOR = ofColor(100, 20, 100, 100);
 
 
