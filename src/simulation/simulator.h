@@ -143,4 +143,8 @@ private:
     // Cluster analysis settings
     bool enableClusterAnalysis = true;
     float clusterConnectionDistance = 50.0f;
+
+    // Normalization functions
+    glm::vec2 normalizePosition(const glm::vec2& position);
+    float normalizeDistance(float distance);
 };

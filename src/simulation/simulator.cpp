@@ -222,9 +222,12 @@ void Simulator::readCollisionData() {
             );
 
             if (collisionPtr) {
-                // Copy collision data
+                // Copy collision data and normalize positions
                 for (uint32_t i = 0; i < actualCollisions; i++) {
                     collisionBuffer.collisions[i] = collisionPtr[i];
+                    // Normalize collision positions to
+                    collisionBuffer.collisions[i].positionA = normalizePosition(collisionPtr[i].positionA);
+                    collisionBuffer.collisions[i].positionB = normalizePosition(collisionPtr[i].positionB);
                 }
                 glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
             }
@@ -486,7 +489,7 @@ void Simulator::calculateClusterStatistics(const std::vector<uint32_t>& parent, 
                 totalVelocity += particle.velocity;
             }
             
-            stats.centerPosition = totalPosition / static_cast<float>(cluster.size());
+            glm::vec2 centerPosition = totalPosition / static_cast<float>(cluster.size());
             stats.averageVelocity = totalVelocity / static_cast<float>(cluster.size());
             
             // Calculate spatial spread (standard deviation of positions)
@@ -496,21 +499,36 @@ void Simulator::calculateClusterStatistics(const std::vector<uint32_t>& parent, 
             for (uint32_t particleId : cluster) {
                 const Particle& particle = particles.active[particleId];
                 
-                glm::vec2 positionDiff = particle.position - stats.centerPosition;
+                glm::vec2 positionDiff = particle.position - centerPosition;
                 spatialVariance += glm::dot(positionDiff, positionDiff);
                 
                 glm::vec2 velocityDiff = particle.velocity - stats.averageVelocity;
                 velocityVariance += glm::dot(velocityDiff, velocityDiff);
             }
             
-            stats.spatialSpread = std::sqrt(spatialVariance / static_cast<float>(cluster.size()));
+            float spatialSpread = std::sqrt(spatialVariance / static_cast<float>(cluster.size()));
             stats.velocitySpread = std::sqrt(velocityVariance / static_cast<float>(cluster.size()));
+            
+            // normalize cluster data
+            stats.centerPosition = normalizePosition(centerPosition);
+            stats.spatialSpread = normalizeDistance(spatialSpread);
             
             clusterIndex++;
         }
     }
     
     clusterData.clusterCount = clusterIndex;
-    
- 
+}
+
+glm::vec2 Simulator::normalizePosition(const glm::vec2& position) {
+    // convert world coordinates to normalized -1 to 1 range
+    float normalizedX = (2.0f * position.x / static_cast<float>(width)) - 1.0f;
+    float normalizedY = (2.0f * position.y / static_cast<float>(height)) - 1.0f;
+    return glm::vec2(normalizedX, normalizedY);
+}
+
+float Simulator::normalizeDistance(float distance) {
+    // normalize distance relative to the diagonal of the world space
+    float worldDiagonal = std::sqrt(static_cast<float>(width * width + height * height));
+    return (2.0f * distance / worldDiagonal);
 }
