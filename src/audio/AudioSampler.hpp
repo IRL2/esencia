@@ -115,7 +115,7 @@ public:
             //return;
         //}
 
-        ofLog() << "trigger audio sampler with pitch " << pitch  << " and volume " << volume;
+        //ofLog() << "trigger audio sampler with pitch " << pitch  << " and volume " << volume;
         pitch >> sampler.in_pitch();
         volume >> amp.in_mod();
         this->volume.set (volume);

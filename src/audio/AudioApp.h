@@ -29,6 +29,10 @@ public:
     void logCollisionDetails(const CollisionBuffer& collisionData);
     void processCollisionsForAudio(const CollisionBuffer& collisionData);
 
+    bool triggerAtInterval(float intervalInSeconds, std::function<void()> callback);
+
+    bool checkInterval(float intervalInSeconds);
+
     // New cluster analysis methods
     void logClusterDetails(const ClusterAnalysisData& clusterData);
     void processClusterStatistics(const ClusterAnalysisData& clusterData);

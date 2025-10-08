@@ -44,7 +44,7 @@ void GuiApp::update()
     if (colorProgress == 0) {
         //bgTargetColor1 = bgColors[ofRandom(bgColors.size())];
         //bgTargetColor2 = bgColors[ofRandom(bgColors.size())];
-        bgTargetColor1 = renderParameters.color;
+        bgTargetColor1 = renderParameters.color.get() * ofColor::darkGray;
         bgTargetColor2 = renderParameters.videoColor;
         bgStartColor1 = bgColor1;
         bgStartColor2 = bgColor2;

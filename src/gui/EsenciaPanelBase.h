@@ -71,7 +71,7 @@ public:
         ofDrawCircle(originCircleX, originCircleY, PANELS_CIRCLE_RADIUS - 2);
 
         // destination glyph (arrow)
-        ofSetColor(ofColor::paleTurquoise, 200);
+        ofSetColor(ofColor::darkTurquoise, 200);
         ofFill();
         ofLine(destinationArrowStart.x-1, destinationArrowEnd.y - PANELS_TRIANGLE_SIZE_S, destinationArrowStart.x + PANELS_TRIANGLE_SIZE-1, destinationArrowEnd.y);
         ofLine(destinationArrowStart.x-1, destinationArrowEnd.y + PANELS_TRIANGLE_SIZE_S, destinationArrowStart.x + PANELS_TRIANGLE_SIZE-1, destinationArrowEnd.y);

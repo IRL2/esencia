@@ -285,15 +285,8 @@ void AudioApp::logCollisionDetails(const CollisionBuffer& collisionData) {
 void AudioApp::processCollisionsForAudio(const CollisionBuffer& collisionData) {
     if (!audioEnabled || collisionData.collisionCount == 0) return;
 
-    // so so
-    //if (sampler2.meter_position() > 0.0f && sampler2.meter_position() < 1.0f) {
-    //}
-    //else {
-    //    float pitch = ofMap(parameters->collisionRate / 2, 0.0, 0.5, -5.0, 5.0);
-    //    float volum = ofMap(parameters->clusterSizeRate, 0.0, 1.0, 1.0, 0.4);
-    //    sampler2.play(pitch, volum); // prev
-    //}
-
+    // selecting "notes" (pitch) from two scales, alternating every second
+    // this actually works well
     int notesA[5] = { -2, 0, 2, 4, 7 };
     int notesB[5] = { 1, 3, 5, 0, 4};
     int notes[] = {0,0,0,0,0};
@@ -302,33 +295,136 @@ void AudioApp::processCollisionsForAudio(const CollisionBuffer& collisionData) {
         std::copy(notesB, notesB + 5, notes);
     }
     int pitch = notes[(int)ofMap(parameters->collisionRate, 0, 1.3, 0, 4)];
+
+
     //float pitch = ceilf(ofMap(parameters->collisionRate, 0.0, 1.5, -5.0, 5.0));
     //float volum = ofMap(parameters->clusterSizeRate, 0.0, 1.0, 1.0, 0.4);
     float vol = ofClamp(parameters->collisionRate * 1.5, -0.3, 1.0);
 
-    if (parameters->collisionRate > 0.03) {
-        if (sampler2.meter_position() > 0.9f) {
-            if (ofGetUnixTime() - lastTime < 0.5) {
-                sampler2.play(pitch, vol); // prev
+
+
+
+    //if (parameters->collisionRate > 0.03) {
+    //    if (sampler2.meter_position() > 0.9f) {
+    //        if (ofGetUnixTime() - lastTime < 0.5) {
+    //            //sampler2.play(pitch, vol); // prev
+    //        }
+    //    }
+
+    //    if (ofGetUnixTimeMillis() % 100 < 10 && ofRandomf() < parameters->collisionRate) {
+    //        //sampler2.play(pitch, 0.5); // prev
+    //    }
+    //}
+
+    //if (parameters->collisions < 10) {
+    //    if (ofGetUnixTime() != lastTime) {
+    //        //sampler2.play(pitch, 0.7); // prev
+    //    }
+    //}
+
+    //if (parameters->collisions > 10 && parameters->collisionRate > 0.03) {
+    //    if (ofGetUnixTimeMillis() % 500 < 250 && ofRandomf() < parameters->collisionRate) {
+    //        //sampler2.play(pitch, 0.5); // prev
+    //    }
+    //}
+
+
+    if (checkInterval(0.5)) { // || ofNoise(ofGetUnixTimeMillis()) < 0.001){
+        ofLog() << "0.5s interval";
+        
+        if (parameters->collisions > 2 && parameters->collisions < 20) {
+            if (ofRandomf() < parameters->collisions / 10) {
+                //sampler2.setReverb(0.5, 0.3, 0.2, 0., 1000, 0., 0.);
+                sampler2.setDelay(0.3f, 0.7f);
+                sampler2.play(pitch, 0.7);
+            }
+        }
+        if (parameters->collisionRate > 0.1 || parameters->collisions > 20) {
+            if (ofRandomf() < parameters->collisionRate) {
+                //sampler2.setReverb(0.5, 0.3, 0.2, 0., 1000, 0., 0.);
+                sampler2.setDelay(0.5f, 0.7f);
+                sampler2.play(pitch, 0.5);
             }
         }
 
-        if (ofGetUnixTimeMillis() % 100 < 10 && ofRandomf() < parameters->collisionRate) {
-            sampler2.play(pitch, 0.7); // prev
-        }
     }
 
-    if (ofGetUnixTime() % 2 == 0) {
-        if (!noteSent) {
-            noteSent = true;
-            float freq = ofMap(parameters->collisionRate, 0.0, 1.0, 0.01, 3.0);
-            polySynth.setLFOfreq(freq);
-            //ofLog() << "lfo freq: " << freq;
+    triggerAtInterval(4.0, [&]() {
+        ofLog() << "1.0s interval";
 
-            polySynth.setPitch(ofMap(parameters->clusters, 2, 20, 40, 52));
-        }
-    }
-    else { noteSent = false; }
+        float freq = ofMap(parameters->collisionRate, 0.0, 1.0, 0.01, 2.0);
+        polySynth.setLFOfreq(freq);
+        polySynth.setPitch(ofMap(parameters->clusters, 2, 20, 44, 58));
+        ofLog() << "x -lfo freq: " << freq;
+    });
 }
 
+
+
+/// <summary>
+///  returns true if the specified interval in seconds has passed since the last check
+/// </summary>
+/// <param name="intervalInSeconds"></param>
+/// <returns></returns>
+bool AudioApp::checkInterval(float intervalInSeconds) {
+    static std::map<float, uint64_t> lastCheckTimes;
+
+    // Get current time
+    uint64_t currentTimeMs = ofGetUnixTimeMillis();
+
+    // Convert interval to milliseconds
+    uint64_t intervalMs = static_cast<uint64_t>(intervalInSeconds * 1000);
+
+    // Initialize if this is the first check for this interval
+    if (lastCheckTimes.find(intervalInSeconds) == lastCheckTimes.end()) {
+        lastCheckTimes[intervalInSeconds] = currentTimeMs;
+        return false;
+    }
+
+    // Check if enough time has passed
+    if (currentTimeMs - lastCheckTimes[intervalInSeconds] >= intervalMs) {
+        // Update the last check time
+        lastCheckTimes[intervalInSeconds] = currentTimeMs;
+        return true;
+    }
+
+    return false;
+}
+
+
+
+/// <summary>
+/// triggers a callback function at specified time intervals in seconds.
+/// </summary>
+/// <param name="intervalInSeconds">interval in seconds, at which to trigger the callback.</param>
+/// <param name="callback">function to execute when the interval has elapsed: App::callback()</param>
+/// <param name="callback">lambda function to execute when the interval has elapsed: [&]</param>
+/// <returns>True if the callback was triggered during this call; false otherwise.</returns>
+bool AudioApp::triggerAtInterval(float intervalInSeconds, std::function<void()> callback) {
+    static std::map<float, uint64_t> lastTriggerTimes;
+
+    // Get current time
+    uint64_t currentTimeMs = ofGetUnixTimeMillis();
+
+    // Convert interval to milliseconds
+    uint64_t intervalMs = static_cast<uint64_t>(intervalInSeconds * 1000);
+
+    // Check if this specific interval has a recorded last time
+    if (lastTriggerTimes.find(intervalInSeconds) == lastTriggerTimes.end()) {
+        lastTriggerTimes[intervalInSeconds] = currentTimeMs;
+        return false;
+    }
+
+    // Check if enough time has passed
+    if (currentTimeMs - lastTriggerTimes[intervalInSeconds] >= intervalMs) {
+        // Execute the callback function
+        callback();
+
+        // Update the last trigger time
+        lastTriggerTimes[intervalInSeconds] = currentTimeMs;
+        return true;
+    }
+
+    return false;
+}
 
