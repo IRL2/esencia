@@ -2559,6 +2559,5 @@
     <None Include="bin\data\shaders\video.vert">
       <Filter>src\render\shaders</Filter>
     </None>
-    <None Include="bin\data\shaders\particlesComputeShader_basic.glsl" />
   </ItemGroup>
 </Project>

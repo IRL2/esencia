@@ -843,7 +843,6 @@
     <None Include="bin\data\shaders\particle.frag" />
     <None Include="bin\data\shaders\particle.vert" />
     <None Include="bin\data\shaders\particlesComputeShader.glsl" />
-    <None Include="bin\data\shaders\particlesComputeShader_basic.glsl" />
     <None Include="bin\data\shaders\shaderBlur.frag" />
     <None Include="bin\data\shaders\shaderBlur.vert" />
     <None Include="bin\data\shaders\trail.frag" />
