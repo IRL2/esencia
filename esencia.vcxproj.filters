@@ -142,6 +142,7 @@
     <ClCompile Include="src\audio\AudioApp.cpp">
       <Filter>src\audio</Filter>
     </ClCompile>
+    <ClCompile Include="src\gui\panels\VACPanel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -2516,6 +2517,7 @@
     <ClInclude Include="src\audio\AudioApp.h">
       <Filter>src\audio</Filter>
     </ClInclude>
+    <ClInclude Include="src\gui\panels\VACPanel.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="icon.rc" />
@@ -2557,5 +2559,6 @@
     <None Include="bin\data\shaders\video.vert">
       <Filter>src\render\shaders</Filter>
     </None>
+    <None Include="bin\data\shaders\particlesComputeShader_basic.glsl" />
   </ItemGroup>
 </Project>
