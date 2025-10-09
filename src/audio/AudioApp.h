@@ -25,30 +25,34 @@ public:
     void setup(SonificationParameters* params, GuiApp* gui);
     void update();
     
-
+    // collision processing
     void logCollisionDetails(const CollisionBuffer& collisionData);
-    void processCollisionsForAudio(const CollisionBuffer& collisionData);
+    void processCollisionsStatistics(const CollisionBuffer& collisionData);
 
-    bool triggerAtInterval(float intervalInSeconds, std::function<void()> callback);
-
-    bool checkInterval(float intervalInSeconds);
-
-    // New cluster analysis methods
+    // cluster analysis
     void logClusterDetails(const ClusterAnalysisData& clusterData);
     void processClusterStatistics(const ClusterAnalysisData& clusterData);
 
+    // when no cluster/collision has detected, needs to reports zeros
+    void cleanClusterStatistics();
+    void cleanCollisionStatistics();
+
+    // audio processing
+    void sonificationControl(const CollisionBuffer& collisionData, const ClusterAnalysisData& clusterData);
+
     CollisionBuffer* collisionData = nullptr;
     ClusterAnalysisData* clusterData = nullptr;
+
+    // timming functions for audio triggers
+    bool triggerAtInterval(float intervalInSeconds, std::function<void()> callback);
+    bool checkInterval(float intervalInSeconds);
 
 private:
 
     SonificationParameters* parameters = nullptr;
     GuiApp* allParameters = nullptr;
 
-    const bool DEBUG_LOG = false;
-
-    bool noteSent = false;
-
+    bool DEBUG_LOG = false;
 
     uint32_t lastProcessedFrame = 0;
     uint32_t lastProcessedClusterFrame = 0;

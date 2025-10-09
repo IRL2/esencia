@@ -14,7 +14,7 @@ class AudioPanel : public EsenciaPanelBase {
 
 	ofParameter<float> avgClusterSize;
 	ofParameter<float> collisionRate;
-	ofParameter<float> clusterSizeRate;
+	ofParameter<float> particlesInClusterRate;
 
 	SonificationParameters* params;
     SimulationParameters* simParams;
@@ -33,15 +33,18 @@ public:
         p->add<ofxGuiValuePlotter>(params->collisionRate.set("collision rate", 0, 0, 1), ofJson({ {"precision", 2} }));
 		
 		p->add<ofxGuiValuePlotter>(params->clusters.set("clusters", 0, 0, 100), ofJson({ {"precision", 0} }));
-		p->add<ofxGuiValuePlotter>(params->clusterParticles.set("particles in clusters", 0, 0, 100), ofJson({ {"precision", 0} }));
+		p->add<ofxGuiValuePlotter>(params->particlesInClusters.set("particles in clusters", 0, 0, 100), ofJson({ {"precision", 0} }));
 		p->add<ofxGuiValuePlotter>(params->avgClusterSize.set("avg cluster size", 0, 0, 100), ofJson({ {"precision", 1} }));
-        p->add<ofxGuiValuePlotter>(params->clusterSizeRate.set("particles in clusters %", 0, 0, 1), ofJson({ {"precision", 2} }));
+        p->add<ofxGuiValuePlotter>(params->particlesInClusterRate.set("particles in clusters %", 0, 0, 1), ofJson({ {"precision", 2} }));
 
+        p->add<ofxGuiValuePlotter>(params->avgClusterVelocity.set("avg cluster velocity", 0, 0, 10), ofJson({ {"precision", 2} }));
+        p->add<ofxGuiValuePlotter>(params->avgClusterSpatialSpread.set("avg cluster spread", 0, 0, 100), ofJson({ {"precision", 2} }));
+        p->add<ofxGuiValuePlotter>(params->avgClusterVelocityMagitude.set("avg cluster vel mag", 0, 0, 10), ofJson({ {"precision", 2} }));
 
-        p->add(params->masterVolume.set("main volume", 0.5, 0.0, 1.0), ofJson({ {"precision", 1} }));
-		p->add(params->polysynthVolume.set("polysynth volume", 0.5, 0.0, 1.0), ofJson({ {"precision", 1} }));
-		p->add(params->samplerplayerVolume.set("sampler1 volume", 0.5, 0.0, 1.0), ofJson({ {"precision", 1} }));
-        p->add(params->datasynthVolume.set("sampler2 volume", 0.5, 0.0, 1.0), ofJson({ {"precision", 1} }));
+        p->add(params->masterVolume.set("main volume", 0.8, 0.0, 1.2), ofJson({ {"precision", 1} }));
+		p->add(params->polysynthVolume.set("polysynth volume", 0.8, 0.0, 1.0), ofJson({ {"precision", 1} }));
+		p->add(params->samplerplayerVolume.set("sampler1 volume", 0.8, 0.0, 1.0), ofJson({ {"precision", 1} }));
+        p->add(params->datasynthVolume.set("sampler2 volume", 0.8, 0.0, 1.0), ofJson({ {"precision", 1} }));
 
 		//p->add(params->eqTrebble.set("eq trebble", 0.5, 0.0, 1.0), ofJson({ {"precision", 2} }));
         //p->add(params->eqBass.set("eq bass", 0.5, 0.0, 1.0), ofJson({ {"precision", 2} }));
@@ -53,13 +56,7 @@ public:
 
 	void update(ofEventArgs&)
 	{
-        //avgClusterSize.set(params->clusters == 0 ? 0 : (float)params->clusterParticles / (float)params->clusters);
-		
-        //collisionRate.set(params->clusters == 0 ? 0 : (float)params->collisions / (float)simParams->amount);
 
-        //clusterSizeRate.set(params->clusters == 0 ? 0 : (float)params->clusterParticles / (float)simParams->amount);
-
-        // calculate avgParticlesPerCluster
 	}
 
 };

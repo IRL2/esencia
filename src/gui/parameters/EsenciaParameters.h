@@ -211,14 +211,35 @@ struct SonificationParameters : public ofxPresetsParametersBase {
     ofParameter<int> maxClusterParticlesSampling;
 
     ofParameter<float> collisions;
+
+    /// <summary>
+    /// the rate of particles that collided from the maximum amount of collisions beign evaluated. value from 0 to 1
+    /// </summary>
     ofParameter<float> collisionRate;
     
     ofParameter<float> clusters;
-    ofParameter<float> clusterParticles;
+
+    /// <summary>
+    /// total amount of particles inside clusteers
+    /// </summary>
+    ofParameter<float> particlesInClusters;
+
+    /// <summary>
+    /// average size (in particle count) of the detected clusters
+    /// </summary>
     ofParameter<float> avgClusterSize;
-    ofParameter<float> clusterSizeRate;
+
+    /// <summary>
+    /// the rate of particles that are in clusters from the total amount of particles in the system. value from 0 to 1
+    /// </summary>
+    ofParameter<float> particlesInClusterRate;
 
     ofParameter<float> avgClusterVelocity;
+
+    ofParameter<float> avgClusterSpatialSpread;
+    ofParameter<float> avgClusterVelocityMagitude;
+
+
 
     ofParameter<float> eqTrebble;
     ofParameter<float> eqBass;

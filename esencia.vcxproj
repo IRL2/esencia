@@ -1308,6 +1308,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="bin\data\shaders\particlesComputeShader.glsl" />
+    <None Include="bin\data\support\gui-styles.json" />
+    <None Include="icon.aps" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ProjectExtensions>

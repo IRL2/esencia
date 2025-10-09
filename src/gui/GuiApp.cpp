@@ -64,8 +64,8 @@ void GuiApp::draw()
 
     // draw lines
     EsenciaPanelBase::drawLineBetween(videoOriginPanel, videoProcessingPanel);
-    EsenciaPanelBase::drawLineBetween(videoProcessingPanel, simulationPanel);
-    EsenciaPanelBase::drawLineBetween(particlesPanel, simulationPanel, 1, 0);
+    EsenciaPanelBase::drawLineBetween(particlesPanel, simulationPanel);
+    EsenciaPanelBase::drawLineBetween(videoProcessingPanel, simulationPanel, 1, 0);
     EsenciaPanelBase::drawLineBetween(simulationPanel, renderPanel);
     EsenciaPanelBase::drawLineBetween(presetsPanel, sequencePanel);
     EsenciaPanelBase::drawLineBetween(simulationPanel, audioPanel, 0, 1);

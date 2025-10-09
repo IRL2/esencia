@@ -62,6 +62,19 @@ public:
 
         ofPushView();
 
+        // connecting line
+        ofPolyline l;
+        l.begin();
+        l.addVertex(originCircleX + 2, originCircleY);
+        l.bezierTo(bezierCX1, bezierCY1,
+            bezierCX2, bezierCY2,
+            bezierX, bezierY,
+            PANELS_BEZIER_RESOLUTION);
+        l.end();
+        //ofSetColor(ofColor::khaki, 180);
+        ofSetColor(a.panel->getBackgroundColor() * ofColor::gray, 200);
+        l.draw();
+
         // origin glyph (circle)
         ofSetColor(ofColor::paleGoldenRod, 220);
 		ofSetCircleResolution(PANELS_CIRCLE_RESOLUTION);
@@ -78,19 +91,6 @@ public:
         ofLine(destinationArrowStart.x + PANELS_TRIANGLE_SIZE_S-1, destinationArrowEnd.y - PANELS_TRIANGLE_SIZE, destinationArrowStart.x + PANELS_TRIANGLE_SIZE_S + PANELS_TRIANGLE_SIZE, destinationArrowEnd.y);
         ofLine(destinationArrowStart.x + PANELS_TRIANGLE_SIZE_S-1, destinationArrowEnd.y + PANELS_TRIANGLE_SIZE, destinationArrowStart.x + PANELS_TRIANGLE_SIZE_S + PANELS_TRIANGLE_SIZE, destinationArrowEnd.y);
         //ofDrawArrow(destinationArrowStart, destinationArrowEnd, PANELS_TRIANGLE_SIZE);  // original circle
-
-        // the actual line
-        ofPolyline l;
-        l.begin();
-        l.addVertex(originCircleX, originCircleY);
-        l.bezierTo(bezierCX1, bezierCY1,
-                   bezierCX2, bezierCY2,
-                   bezierX, bezierY,
-                   PANELS_BEZIER_RESOLUTION);
-        l.end();
-        //ofSetColor(ofColor::khaki, 180);
-        ofSetColor(a.panel->getBackgroundColor() * ofColor::gray, 200);
-        l.draw();
 
         // moving dots along the line to simulate flow
         //ofSetColor(ofColor::paleTurquoise, 200); // standard color

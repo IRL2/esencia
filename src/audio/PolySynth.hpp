@@ -146,7 +146,7 @@ public:
         chorus_depth_ctrl >> chorus.in_depth();
         ui.add(chorus_speed_ctrl.set("chorus freq", 0.25f, 0.25f, 1.0f));
         ui.add(chorus_depth_ctrl.set("chorus depth", 10.0f, 1.0f, 10.0f));
-        ui.add(gain.set("gain", -5, -48, 12));
+        ui.add(gain.set("gain", -10, -48, 12));
         gain.enableSmoothing(50.f);
         // ------------------------------------------------------------------------
     }
