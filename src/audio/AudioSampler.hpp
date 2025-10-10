@@ -33,7 +33,7 @@ public:
 
         sampler >> delay >> verbGain >> amp;
 
-        volume >> amp.in_mod();
+        damp >> amp.in_mod();
 
         amp >> fader; // output
 
@@ -50,31 +50,44 @@ public:
         delayFeedbackControl >> delay.in_feedback();
         delayDampControl >> delay.in_damping();
 
-        verbGain.set("reverb gain", 9, -48, 12);
-        lowCutControl.set("low cut freq", 100, 20, 1000);
-        timeControl.set("rt60", 3.33f, 0.05f, 20.0f);
-        densityControl.set("density", 0.5f, 0.0f, 1.0f);
-        dampingControl.set("damping", 0.5f, 0.0f, 1.0f);
-        hiCutControl.set("high cut freq", 5000, 3000, 20000);
-        modFreqControl.set("mod speed (hz)", 0.2f, 0.01f, 1.25f);
-        modAmountControl.set("mod depth (ms)", 0.8f, 0.0f, 3.0f);
+        ui.add(verbGain.set("reverb gain", 9, -48, 12));
+        ui.add(lowCutControl.set("low cut freq", 100, 20, 1000));
+        ui.add(timeControl.set("rt60", 3.33f, 0.05f, 20.0f));
+        ui.add(densityControl.set("density", 0.5f, 0.0f, 1.0f));
+        ui.add(dampingControl.set("damping", 0.5f, 0.0f, 1.0f));
+        ui.add(hiCutControl.set("high cut freq", 5000, 3000, 20000));
+        ui.add(modFreqControl.set("mod speed (hz)", 0.2f, 0.01f, 1.25f));
+        ui.add(modAmountControl.set("mod depth (ms)", 0.8f, 0.0f, 3.0f));
 
-        delayTimeControl.set("delay time", 0.3f, 0.0f, 10.0f);
-        delayFeedbackControl.set("delay feedback", 0.3f, 0.0f, 0.95f);
-        delayDampControl.set("delay damp", 0.5f, 0.0f, 1.0f);
+        ui.add(delayTimeControl.set("delay time", 0.3f, 0.0f, 10.0f));
+        ui.add(delayFeedbackControl.set("delay feedback", 0.3f, 0.0f, 0.95f));
+        ui.add(delayDampControl.set("delay damp", 0.5f, 0.0f, 1.0f));
+
+        damp.set("damp", 0.0);
 
         fader.set("gain", -12, -48, 12);
+
+        pitchControl.enableSmoothing(50.0f);
     }
 
-    void load(string path, bool setHoldTime = false) {
-        //sample = new pdsp::SampleBuffer();
+    void load(string path, size_t index = 0) {
+        samples.resize(index+1);
+        samples[index] = pdsp::SampleBuffer(); // reset the sample buffer at this index
+        pdsp::SampleBuffer& sample = samples[index];
+
+
         sample.load(path);
+
         if (sample.channels == 1) {
-            sampler.setSample(&sample, 0, 0);
+            sampler.setSample(&sample, index, 0);
         }
         else {
-            sampler.setSample(&sample, 0, 1);
+            sampler.setSample(&sample, index, 1);
         }
+    }
+
+    size_t getNumSamples() const {
+        return samples.size();
     }
 
     void gain(float dBvalue) {
@@ -109,23 +122,37 @@ public:
         delayFeedbackControl.set(feedback);
     }
 
-    void play(float pitch, float volume) {
-         //if (sampler.meter_position() > 0.0f && sampler.meter_position() < 0.99f) {
-            //0.0 >> sampler.in_start(); // reset position if we are at the end of the sample
-            //return;
-        //}
+    void play(float pitch, int sampleIndex = 0, bool restart = true, float velocity = 1.0, float damp = 1.0) {
+        if (restart) {
+            0.0 >> sampler.in_start(); // reset position if we are at the end of the sample
+        }
+        else {
+            if (sampler.meter_position() > 0.0f && sampler.meter_position() < 0.99f) {
+                return;
+            }
+        }
 
-        //ofLog() << "trigger audio sampler with pitch " << pitch  << " and volume " << volume;
+        currentSampleIndex = sampleIndex;
+        currentSampleIndex >> sampler.in_select();
+
         pitch >> sampler.in_pitch();
-        volume >> amp.in_mod();
-        this->volume.set (volume);
-        trig.trigger(1.0f); // default volume envelop
+        damp >> amp.in_mod();
+        this->damp.set (damp);
+
+        trig.trigger(velocity);
+    }
+
+    void switchSampleIndex(int sampleIndex) {
+        ofLog() << "switching to sample index " << sampleIndex;
+        currentSampleIndex = sampleIndex % samples.size();
+        ofLog() << "switching to sample index curr " << currentSampleIndex;
+        currentSampleIndex >> sampler.in_select();
     }
 
 
     pdsp::TriggerControl trig;
 
-    pdsp::ParameterAmp   volume;
+    pdsp::ParameterAmp   damp;
 
     ofParameterGroup parameters;
     pdsp::Parameter     timeControl;
@@ -139,6 +166,7 @@ public:
 
     pdsp::Parameter     pitchControl;
 
+    size_t     currentSampleIndex = 0;
 
     pdsp::BasiVerb reverb;
     pdsp::PatchNode     triggers;
@@ -147,7 +175,8 @@ public:
     pdsp::Amp           amp;
     pdsp::LowCut        lowcut;
 
-    pdsp::SampleBuffer sample;
+    //pdsp::SampleBuffer sample;
+    vector<pdsp::SampleBuffer> samples;
 
     pdsp::LFO          modLFO;
 
@@ -157,4 +186,6 @@ public:
     pdsp::Parameter    delayDampControl;
 
     pdsp::ParameterGain fader;
+
+    ofParameterGroup ui; // for debugging purposes
 };

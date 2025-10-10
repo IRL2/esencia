@@ -68,7 +68,7 @@ private:
     AudioOscillator  oscillator1;
     AudioOscillator  oscillator2;
     PolySynth        polySynth;
-    DataSynth       dataSynth;
+    DataSynth        dataSynth;
 
     pdsp::ParameterAmp  masterAmp;
 

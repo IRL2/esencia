@@ -22,7 +22,6 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
 
 
     /// sound setup
-
     audioEngine.listDevices();
     audioEngine.setDeviceID(0); // todo: add control to change this from gui (currently uses the system's default interface)
     audioEngine.setup(44100, 512, 3);
@@ -35,8 +34,9 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
 
     //ofFileDialogResult openFileResult2 = ofSystemLoadDialog("select an audio sample for collisions");
     //sampler2.load(openFileResult2.getPath());
-    //sampler2.load(ofToDataPath("sounds/obell-c.wav"));
-    sampler2.load(ofToDataPath("sounds/kalimba-soft2.wav"));
+    sampler2.load(ofToDataPath("sounds/obell-c2.wav"), 0);
+    sampler2.load(ofToDataPath("sounds/kalimba-soft2.wav"), 1);
+    sampler2.load(ofToDataPath("sounds/pianofelt12.wav"), 2);
 
 
     // config sampler player
@@ -45,8 +45,8 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
 
     sampler2.setReverb(0.5, 0.3, 0.2, 0., 1000, 0., 0.);
     sampler2.setDelay(0.5f, 0.7f);
-    sampler2.setAHR(300., 0., 2000.);
-    sampler2.play(1.0, 1.0);
+    sampler2.setAHR(100., 100., 2000.);
+    //sampler2.play(1.0, 1.0);
 
     // configure synth
     polySynth.setup(8);
@@ -301,20 +301,20 @@ void AudioApp::sonificationControl(const CollisionBuffer& collisionData, const C
     // update volumes from parameters
     masterAmp.set(parameters->masterVolume);
     sampler1.fader.set(ofMap(parameters->datasynthVolume, 0.0, 1.0, -48, 12));
-    sampler2.fader.set(ofMap(parameters->samplerplayerVolume, 0.0, 1.0, -48, 12));
+    //sampler2.fader.set(ofMap(parameters->samplerplayerVolume, 0.0, 1.0, -48, 12));
     polySynth.gain.set(ofMap(parameters->polysynthVolume, 0.0, 1.0, -80, -12));
 
 
     // when no data is presented
-    if (parameters->clusters == 0 || parameters->collisions == 0) {
-        parameters->polysynthVolume.set(0.1);
-        polySynth.setPitch(46);
-        polySynth.setLFOfreq(0);
-        return;
-    }
-    else {
-        parameters->polysynthVolume.set(0.6);
-    }
+    //if (parameters->clusters == 0 || parameters->collisions == 0) {
+    //    parameters->polysynthVolume.set(0.1);
+    //    polySynth.setPitch(46);
+    //    polySynth.setLFOfreq(0);
+    //    return;
+    //}
+    //else {
+    //    parameters->polysynthVolume.set(0.6);
+    //}
 
 
 
@@ -336,11 +336,17 @@ void AudioApp::sonificationControl(const CollisionBuffer& collisionData, const C
     // melodic silent hill
     //sampler1.play(clusterData.clusterCount / 10, parameters->avgClusterSize);
 
+    size_t samplerIndex = sampler2.currentSampleIndex;
+    triggerAtInterval(2.0, [&]() {
+        samplerIndex = (samplerIndex + 1) % sampler2.getNumSamples();
+        sampler2.switchSampleIndex(samplerIndex);
+        ofLog() << "switching to sample #" << samplerIndex;
+    });
 
     // selecting "notes" (pitch) from two scales, alternating every second
     // this actually works well
     int notesA[5] = { -2, 0, 2, 4, 7 };
-    int notesB[5] = { 1, 3, 5, 0, 4};
+    int notesB[5] = {  1, 3, 5, 0, 4 };
     int notes[] = {0,0,0,0,0};
     std::copy(notesA, notesA + 5, notes);
     if (lastTime % 2 == 0) {
@@ -351,17 +357,18 @@ void AudioApp::sonificationControl(const CollisionBuffer& collisionData, const C
 
     //float pitch = ceilf(ofMap(parameters->collisionRate, 0.0, 1.5, -5.0, 5.0));
     //float volum = ofMap(parameters->particlesInClusterRate, 0.0, 1.0, 1.0, 0.4);
-    float vol = ofClamp(parameters->collisionRate * 1.5, -0.3, 1.0);
+    //float vol = ofClamp(parameters->collisionRate * 1.5, -0.3, 1.0); // original
+    //float vol = ofMap(parameters->clusters, 1, 8, 20, -50);
+    float vol = ofMap(parameters->samplerplayerVolume, 0.0, 1.0, -30, 5);
 
-
-
+    //parameters->samplerplayerVolume.set(vol);
 
 
     if (checkInterval(0.5)) { 
-        if (ofRandomf() < (parameters->collisionRate * parameters->collisionRate)/2 ) {
+        if (ofRandomGaussian(0., 1.) < (parameters->collisionRate * parameters->collisionRate)/2 ) {
             sampler2.setReverb(0.5, 0.3, 0.2, 0., 1000, 0., 0.);
             sampler2.setDelay(0.5f, 0.7f);
-            sampler2.play(pitch, vol);
+            sampler2.play(pitch, samplerIndex);
         }
     }
 

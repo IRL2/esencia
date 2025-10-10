@@ -3,7 +3,7 @@
 
 #include "ofMain.h"
 #include "ofxPDSP.h"
-#include "ofxGuiExtended.h"
+//#include "ofxGuiExtended.h"
 
 // datatable based polysynth
 
