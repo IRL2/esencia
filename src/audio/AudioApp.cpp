@@ -30,13 +30,13 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
     // load sound files
     //ofFileDialogResult openFileResult1 = ofSystemLoadDialog("select an audio sample for clusters");
     //sampler1.load(openFileResult1.getPath());
-    sampler1.load(ofToDataPath("sounds/omissed-track.wav"));
+    sampler1.add(ofToDataPath("sounds/omissed-track.wav"));
 
     //ofFileDialogResult openFileResult2 = ofSystemLoadDialog("select an audio sample for collisions");
     //sampler2.load(openFileResult2.getPath());
-    sampler2.load(ofToDataPath("sounds/obell-c2.wav"), 0);
-    sampler2.load(ofToDataPath("sounds/kalimba-soft2.wav"), 1);
-    sampler2.load(ofToDataPath("sounds/pianofelt12.wav"), 2);
+    //sampler2.load(ofToDataPath("sounds/obell-c2.wav"), 0);
+    sampler2.add(ofToDataPath("sounds/kalimba-soft2.wav"));
+    //sampler2.load(ofToDataPath("sounds/pianofelt12.wav"), 2);
 
 
     // config sampler player
@@ -301,7 +301,7 @@ void AudioApp::sonificationControl(const CollisionBuffer& collisionData, const C
     // update volumes from parameters
     masterAmp.set(parameters->masterVolume);
     sampler1.fader.set(ofMap(parameters->datasynthVolume, 0.0, 1.0, -48, 12));
-    //sampler2.fader.set(ofMap(parameters->samplerplayerVolume, 0.0, 1.0, -48, 12));
+    sampler2.fader.set(ofMap(parameters->samplerplayerVolume, 0.0, 1.0, -48, 12));
     polySynth.gain.set(ofMap(parameters->polysynthVolume, 0.0, 1.0, -80, -12));
 
 
@@ -368,7 +368,7 @@ void AudioApp::sonificationControl(const CollisionBuffer& collisionData, const C
         if (ofRandomGaussian(0., 1.) < (parameters->collisionRate * parameters->collisionRate)/2 ) {
             sampler2.setReverb(0.5, 0.3, 0.2, 0., 1000, 0., 0.);
             sampler2.setDelay(0.5f, 0.7f);
-            sampler2.play(pitch, samplerIndex);
+            sampler2.play(pitch, 0);
         }
     }
 

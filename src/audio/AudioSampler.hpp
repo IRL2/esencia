@@ -22,16 +22,13 @@ public:
         env.enableDBTriggering(-24.0f, 0.0f);
         setAHR(0.0f, 0.0f, 2000.0f); // all the samples used here are shorter than this
 
-        //modLFO >> trig;
-
-        //modLFO.in_freq();
-
         trig >> triggers;
         triggers >> env >> amp.in_mod();
 
         triggers >> sampler >> lowcut >> reverb >> verbGain >> amp;
 
-        sampler >> delay >> verbGain >> amp;
+        sampler >> delay >> delayGain >> amp;
+        sampler >> amp;
 
         damp >> amp.in_mod();
 
@@ -50,15 +47,18 @@ public:
         delayFeedbackControl >> delay.in_feedback();
         delayDampControl >> delay.in_damping();
 
+        ui.setName("audio sampler");
+        // reverb
         ui.add(verbGain.set("reverb gain", 9, -48, 12));
         ui.add(lowCutControl.set("low cut freq", 100, 20, 1000));
+        ui.add(hiCutControl.set("high cut freq", 5000, 3000, 20000));
         ui.add(timeControl.set("rt60", 3.33f, 0.05f, 20.0f));
         ui.add(densityControl.set("density", 0.5f, 0.0f, 1.0f));
         ui.add(dampingControl.set("damping", 0.5f, 0.0f, 1.0f));
-        ui.add(hiCutControl.set("high cut freq", 5000, 3000, 20000));
         ui.add(modFreqControl.set("mod speed (hz)", 0.2f, 0.01f, 1.25f));
         ui.add(modAmountControl.set("mod depth (ms)", 0.8f, 0.0f, 3.0f));
-
+        // delay
+        ui.add(delayGain.set("delay gain", -3, -48, 12));
         ui.add(delayTimeControl.set("delay time", 0.3f, 0.0f, 10.0f));
         ui.add(delayFeedbackControl.set("delay feedback", 0.3f, 0.0f, 0.95f));
         ui.add(delayDampControl.set("delay damp", 0.5f, 0.0f, 1.0f));
@@ -70,20 +70,10 @@ public:
         pitchControl.enableSmoothing(50.0f);
     }
 
-    void load(string path, size_t index = 0) {
-        samples.resize(index+1);
-        samples[index] = pdsp::SampleBuffer(); // reset the sample buffer at this index
-        pdsp::SampleBuffer& sample = samples[index];
-
-
-        sample.load(path);
-
-        if (sample.channels == 1) {
-            sampler.setSample(&sample, index, 0);
-        }
-        else {
-            sampler.setSample(&sample, index, 1);
-        }
+    void add(string path, bool setHoldTime = false) {
+        samples.push_back(new pdsp::SampleBuffer());
+        samples.back()->load(path);
+        sampler.addSample(samples.back());
     }
 
     size_t getNumSamples() const {
@@ -176,14 +166,13 @@ public:
     pdsp::LowCut        lowcut;
 
     //pdsp::SampleBuffer sample;
-    vector<pdsp::SampleBuffer> samples;
+    std::vector<pdsp::SampleBuffer*> samples;
 
-    pdsp::LFO          modLFO;
-
-    pdsp::Delay        delay;
-    pdsp::Parameter    delayTimeControl;
-    pdsp::Parameter    delayFeedbackControl;
-    pdsp::Parameter    delayDampControl;
+    pdsp::Delay         delay;
+    pdsp::ParameterGain delayGain;
+    pdsp::Parameter     delayTimeControl;
+    pdsp::Parameter     delayFeedbackControl;
+    pdsp::Parameter     delayDampControl;
 
     pdsp::ParameterGain fader;
 
