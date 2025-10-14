@@ -142,7 +142,12 @@
     <ClCompile Include="src\audio\AudioApp.cpp">
       <Filter>src\audio</Filter>
     </ClCompile>
-    <ClCompile Include="src\gui\panels\VACPanel.cpp" />
+    <ClCompile Include="src\gui\panels\VACPanel.cpp">
+      <Filter>src\gui\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gui\panels\SimulationDataPanel.cpp">
+      <Filter>src\gui\panels</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -2517,7 +2522,12 @@
     <ClInclude Include="src\audio\AudioApp.h">
       <Filter>src\audio</Filter>
     </ClInclude>
-    <ClInclude Include="src\gui\panels\VACPanel.h" />
+    <ClInclude Include="src\gui\panels\VACPanel.h">
+      <Filter>src\gui\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gui\panels\SimulationDataPanel.h">
+      <Filter>src\gui\panels</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="icon.rc" />

@@ -7,18 +7,17 @@ void VACPanel::setup(ofxGui& gui, SimulationParameters& params, Simulator* sim) 
     
     panel = gui.addPanel("VAC Analysis");
     
-    // Add VAC control parameters - sync with simulator state
+    // Add VAC control parameters sync with simulator state
     bool initialVACState = simulator ? simulator->isVACEnabled() : true;
     int initialMaxLags = simulator ? static_cast<int>(simulator->vacData.maxTimeLags) : 120;
     
     panel->add(enableVACCalculation.set("Enable VAC", initialVACState));
-    panel->add(maxTimeLags.set("Max Time Lags", initialMaxLags, 10, 300));
+    panel->add(maxTimeLags.set("Max Time Lags", initialMaxLags, 10, 512));
     
-    // Add custom VAC plot area
+    // VAC plot area
     ofxGuiContainer* plotContainer = panel->addContainer("VAC Plot", 
         ofJson({ {"width", PLOT_WIDTH}, {"height", PLOT_HEIGHT} }));
     
-    // Add listener for VAC enable/disable
     enableVACCalculation.addListener(this, &VACPanel::onVACToggleChanged);
     maxTimeLags.addListener(this, &VACPanel::onMaxTimeLagsChanged);
     
@@ -41,7 +40,7 @@ void VACPanel::onMaxTimeLagsChanged(int& value) {
         simulator->vacData.vacValues.resize(simulator->vacData.maxTimeLags, 0.0f);
         simulator->vacData.timePoints.resize(simulator->vacData.maxTimeLags);
         for (uint32_t i = 0; i < simulator->vacData.maxTimeLags; i++) {
-            simulator->vacData.timePoints[i] = static_cast<float>(i) * 0.01f; // Assuming 0.01f deltaTime
+            simulator->vacData.timePoints[i] = static_cast<float>(i) * 0.01f;
         }
         ofLogNotice("VACPanel") << "Max time lags changed to " << simulator->vacData.maxTimeLags;
     }
@@ -50,12 +49,10 @@ void VACPanel::onMaxTimeLagsChanged(int& value) {
 void VACPanel::drawVACPlot(ofEventArgs& args) {
     if (!simulator || !panel || !enableVACCalculation) return;
     
-    // Get panel position and size for plotting area
     ofVec2f panelPos = panel->getPosition();
     float panelWidth = panel->getWidth();
     float panelHeight = panel->getHeight();
     
-    // Define plot area (offset from panel controls)
     ofRectangle plotArea(panelPos.x + 10, panelPos.y + 80, PLOT_WIDTH - 20, PLOT_HEIGHT - 20);
     
     // Get VAC data from simulator
@@ -65,25 +62,23 @@ void VACPanel::drawVACPlot(ofEventArgs& args) {
     
     ofPushStyle();
     
-    // Draw plot background
+    // background
     ofSetColor(40, 40, 40, 180);
     ofFill();
     ofDrawRectangle(plotArea);
     
-    // Draw plot border
+    // border
     ofSetColor(200, 200, 200);
     ofNoFill();
     ofSetLineWidth(1);
     ofDrawRectangle(plotArea);
     
-    // Draw axes
-    // X-axis
+    // axes
     ofSetColor(150, 150, 150);
     ofDrawLine(plotArea.x, plotArea.getBottom() - 1, plotArea.getRight(), plotArea.getBottom() - 1);
-    // Y-axis
     ofDrawLine(plotArea.x + 1, plotArea.y, plotArea.x + 1, plotArea.getBottom());
     
-    // Draw VAC curve
+    // VAC curve
     if (vacData.vacValues.size() > 1) {
         ofSetColor(100, 200, 255);
         ofSetLineWidth(2);
@@ -119,13 +114,12 @@ void VACPanel::drawVACPlot(ofEventArgs& args) {
     // Draw labels
     ofSetColor(200, 200, 200);
     
-    // Title
     ofDrawBitmapString("Velocity Autocorrelation Function", plotArea.x, plotArea.y - 10);
     
-    // X-axis label
+    // X-axis 
     ofDrawBitmapString("Time (frames)", plotArea.x + plotArea.width/2 - 30, plotArea.getBottom() + 20);
     
-    // Y-axis label  
+    // Y-axis   
     ofPushMatrix();
     ofTranslate(plotArea.x - 15, plotArea.y + plotArea.height/2);
     ofRotate(-90);

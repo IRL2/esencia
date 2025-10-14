@@ -54,11 +54,11 @@ struct VACData {
     bool isEnabled;                         // Whether VAC calculation is enabled
     uint32_t lastCalculationFrame;          // Track when VAC was last calculated
     
-    VACData() : maxTimeLags(60), currentFrame(0), isEnabled(true), lastCalculationFrame(0) {  // Reduced from 120 to 60
+    VACData() : maxTimeLags(60), currentFrame(0), isEnabled(true), lastCalculationFrame(0) {
         vacValues.resize(maxTimeLags, 0.0f);
         timePoints.resize(maxTimeLags);
         for (uint32_t i = 0; i < maxTimeLags; i++) {
-            timePoints[i] = static_cast<float>(i) * 0.01f; // Assuming 0.01f deltaTime
+            timePoints[i] = static_cast<float>(i) * 0.01f;
         }
     }
 };
@@ -83,6 +83,17 @@ public:
     bool isVACEnabled() const { return enableVACCalculation; }
     void setVACEnabled(bool enabled) { enableVACCalculation = enabled; }
     uint32_t getMaxVelocityFrames() const { return maxVelocityFrames; }
+    
+    // Collision data access method
+    const CollisionBuffer& getCollisionData() const { return collisionData; }
+    bool isCollisionLoggingEnabled() const { return parameters->enableCollisionLogging; }
+    void setCollisionLoggingEnabled(bool enabled) { parameters->enableCollisionLogging = enabled; }
+    
+    // Cluster analysis control methods
+    bool isClusterAnalysisEnabled() const { return enableClusterAnalysis; }
+    void setClusterAnalysisEnabled(bool enabled) { enableClusterAnalysis = enabled; }
+    float getClusterConnectionDistance() const { return clusterConnectionDistance; }
+    void setClusterConnectionDistance(float distance) { clusterConnectionDistance = distance; }
 
     GLint deltaTimeLocation;
     GLint worldSizeLocation;
@@ -101,8 +112,8 @@ public:
     GLint enableCollisionLoggingLocation;
 
     static const size_t MAX_COLLISIONS_PER_FRAME = 1024;
-    static const size_t MAX_CLUSTERS_PER_FRAME = 50; // Reasonable max clusters
-    static const uint32_t MIN_CLUSTER_SIZE = 5;      // Reduced for testing - was 10
+    static const size_t MAX_CLUSTERS_PER_FRAME = 10;
+    static const uint32_t MIN_CLUSTER_SIZE = 10;
 
 private:
     void setupComputeShader();
@@ -174,9 +185,9 @@ private:
     float clusterConnectionDistance = 50.0f;
 
     // VAC calculation settings and data storage
-    std::vector<std::vector<glm::vec2>> velocityHistory;  // velocityHistory[frame][0] contains ensemble velocity
-    uint32_t maxVelocityFrames = 60;                     // Reduced from 120 to 60 frames (1 second at 60fps)
-    uint32_t vacCalculationInterval = 5;                 // Calculate VAC every 5 frames (back to original frequency)
+    std::vector<std::vector<glm::vec2>> velocityHistory; 
+    uint32_t maxVelocityFrames = 512;
+    uint32_t vacCalculationInterval = 5;                 
     bool enableVACCalculation = true;
 
     // Normalization functions

@@ -68,6 +68,7 @@ void GuiApp::draw()
     EsenciaPanelBase::drawLineBetween(particlesPanel, simulationPanel);
     EsenciaPanelBase::drawLineBetween(simulationPanel, renderPanel);
     EsenciaPanelBase::drawLineBetween(simulationPanel, vacPanel);
+    EsenciaPanelBase::drawLineBetween(simulationPanel, simulationDataPanel);
     EsenciaPanelBase::drawLineBetween(presetsPanel, sequencePanel);
 
     fbo.end();
@@ -97,12 +98,15 @@ void GuiApp::setupVACPanel(Simulator* simulator) {
         vacPanel.setup(gui, simulationParameters, simulator);
         ofLogNotice("GuiApp") << "VAC Panel setup completed";
     } else {
-        ofLogError("GuiApp") << "Cannot setup VAC Panel: simulator is null";
+        ofLogError("GuiApp") << "simulator is null";
     }
 }
 
-
-
-
-
-
+void GuiApp::setupSimulationDataPanel(Simulator* simulator) {
+    if (simulator) {
+        simulationDataPanel.setup(gui, simulationParameters, simulator);
+        ofLogNotice("GuiApp") << "Simulation Data Panel setup completed";
+    } else {
+        ofLogError("GuiApp") << "simulator is null";
+    }
+}

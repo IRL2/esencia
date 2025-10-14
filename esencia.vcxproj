@@ -107,6 +107,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\audio\AudioApp.cpp" />
+    <ClCompile Include="src\gui\panels\SimulationDataPanel.cpp" />
     <ClCompile Include="src\gui\panels\VACPanel.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
@@ -155,6 +156,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\audio\AudioApp.h" />
+    <ClInclude Include="src\gui\panels\SimulationDataPanel.h" />
     <ClInclude Include="src\gui\panels\VACPanel.h" />
     <ClInclude Include="src\gui\SystemUsage.h" />
     <ClInclude Include="src\ofApp.h" />

@@ -364,21 +364,7 @@ void Simulator::applyBerendsenThermostat() {
 void Simulator::keyReleased(ofKeyEventArgs& e) {
     int key = e.keycode;
     switch (key) {
-    case 'c':
-    case 'C':
-        parameters->enableCollisionLogging = !parameters->enableCollisionLogging;
-        ofLogNotice("Simulator") << "Collision logging " << (parameters->enableCollisionLogging ? "enabled" : "disabled") << " via keyboard";
-        break;
-    case 'k':
-    case 'K':
-        enableClusterAnalysis = !enableClusterAnalysis;
-        ofLogNotice("Simulator") << "Cluster analysis " << (enableClusterAnalysis ? "enabled" : "disabled") << " via keyboard";
-        break;
-    case 'v':
-    case 'V':
-        enableVACCalculation = !enableVACCalculation;
-        ofLogNotice("Simulator") << "VAC calculation " << (enableVACCalculation ? "enabled" : "disabled") << " via keyboard";
-        break;
+    
     case 'b':
     case 'B':
         // Decrease VAC calculation frequency (increase interval)
@@ -390,16 +376,6 @@ void Simulator::keyReleased(ofKeyEventArgs& e) {
         // Increase VAC calculation frequency (decrease interval)
         vacCalculationInterval = std::max(5u, vacCalculationInterval - 5);
         ofLogNotice("Simulator") << "VAC calculation interval decreased to " << vacCalculationInterval << " frames";
-        break;
-    case 'n':
-    case 'N':
-        clusterConnectionDistance += 10.0f;
-        ofLogNotice("Simulator") << "Cluster connection distance increased to " << clusterConnectionDistance;
-        break;
-    case 'm':
-    case 'M':
-        clusterConnectionDistance = std::max(10.0f, clusterConnectionDistance - 10.0f);
-        ofLogNotice("Simulator") << "Cluster connection distance decreased to " << clusterConnectionDistance;
         break;
     default:
         break;
@@ -416,11 +392,6 @@ void Simulator::analyzeParticleClusters() {
         return;
     }
     
-    //// Debug logging
-    //if (currentFrameNumber % 60 == 0) { // Log every 2 seconds at 30fps
-    //    ofLogNotice("Simulator::ClusterDebug") << "Frame " << currentFrameNumber 
-    //              << ": Analyzing " << particleCount << " particles with connection distance " << clusterConnectionDistance;
-    //}
     
     // Initialize Union-Find data structures
     std::vector<uint32_t> parent(particleCount);
@@ -449,14 +420,7 @@ void Simulator::analyzeParticleClusters() {
         
         clusterMembers[rootToClusterIndex[root]].insert(i);
     }
-    
-    //// Debug: Log all cluster sizes before filtering
-    //if (currentFrameNumber % 60 == 0 && clusterMembers.size() > 0) {
-    //    ofLogNotice("Simulator::ClusterDebug") << "Found " << clusterMembers.size() << " raw clusters. Sizes: ";
-    //    for (size_t i = 0; i < std::min(clusterMembers.size(), size_t(10)); i++) {
-    //        ofLogNotice("Simulator::ClusterDebug") << "  Cluster " << i << ": " << clusterMembers[i].size() << " particles";
-    //    }
-    //}
+   
     
     // Filter clusters by minimum size and calculate statistics
     calculateClusterStatistics(parent, clusterMembers);
@@ -587,7 +551,6 @@ void Simulator::storeVelocityFrame() {
 
     uint32_t frameIndex = vacData.currentFrame % maxVelocityFrames;
 
-    // Store individual particle velocities (not ensemble average)
     if (velocityHistory[frameIndex].size() != particles.active.size()) {
         velocityHistory[frameIndex].resize(particles.active.size());
     }
@@ -611,11 +574,10 @@ void Simulator::calculateVAC() {
     // Reset VAC values
     std::fill(vacData.vacValues.begin(), vacData.vacValues.end(), 0.0f);
 
-    // DS-style calculation: sum correlations across all particles
+    // sum correlations across all particles
     for (uint32_t dt = 0; dt < maxTimeLags; dt++) {
         double correlation = 0.0;
 
-        // For each particle
         for (size_t particleIdx = 0; particleIdx < particles.active.size(); particleIdx++) {
             // Get current velocity (t=0)
             uint32_t currentFrameIdx = (vacData.currentFrame - 1) % maxVelocityFrames;
@@ -629,7 +591,6 @@ void Simulator::calculateVAC() {
 
             glm::vec2 vt = velocityHistory[pastFrameIdx][particleIdx];
 
-            // Add this particle's contribution: v(0) · v(dt)
             correlation += glm::dot(v0, vt);
         }
 

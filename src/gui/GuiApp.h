@@ -16,6 +16,7 @@
 #include "panels/PresetsPanel.h"
 #include "panels/SequencePanel.h"
 #include "panels/VACPanel.h"
+#include "panels/SimulationDataPanel.h"
 
 
 #include "ofxPresets.h"
@@ -38,6 +39,9 @@ public:
     
     // Method to setup VAC panel with simulator reference
     void setupVACPanel(class Simulator* simulator);
+    
+    // Method to setup Simulation Data panel with simulator reference
+    void setupSimulationDataPanel(class Simulator* simulator);
 
     ofxGui gui;
     
@@ -70,6 +74,8 @@ private:
 	SequencePanel sequencePanel;
 	
 	VACPanel vacPanel;
+	
+	SimulationDataPanel simulationDataPanel;
 
     ofFbo fbo;  // for the extra layers behind the GUI (lines, background, etc)
 
@@ -88,6 +94,48 @@ private:
     int bgChangeDuration = 1000;
     std::vector<ofColor> bgColors = { ofColor::darkSalmon, ofColor::darkGrey, ofColor::darkSlateGray, ofColor::darkKhaki, ofColor::darkViolet, ofColor::deepSkyBlue };
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
