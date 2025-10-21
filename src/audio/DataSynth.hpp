@@ -85,6 +85,8 @@ public:
     pdsp::TriggerControl voiceTrigger; // temp for testing
     pdsp::Parameter     pitchCtrl;    // temp for testing
 
+    pdsp::ParameterGain gain;  // fader
+
 
     pdsp::Patchable& DataSynth::ch(int index) {
         index = index % 2;
@@ -168,7 +170,6 @@ public:
 
 private: // --------------------------------------------------
 
-    pdsp::ParameterGain gain;
 
     pdsp::Parameter     cutoff_ctrl;
     pdsp::Parameter     reso_ctrl;

@@ -119,13 +119,6 @@ void VACPanel::drawVACPlot(ofEventArgs& args) {
     // X-axis 
     ofDrawBitmapString("Z(t)   /   Time (frames)", plotArea.x + 5, plotArea.getBottom() + 30);
     
-    // Y-axis
-    //ofPushMatrix();
-    //ofTranslate(plotArea.x - 15, plotArea.y + (plotArea.height / 2) + 30);
-    //ofRotate(-90);
-    //ofDrawBitmapString("Z(t)", 0, 40);
-    //ofPopMatrix();
-    
     ofSetColor(255); // to-do: change for panel style text color
     
     // X-axis ticks (time)

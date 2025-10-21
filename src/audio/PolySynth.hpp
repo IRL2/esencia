@@ -98,7 +98,7 @@ public:
 
     pdsp::TriggerControl trigger;
     pdsp::Parameter     pitchCtrl;
-    pdsp::ParameterGain gain;
+    pdsp::ParameterGain gain;  // fader
 
 
     pdsp::Patchable& PolySynth::ch(int index) {

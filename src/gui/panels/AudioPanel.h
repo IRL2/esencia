@@ -43,8 +43,9 @@ public:
 
         p->add(params->masterVolume.set("main volume", 0.8, 0.0, 1.2), ofJson({ {"precision", 1} }));
 		p->add(params->polysynthVolume.set("polysynth volume", 0.8, 0.0, 1.0), ofJson({ {"precision", 1} }));
-		p->add(params->samplerplayerVolume.set("sampler1 volume", 0.8, 0.0, 1.0), ofJson({ {"precision", 1} }));
-        p->add(params->datasynthVolume.set("sampler2 volume", 0.8, 0.0, 1.0), ofJson({ {"precision", 1} }));
+		p->add(params->sampler1playerVolume.set("sampler1 volume", 0.8, 0.0, 1.0), ofJson({ {"precision", 1} }));
+		p->add(params->sampler2playerVolume.set("sampler2 volume", 0.8, 0.0, 1.0), ofJson({ {"precision", 1} }));
+        p->add(params->datasynthVolume.set("datasynth volume", 0.8, 0.0, 1.0), ofJson({ {"precision", 1} }));
 
 		//p->add(params->eqTrebble.set("eq trebble", 0.5, 0.0, 1.0), ofJson({ {"precision", 2} }));
         //p->add(params->eqBass.set("eq bass", 0.5, 0.0, 1.0), ofJson({ {"precision", 2} }));

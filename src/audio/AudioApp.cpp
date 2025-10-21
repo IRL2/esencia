@@ -53,19 +53,25 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
     polySynth.on(1.0f);
     polySynth.setPitch(46);
 
+    dataSynth.datatable.setup(250, 140, true);
+    dataSynth.setup();
+
     // connect all modules to a master gain then to the audio engine
     sampler1.fader.ch(0) >> masterAmp.ch(0);
     sampler2.fader.ch(0) >> masterAmp.ch(0);
     polySynth.ch(0) >> masterAmp.ch(0);
     polySynth.ch(1) >> masterAmp.ch(1);
+    dataSynth.ch(0) >> masterAmp.ch(0);
+    dataSynth.ch(1) >> masterAmp.ch(1);
     masterAmp.ch(0) >> audioEngine.audio_out(0);
     masterAmp.ch(1) >> audioEngine.audio_out(1);
 
     // initial volumes
     parameters->masterVolume.set(0.8);
-    parameters->datasynthVolume.set(0.5);
-    parameters->samplerplayerVolume.set(0.7);
     parameters->polysynthVolume.set(0.6);
+    parameters->sampler1playerVolume.set(0.7);
+    parameters->sampler2playerVolume.set(0.7);
+    parameters->datasynthVolume.set(0.5);
 }
 
 
@@ -300,21 +306,22 @@ void AudioApp::sonificationControl(const CollisionBuffer& collisionData, const C
 
     // update volumes from parameters
     masterAmp.set(parameters->masterVolume);
-    sampler1.fader.set(ofMap(parameters->datasynthVolume, 0.0, 1.0, -48, 12));
-    sampler2.fader.set(ofMap(parameters->samplerplayerVolume, 0.0, 1.0, -48, 12));
+    sampler1.fader.set(ofMap(parameters->sampler1playerVolume, 0.0, 1.0, -48, 12));
+    sampler2.fader.set(ofMap(parameters->sampler2playerVolume, 0.0, 1.0, -48, 12));
     polySynth.gain.set(ofMap(parameters->polysynthVolume, 0.0, 1.0, -80, -12));
+    dataSynth.gain.set(ofMap(parameters->datasynthVolume, 0.0, 1.0, -48, 12));
 
 
     // when no data is presented
-    if (parameters->clusters == 0 || parameters->collisions == 0) {
-        parameters->polysynthVolume.set(0.1);
-        polySynth.setPitch(46);
-        polySynth.setLFOfreq(0);
-        return;
-    }
-    else {
-        parameters->polysynthVolume.set(0.6);
-    }
+    //if (parameters->clusters == 0 || parameters->collisions == 0) {
+    //    parameters->polysynthVolume.set(0.1);
+    //    polySynth.setPitch(46);
+    //    polySynth.setLFOfreq(0);
+    //    return;
+    //}
+    //else {
+    //    parameters->polysynthVolume.set(0.6);
+    //}
 
 
 
@@ -359,7 +366,7 @@ void AudioApp::sonificationControl(const CollisionBuffer& collisionData, const C
     //float volum = ofMap(parameters->particlesInClusterRate, 0.0, 1.0, 1.0, 0.4);
     //float vol = ofClamp(parameters->collisionRate * 1.5, -0.3, 1.0); // original
     //float vol = ofMap(parameters->clusters, 1, 8, 20, -50);
-    float vol = ofMap(parameters->samplerplayerVolume, 0.0, 1.0, -30, 5);
+    float vol = ofMap(parameters->sampler1playerVolume, 0.0, 1.0, -30, 5);
 
     //parameters->samplerplayerVolume.set(vol);
 
@@ -372,11 +379,19 @@ void AudioApp::sonificationControl(const CollisionBuffer& collisionData, const C
         }
     }
 
-    triggerAtInterval(1.0, [&]() {
-        float freq = ofMap(parameters->avgClusterVelocity, 0.0, 100.0, 0.01, 2.0);
-        polySynth.setLFOfreq(freq);
-        polySynth.setPitch(ofMap(parameters->clusters, 2, 20, 44, 58));
-    });
+    //triggerAtInterval(1.0, [&]() {
+    //    float freq = ofMap(parameters->avgClusterVelocity, 0.0, 100.0, 0.01, 2.0);
+    //    polySynth.setLFOfreq(freq);
+    //    polySynth.setPitch(ofMap(parameters->clusters, 2, 20, 44, 58));
+    //});
+
+
+    std::vector<float> vacValues = parameters->vacValues.get();
+    dataSynth.datatable.begin();
+    for (int i = 0; i < parameters->vacWidth; ++i) {
+        dataSynth.datatable.data(i, vacValues[i]);
+    }
+    dataSynth.datatable.end();
 }
 
 

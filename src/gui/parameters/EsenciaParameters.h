@@ -200,10 +200,13 @@ struct SimulationParameters : public ofxPresetsParametersBase {
 /// The SonificationParameters struct contains all the parameters that are used to configure the simulation.
 /// </summary>
 struct SonificationParameters : public ofxPresetsParametersBase {
+
+    // instrument volumes
     ofParameter<float> masterVolume;
     ofParameter<float> polysynthVolume;
     ofParameter<float> datasynthVolume;
-    ofParameter<float> samplerplayerVolume;
+    ofParameter<float> sampler1playerVolume;
+    ofParameter<float> sampler2playerVolume;
 
 
     ofParameter<int> maxCollisionSampling;
@@ -240,6 +243,10 @@ struct SonificationParameters : public ofxPresetsParametersBase {
     ofParameter<float> avgClusterVelocityMagitude;
 
 
+    // VAC analysis data
+    ofParameter<int> vacWidth;
+    ofParameter<int> vacHeight;
+    ofParameter<std::vector<float>> vacValues;
 
     ofParameter<float> eqTrebble;
     ofParameter<float> eqBass;
@@ -258,7 +265,8 @@ struct SonificationParameters : public ofxPresetsParametersBase {
         parameterMap["masterVolume"] = &masterVolume;
         parameterMap["polysynthVolume"] = &polysynthVolume;
         parameterMap["datasynthVolume"] = &datasynthVolume;
-        parameterMap["samplerplayerVolume"] = &samplerplayerVolume;
+        parameterMap["sampler1playerVolume"] = &sampler1playerVolume;
+        parameterMap["sampler2playerVolume"] = &sampler2playerVolume;
     }
 };
 
