@@ -306,15 +306,15 @@ void AudioApp::sonificationControl(const CollisionBuffer& collisionData, const C
 
 
     // when no data is presented
-    //if (parameters->clusters == 0 || parameters->collisions == 0) {
-    //    parameters->polysynthVolume.set(0.1);
-    //    polySynth.setPitch(46);
-    //    polySynth.setLFOfreq(0);
-    //    return;
-    //}
-    //else {
-    //    parameters->polysynthVolume.set(0.6);
-    //}
+    if (parameters->clusters == 0 || parameters->collisions == 0) {
+        parameters->polysynthVolume.set(0.1);
+        polySynth.setPitch(46);
+        polySynth.setLFOfreq(0);
+        return;
+    }
+    else {
+        parameters->polysynthVolume.set(0.6);
+    }
 
 
 
@@ -372,10 +372,10 @@ void AudioApp::sonificationControl(const CollisionBuffer& collisionData, const C
         }
     }
 
-    triggerAtInterval(4.0, [&]() {
-        float freq = ofMap(parameters->collisionRate, 0.0, 1.0, 0.01, 2.0);
+    triggerAtInterval(1.0, [&]() {
+        float freq = ofMap(parameters->avgClusterVelocity, 0.0, 100.0, 0.01, 2.0);
         polySynth.setLFOfreq(freq);
-        //polySynth.setPitch(ofMap(parameters->clusters, 2, 20, 44, 58));
+        polySynth.setPitch(ofMap(parameters->clusters, 2, 20, 44, 58));
     });
 }
 

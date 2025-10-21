@@ -104,7 +104,6 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\audio\SoundManager.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
     <ClCompile Include="src\audio\AudioApp.cpp" />
@@ -340,7 +339,6 @@
     <ClInclude Include="src\audio\AudioSampler.hpp" />
     <ClInclude Include="src\audio\DataSynth.hpp" />
     <ClInclude Include="src\audio\PolySynth.hpp" />
-    <ClInclude Include="src\audio\SoundManager.h" />
     <ClInclude Include="src\gui\panels\AudioPanel.h" />
     <ClInclude Include="src\ofApp.h" />
     <ClInclude Include="src\audio\AudioApp.h" />

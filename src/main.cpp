@@ -8,10 +8,11 @@
 int main()
 {
     ofGLFWWindowSettings settings;
+    const int WU = 30; // window unit
 
     // render window
-    settings.setSize(27*30, 27*30);
-    settings.setPosition(glm::vec2(47*30,60));
+    settings.setSize(33*WU, 33*WU);
+    settings.setPosition(glm::vec2(47*WU, 2*WU));
     settings.resizable = true;
     settings.setGLVersion(3, 2);
     auto renderWindow = ofCreateWindow(settings);
@@ -20,8 +21,8 @@ int main()
 
 
     // gui window
-    settings.setSize(45*30, 33*30);
-    settings.setPosition(glm::vec2(30,60));
+    settings.setSize(45*WU, 33*WU);
+    settings.setPosition(glm::vec2(WU, 2*WU));
     settings.resizable = true;
     auto mainWindow = ofCreateWindow(settings);
     shared_ptr<ofApp> mainApp(new ofApp);

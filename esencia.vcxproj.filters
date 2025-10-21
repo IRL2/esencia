@@ -694,9 +694,6 @@
     <ClCompile Include="..\..\..\addons\ofxPDSP\libs\audiofft\AudioFFT.cpp">
       <Filter>addons\ofxPDSP\libs\audiofft</Filter>
     </ClCompile>
-    <ClCompile Include="src\audio\SoundManager.cpp">
-      <Filter>src\audio</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -4131,9 +4128,6 @@
       <Filter>src\audio</Filter>
     </ClInclude>
     <ClInclude Include="src\audio\AudioSampler.hpp">
-      <Filter>src\audio</Filter>
-    </ClInclude>
-    <ClInclude Include="src\audio\SoundManager.h">
       <Filter>src\audio</Filter>
     </ClInclude>
     <ClInclude Include="src\gui\panels\AudioPanel.h">

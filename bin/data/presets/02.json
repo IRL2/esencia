@@ -9,7 +9,7 @@
         "nConsidered": 8,
         "polygonTolerance": 1.0,
         "showPolygons": false,
-        "useMask": true
+        "useMask": false
     },
     "render": {
         "color": 9274056,
@@ -31,12 +31,12 @@
         "videopreviewVisibility": 0.2991071343421936
     },
     "simulation": {
-        "amount": 451.0777893066406,
+        "amount": 397.2038879394531,
         "applyThermostat": true,
         "coupling": 0.8111607432365417,
         "depthFieldScale": -103303.5703125,
         "enableCollisionLogging": true,
-        "radius": 8,
+        "radius": 5,
         "targetTemperature": 8513.392578125
     }
 }
