@@ -12,9 +12,9 @@
         "useMask": false
     },
     "render": {
-        "color": 9274056,
-        "color_alpha": 255,
-        "fakeTrialsVisibility": 0.5718749761581421,
+        "color": 7618646,
+        "color_alpha": 85,
+        "fakeTrialsVisibility": 0.0,
         "motionBlurStrength": 0.5,
         "particleGlow": 1.0,
         "showVideoPreview": true,
@@ -31,12 +31,12 @@
         "videopreviewVisibility": 0.2991071343421936
     },
     "simulation": {
-        "amount": 397.2038879394531,
+        "amount": 278.6813049316406,
         "applyThermostat": true,
         "coupling": 0.8111607432365417,
         "depthFieldScale": -103303.5703125,
         "enableCollisionLogging": true,
-        "radius": 5,
+        "radius": 24,
         "targetTemperature": 8513.392578125
     }
 }

@@ -133,9 +133,9 @@ public:
     }
 
     void switchSampleIndex(int sampleIndex) {
-        ofLog() << "switching to sample index " << sampleIndex;
+        //ofLog() << "switching to sample index " << sampleIndex;
         currentSampleIndex = sampleIndex % samples.size();
-        ofLog() << "switching to sample index curr " << currentSampleIndex;
+        //ofLog() << "switching to sample index curr " << currentSampleIndex;
         currentSampleIndex >> sampler.in_select();
     }
 

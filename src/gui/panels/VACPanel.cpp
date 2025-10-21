@@ -53,7 +53,7 @@ void VACPanel::drawVACPlot(ofEventArgs& args) {
     float panelWidth = panel->getWidth();
     float panelHeight = panel->getHeight();
     
-    ofRectangle plotArea(panelPos.x + 10, panelPos.y + 80, PLOT_WIDTH - 20, PLOT_HEIGHT - 20);
+    ofRectangle plotArea(panelPos.x + 40, panelPos.y + 140, PLOT_WIDTH - 50, PLOT_HEIGHT/2);
     
     // Get VAC data from simulator
     const VACData& vacData = simulator->vacData;
@@ -81,7 +81,7 @@ void VACPanel::drawVACPlot(ofEventArgs& args) {
     // VAC curve
     if (vacData.vacValues.size() > 1) {
         ofSetColor(100, 200, 255);
-        ofSetLineWidth(2);
+        ofSetLineWidth(3);
         
         uint32_t maxPoints = std::min(static_cast<uint32_t>(vacData.vacValues.size()), 
                                      static_cast<uint32_t>(maxTimeLags.get()));
@@ -114,20 +114,19 @@ void VACPanel::drawVACPlot(ofEventArgs& args) {
     // Draw labels
     ofSetColor(200, 200, 200);
     
-    ofDrawBitmapString("Velocity Autocorrelation Function", plotArea.x, plotArea.y - 10);
+    ofDrawBitmapString("Velocity Autocorrelation Fn", plotArea.x-15, plotArea.y - 10);
     
     // X-axis 
-    ofDrawBitmapString("Time (frames)", plotArea.x + plotArea.width/2 - 30, plotArea.getBottom() + 20);
+    ofDrawBitmapString("Z(t)   /   Time (frames)", plotArea.x + 5, plotArea.getBottom() + 30);
     
-    // Y-axis   
-    ofPushMatrix();
-    ofTranslate(plotArea.x - 15, plotArea.y + plotArea.height/2);
-    ofRotate(-90);
-    ofDrawBitmapString("Z(t)", 0, 0);
-    ofPopMatrix();
+    // Y-axis
+    //ofPushMatrix();
+    //ofTranslate(plotArea.x - 15, plotArea.y + (plotArea.height / 2) + 30);
+    //ofRotate(-90);
+    //ofDrawBitmapString("Z(t)", 0, 40);
+    //ofPopMatrix();
     
-    // Draw axis tick marks and values
-    ofSetColor(120, 120, 120);
+    ofSetColor(255); // to-do: change for panel style text color
     
     // X-axis ticks (time)
     for (int i = 0; i <= 4; i++) {
@@ -139,12 +138,12 @@ void VACPanel::drawVACPlot(ofEventArgs& args) {
     }
     
     // Y-axis ticks (VAC values)
-    for (int i = 0; i <= 4; i++) {
-        float y = plotArea.getBottom() - (i * plotArea.height / 4.0f);
+    for (int i = 0; i <= 3; i++) {
+        float y = plotArea.getBottom() - (i * plotArea.height / 3.0f);
         ofDrawLine(plotArea.x - 3, y, plotArea.x + 3, y);
         
-        float vacValue = -0.5f + (1.5f * i / 4.0f); // Range from -0.5 to 1.0
-        ofDrawBitmapString(ofToString(vacValue, 1), plotArea.x - 25, y + 4);
+        float vacValue = -0.5f + (1.5f * i / 3.0f); // Range from -0.5 to 1.0
+        ofDrawBitmapString(ofToString(vacValue, 1), plotArea.x - 33, y + 4);
     }
     
     ofPopStyle();

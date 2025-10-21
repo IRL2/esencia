@@ -5,7 +5,7 @@
 
 class SequencePanel : public EsenciaPanelBase {
 
-	const ofRectangle PANEL_RECT = ofRectangle(10, 25, 12, 0);
+	const ofRectangle PANEL_RECT = ofRectangle(10, 25, 8, 0);
 	const ofColor &BG_COLOR = ofColor(100, 100, 100, 100);
 
 	const float DEFAULT_TRANSITION_DURATION_INIT = 5.0;

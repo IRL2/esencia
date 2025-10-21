@@ -1,7 +1,7 @@
 #pragma once
 
 #include "EsenciaPanelBase.h"
-#include "../ParticleSizeSlider.h"
+#include "ParticleSizeSlider.h"
 
 class ParticlesPanel : public EsenciaPanelBase {
 

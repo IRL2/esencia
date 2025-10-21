@@ -11,8 +11,8 @@ int main()
     const int WU = 30; // window unit
 
     // render window
-    settings.setSize(33*WU, 33*WU);
-    settings.setPosition(glm::vec2(47*WU, 2*WU));
+    settings.setSize(36*WU, 33*WU);
+    settings.setPosition(glm::vec2(49*WU, 2*WU));
     settings.resizable = true;
     settings.setGLVersion(3, 2);
     auto renderWindow = ofCreateWindow(settings);
@@ -21,7 +21,7 @@ int main()
 
 
     // gui window
-    settings.setSize(45*WU, 33*WU);
+    settings.setSize(47*WU, 33*WU);
     settings.setPosition(glm::vec2(WU, 2*WU));
     settings.resizable = true;
     auto mainWindow = ofCreateWindow(settings);

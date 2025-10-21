@@ -8,9 +8,9 @@ class Simulator;
 class VACPanel : public EsenciaPanelBase {
 
     // Panel configuration
-    const int PLOT_WIDTH = 300;
-    const int PLOT_HEIGHT = 150;
-    const ofRectangle PANEL_RECT = ofRectangle(12, 1, 10, 0);
+    const int PLOT_WIDTH = 250;
+    const int PLOT_HEIGHT = 140;
+    const ofRectangle PANEL_RECT = ofRectangle(37, 6, 8, 0);
     const ofColor BG_COLOR = ofColor(80, 80, 120, 100);
 
     // VAC plot parameters

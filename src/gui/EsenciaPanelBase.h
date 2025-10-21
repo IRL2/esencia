@@ -93,9 +93,8 @@ public:
         //ofDrawArrow(destinationArrowStart, destinationArrowEnd, PANELS_TRIANGLE_SIZE);  // original circle
 
         // moving dots along the line to simulate flow
-        //ofSetColor(ofColor::paleTurquoise, 200); // standard color
-        ofSetColor(a.panel->getBackgroundColor(), 180);
         ofNoFill();
+        ofSetColor(a.panel->getBackgroundColor() * ofColor::white, 180);
         for (int i=1; i<=FLOW_DOT_COUNT; i++) {
             // Draw a small rectangle moving along the connection line
             float percent = fmod((oy + ofGetElapsedTimef() + i) / 3, 1.0f); // Get a percentage value that loops from 0 to 1

@@ -77,6 +77,10 @@ private:
 	SequencePanel sequencePanel;
 
     AudioPanel audioPanel;
+
+    VACPanel vacPanel;
+
+    SimulationDataPanel simulationDataPanel;
      
 
     ofFbo fbo;  // for the extra layers behind the GUI (lines, background, etc)

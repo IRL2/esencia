@@ -20,6 +20,8 @@ ofFbo trailFbo;
 std::vector<glm::vec3> particlePositions;
 std::vector<float> particleSizes;
 
+const bool INVEASTERNEGG = true;
+
 //--------------------------------------------------------------
 void RenderApp::setup()
 {
@@ -32,8 +34,15 @@ void RenderApp::setup()
     SetWindowPos(ofGetWin32Window(), HWND_DESKTOP, ofGetViewportWidth() - ofGetWidth(), 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
     ShowWindow(GetConsoleWindow(), SW_MINIMIZE);
 
-    // Load the particle texture    
-    bool textureLoaded = particleTexture.load("images/particle.png");
+    // Load the particle texture
+    bool textureLoaded;
+    if ((ofGetMonth() == 10 && ofGetDay() == 31) || INVEASTERNEGG) {
+        textureLoaded = particleTexture.load("images/pumpkin.png");
+    }
+    else {
+        textureLoaded = particleTexture.load("images/particle.png");
+    }
+
     if (!textureLoaded) {
         ofLogError("RenderApp::setup()") << "Failed to load particle texture!";
     }

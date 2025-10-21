@@ -31,7 +31,10 @@ void GuiApp::setup()
     audioPanel.setup(gui, &sonificationParameters, &simulationParameters);
 
     //parameters->previewRender.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
-
+    bgTargetColor1 = ofColor::white;
+    bgTargetColor2 = ofColor::white;
+    bgStartColor1 = ofColor::white;
+    bgStartColor2 = ofColor::white;
 }
 
 void GuiApp::update() 
@@ -42,18 +45,13 @@ void GuiApp::update()
     if (bgChangeFrequency == bgChangeDuration) bgChangeFrequency = 0;
 
     if (colorProgress == 0) {
-        //bgTargetColor1 = bgColors[ofRandom(bgColors.size())];
-        //bgTargetColor2 = bgColors[ofRandom(bgColors.size())];
-        bgTargetColor1 = renderParameters.color.get() * ofColor::darkGray;
-        bgTargetColor2 = renderParameters.videoColor;
+        bgTargetColor1.setHsb(renderParameters.color.get().getHueAngle(), 200, 100);
+        bgTargetColor2.setHsb(renderParameters.videoColor.get().getHueAngle(), 200, 100);
         bgStartColor1 = bgColor1;
         bgStartColor2 = bgColor2;
     }
-    //bgColor1 = bgStartColor1.getLerped(bgTargetColor1, colorProgress);
-    //bgColor2 = bgStartColor2.getLerped(bgTargetColor2, colorProgress);
-
-    bgColor1 = bgStartColor1.getLerped(renderParameters.color, colorProgress);
-    bgColor2 = bgStartColor2.getLerped(renderParameters.videoColor, colorProgress);
+    bgColor1 = bgStartColor1.getLerped(bgTargetColor1, colorProgress);
+    bgColor2 = bgStartColor2.getLerped(bgTargetColor2, colorProgress);
 }
 
 
@@ -66,16 +64,16 @@ void GuiApp::draw()
     EsenciaPanelBase::drawLineBetween(videoOriginPanel, videoProcessingPanel);
     EsenciaPanelBase::drawLineBetween(particlesPanel, simulationPanel);
     EsenciaPanelBase::drawLineBetween(videoProcessingPanel, simulationPanel, 1, 0);
-    EsenciaPanelBase::drawLineBetween(simulationPanel, renderPanel);
-    EsenciaPanelBase::drawLineBetween(simulationPanel, vacPanel);
-    EsenciaPanelBase::drawLineBetween(simulationPanel, simulationDataPanel);
-    EsenciaPanelBase::drawLineBetween(presetsPanel, sequencePanel);
+    EsenciaPanelBase::drawLineBetween(simulationPanel, simulationDataPanel, 0, 3);
+    EsenciaPanelBase::drawLineBetween(simulationPanel, vacPanel, 0, 2);
     EsenciaPanelBase::drawLineBetween(simulationPanel, audioPanel, 0, 1);
+    EsenciaPanelBase::drawLineBetween(simulationPanel, renderPanel, 0, 0);
+    EsenciaPanelBase::drawLineBetween(presetsPanel, sequencePanel);
 
     fbo.end();
     fbo.draw(0,0);
 
-    // panels draw themselves automatically on draw() (they had a draw event listener added during setup)
+    // panels draw themselves automatically after this draw event; they had a drawingg event listener added during setup
 }
 
 

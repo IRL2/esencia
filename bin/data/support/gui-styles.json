@@ -4,8 +4,7 @@
       "border-radius": 4,
       "border-color": "rgba(44,44,44,200)",
       "fill-color": "rgba(200,200,200,150)",
-      "border-width": 0.5,
-      "border-color": "#5c5c5c",
+      "border-width": 0.3,
       "text-color": "#ffffff",
       "font-family": "support/RedHatMono-Regular.ttf"
     },

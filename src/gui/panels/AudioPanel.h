@@ -9,7 +9,7 @@ class AudioPanel : public EsenciaPanelBase {
 	const int WIDTH = 200;
 	const int HEIGHT = 30;
 
-	const ofRectangle PANEL_RECT = ofRectangle(35, 15, 8, 8);
+	const ofRectangle PANEL_RECT = ofRectangle(37, 15, 8, 8);
 	const ofColor BG_COLOR = ofColor(100, 200, 100, 100);
 
 	ofParameter<float> avgClusterSize;

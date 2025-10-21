@@ -15,7 +15,7 @@ void SimulationDataPanel::setup(ofxGui& gui, SimulationParameters& params, Simul
     float initialClusterDistance = simulator ? simulator->getClusterConnectionDistance() : 50.0f;
     
     panel->add(enableClusterAnalysis.set("Enable Cluster Analysis", initialClusterAnalysisState));
-    panel->add(clusterConnectionDistance.set("Cluster Connection Distance", initialClusterDistance, 10.0f, 200.0f));
+    panel->add(clusterConnectionDistance.set("Cluster Connection Distance", initialClusterDistance, 10.0f, 200.0f), ofJson({ {"precision", 0} }));
     
     // Add listeners
     enableCollisionLogging.addListener(this, &SimulationDataPanel::onCollisionLoggingChanged);

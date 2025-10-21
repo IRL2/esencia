@@ -7,7 +7,7 @@ class Simulator;
 
 class SimulationDataPanel : public EsenciaPanelBase {
 
-    const ofRectangle PANEL_RECT = ofRectangle(34, 1, 10, 0);
+    const ofRectangle PANEL_RECT = ofRectangle(37, 1, 8, 0);
     const ofColor BG_COLOR = ofColor(200, 120, 80, 100);
 
     // Collision logging parameter
