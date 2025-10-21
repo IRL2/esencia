@@ -2,6 +2,7 @@
 #include "ofLog.h"
 #include <iomanip>
 #include <algorithm>
+#include <numeric>
 
 void Simulator::setup(SimulationParameters* params, GuiApp* globalParams) {
     parameters = params;
@@ -13,6 +14,7 @@ void Simulator::setup(SimulationParameters* params, GuiApp* globalParams) {
     setupComputeShader();
     setupCollisionBuffer();
     setupClusterAnalysis();
+    setupVACAnalysis();
 
     glGenTextures(1, &depthFieldTexture);
     glBindTexture(GL_TEXTURE_2D, depthFieldTexture);
@@ -133,9 +135,25 @@ void Simulator::setupClusterAnalysis() {
               << ", connection distance: " << clusterConnectionDistance;
 }
 
+void Simulator::setupVACAnalysis() {
+    velocityHistory.clear();
+    velocityHistory.resize(maxVelocityFrames);
+    
+    // Initialize each frame's velocity storage for ensemble center-of-mass velocity (single vec2 per frame)
+    for (auto& frame : velocityHistory) {
+        frame.resize(1); // Only store one velocity per frame (the ensemble velocity)
+    }
+    
+    vacData = VACData(); // Reset VAC data
+    
+    ofLogNotice("Simulator::setupVACAnalysis") << "VAC analysis initialized with " 
+              << maxVelocityFrames << " frames history, using ensemble center-of-mass velocity";
+}
+
 void Simulator::update() {
     currentFrameNumber++;
     updateParticlesOnGPU();
+    
     if (parameters->enableCollisionLogging) {
         readCollisionData();
         // Copy internal collision data to public collision data for external access
@@ -145,6 +163,15 @@ void Simulator::update() {
     // Perform cluster analysis if enabled (independent of collision logging)
     if (enableClusterAnalysis) {
         analyzeParticleClusters();
+    }
+    
+    // Store velocity data and calculate VAC if enabled
+    if (enableVACCalculation) {
+        storeVelocityFrame();
+        // Calculate VAC less frequently for better performance
+        if ((currentFrameNumber % vacCalculationInterval) == 0) {
+            calculateVAC();
+        }
     }
 }
 
@@ -222,9 +249,12 @@ void Simulator::readCollisionData() {
             );
 
             if (collisionPtr) {
-                // Copy collision data
+                // Copy collision data and normalize positions
                 for (uint32_t i = 0; i < actualCollisions; i++) {
                     collisionBuffer.collisions[i] = collisionPtr[i];
+                    // Normalize collision positions to
+                    collisionBuffer.collisions[i].positionA = normalizePosition(collisionPtr[i].positionA);
+                    collisionBuffer.collisions[i].positionB = normalizePosition(collisionPtr[i].positionB);
                 }
                 glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
             }
@@ -247,6 +277,11 @@ void Simulator::onGUIChangeAmmount(float& value) {
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboParticles);
     glBufferData(GL_SHADER_STORAGE_BUFFER, particles.active.size() * sizeof(Particle), particles.active.data(), GL_DYNAMIC_COPY);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    
+    // No need to update sampling since we're using ensemble velocity
+    if (enableVACCalculation) {
+        ofLogNotice("Simulator") << "VAC ensemble calculation updated for " << particles.active.size() << " particles";
+    }
 }
 
 void Simulator::onRenderwindowResize(glm::vec2& worldSize) {
@@ -329,25 +364,18 @@ void Simulator::applyBerendsenThermostat() {
 void Simulator::keyReleased(ofKeyEventArgs& e) {
     int key = e.keycode;
     switch (key) {
-    case 'c':
-    case 'C':
-        parameters->enableCollisionLogging = !parameters->enableCollisionLogging;
-        ofLogNotice("Simulator") << "Collision logging " << (parameters->enableCollisionLogging ? "enabled" : "disabled") << " via keyboard";
+    
+    case 'b':
+    case 'B':
+        // Decrease VAC calculation frequency (increase interval)
+        vacCalculationInterval = std::min(60u, vacCalculationInterval + 5);
+        ofLogNotice("Simulator") << "VAC calculation interval increased to " << vacCalculationInterval << " frames";
         break;
-    case 'k':
-    case 'K':
-        enableClusterAnalysis = !enableClusterAnalysis;
-        ofLogNotice("Simulator") << "Cluster analysis " << (enableClusterAnalysis ? "enabled" : "disabled") << " via keyboard";
-        break;
-    case 'n':
-    case 'N':
-        clusterConnectionDistance += 10.0f;
-        ofLogNotice("Simulator") << "Cluster connection distance increased to " << clusterConnectionDistance;
-        break;
-    case 'm':
-    case 'M':
-        clusterConnectionDistance = std::max(10.0f, clusterConnectionDistance - 10.0f);
-        ofLogNotice("Simulator") << "Cluster connection distance decreased to " << clusterConnectionDistance;
+    case 'g':
+    case 'G':
+        // Increase VAC calculation frequency (decrease interval)
+        vacCalculationInterval = std::max(5u, vacCalculationInterval - 5);
+        ofLogNotice("Simulator") << "VAC calculation interval decreased to " << vacCalculationInterval << " frames";
         break;
     default:
         break;
@@ -364,11 +392,6 @@ void Simulator::analyzeParticleClusters() {
         return;
     }
     
-    //// Debug logging
-    //if (currentFrameNumber % 60 == 0) { // Log every 2 seconds at 30fps
-    //    ofLogNotice("Simulator::ClusterDebug") << "Frame " << currentFrameNumber 
-    //              << ": Analyzing " << particleCount << " particles with connection distance " << clusterConnectionDistance;
-    //}
     
     // Initialize Union-Find data structures
     std::vector<uint32_t> parent(particleCount);
@@ -397,14 +420,7 @@ void Simulator::analyzeParticleClusters() {
         
         clusterMembers[rootToClusterIndex[root]].insert(i);
     }
-    
-    //// Debug: Log all cluster sizes before filtering
-    //if (currentFrameNumber % 60 == 0 && clusterMembers.size() > 0) {
-    //    ofLogNotice("Simulator::ClusterDebug") << "Found " << clusterMembers.size() << " raw clusters. Sizes: ";
-    //    for (size_t i = 0; i < std::min(clusterMembers.size(), size_t(10)); i++) {
-    //        ofLogNotice("Simulator::ClusterDebug") << "  Cluster " << i << ": " << clusterMembers[i].size() << " particles";
-    //    }
-    //}
+   
     
     // Filter clusters by minimum size and calculate statistics
     calculateClusterStatistics(parent, clusterMembers);
@@ -488,7 +504,7 @@ void Simulator::calculateClusterStatistics(const std::vector<uint32_t>& parent, 
                 totalVelocity += particle.velocity;
             }
             
-            stats.centerPosition = totalPosition / static_cast<float>(cluster.size());
+            glm::vec2 centerPosition = totalPosition / static_cast<float>(cluster.size());
             stats.averageVelocity = totalVelocity / static_cast<float>(cluster.size());
             
             // Calculate spatial spread (standard deviation of positions)
@@ -498,21 +514,96 @@ void Simulator::calculateClusterStatistics(const std::vector<uint32_t>& parent, 
             for (uint32_t particleId : cluster) {
                 const Particle& particle = particles.active[particleId];
                 
-                glm::vec2 positionDiff = particle.position - stats.centerPosition;
+                glm::vec2 positionDiff = particle.position - centerPosition;
                 spatialVariance += glm::dot(positionDiff, positionDiff);
                 
                 glm::vec2 velocityDiff = particle.velocity - stats.averageVelocity;
                 velocityVariance += glm::dot(velocityDiff, velocityDiff);
             }
             
-            stats.spatialSpread = std::sqrt(spatialVariance / static_cast<float>(cluster.size()));
+            float spatialSpread = std::sqrt(spatialVariance / static_cast<float>(cluster.size()));
             stats.velocitySpread = std::sqrt(velocityVariance / static_cast<float>(cluster.size()));
+            
+            // normalize cluster data
+            stats.centerPosition = normalizePosition(centerPosition);
+            stats.spatialSpread = normalizeDistance(spatialSpread);
             
             clusterIndex++;
         }
     }
     
     clusterData.clusterCount = clusterIndex;
-    
- 
+}
+
+glm::vec2 Simulator::normalizePosition(const glm::vec2& position) {
+    // convert world coordinates to normalized -1 to 1 range
+    float normalizedX = (2.0f * position.x / static_cast<float>(width)) - 1.0f;
+    float normalizedY = (2.0f * position.y / static_cast<float>(height)) - 1.0f;
+    return glm::vec2(normalizedX, normalizedY);
+}
+
+float Simulator::normalizeDistance(float distance) {
+    // normalize distance relative to the diagonal of the world space
+    float worldDiagonal = std::sqrt(static_cast<float>(width * width + height * height));
+    return (2.0f * distance / worldDiagonal);
+}
+
+void Simulator::storeVelocityFrame() {
+    if (!enableVACCalculation || particles.active.empty()) return;
+
+    uint32_t frameIndex = vacData.currentFrame % maxVelocityFrames;
+
+    if (velocityHistory[frameIndex].size() != particles.active.size()) {
+        velocityHistory[frameIndex].resize(particles.active.size());
+    }
+
+    for (size_t i = 0; i < particles.active.size(); i++) {
+        velocityHistory[frameIndex][i] = particles.active[i].velocity;
+    }
+
+    vacData.currentFrame++;
+}
+
+void Simulator::calculateVAC() {
+    if (!enableVACCalculation || vacData.currentFrame < 2 || particles.active.empty()) return;
+
+    if ((currentFrameNumber - vacData.lastCalculationFrame) < vacCalculationInterval) return;
+    vacData.lastCalculationFrame = currentFrameNumber;
+
+    uint32_t availableFrames = std::min(vacData.currentFrame, maxVelocityFrames);
+    uint32_t maxTimeLags = std::min(vacData.maxTimeLags, availableFrames - 1);
+
+    // Reset VAC values
+    std::fill(vacData.vacValues.begin(), vacData.vacValues.end(), 0.0f);
+
+    // sum correlations across all particles
+    for (uint32_t dt = 0; dt < maxTimeLags; dt++) {
+        double correlation = 0.0;
+
+        for (size_t particleIdx = 0; particleIdx < particles.active.size(); particleIdx++) {
+            // Get current velocity (t=0)
+            uint32_t currentFrameIdx = (vacData.currentFrame - 1) % maxVelocityFrames;
+            if (velocityHistory[currentFrameIdx].size() <= particleIdx) continue;
+
+            glm::vec2 v0 = velocityHistory[currentFrameIdx][particleIdx];
+
+            // Get velocity at time dt ago
+            uint32_t pastFrameIdx = (vacData.currentFrame - 1 - dt + maxVelocityFrames) % maxVelocityFrames;
+            if (velocityHistory[pastFrameIdx].size() <= particleIdx) continue;
+
+            glm::vec2 vt = velocityHistory[pastFrameIdx][particleIdx];
+
+            correlation += glm::dot(v0, vt);
+        }
+
+        vacData.vacValues[dt] = static_cast<float>(correlation);
+    }
+
+    // Normalize so VAC(0) = 1
+    if (vacData.vacValues[0] > 0.0f) {
+        float normalizationFactor = 1.0f / vacData.vacValues[0];
+        for (uint32_t i = 0; i < maxTimeLags; i++) {
+            vacData.vacValues[i] *= normalizationFactor;
+        }
+    }
 }

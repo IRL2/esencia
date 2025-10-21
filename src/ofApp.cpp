@@ -17,7 +17,10 @@ void ofApp::setup(){
 
     simulator.setup(&gui.simulationParameters, &gui);
     
-    // Connect cluster analysis data to AudioApp
+    gui.setupVACPanel(&simulator);
+    
+    gui.setupSimulationDataPanel(&simulator);
+    
     audioApp.clusterData = &simulator.clusterData;
 }
 //--------------------------------------------------------------

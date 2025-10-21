@@ -694,6 +694,12 @@
     <ClCompile Include="..\..\..\addons\ofxPDSP\libs\audiofft\AudioFFT.cpp">
       <Filter>addons\ofxPDSP\libs\audiofft</Filter>
     </ClCompile>
+    <ClCompile Include="src\gui\panels\VACPanel.cpp">
+      <Filter>src\gui\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gui\panels\SimulationDataPanel.cpp">
+      <Filter>src\gui\panels</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -4138,6 +4144,12 @@
     </ClInclude>
     <ClInclude Include="src\audio\DataSynth.hpp">
       <Filter>src\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gui\panels\VACPanel.h">
+      <Filter>src\gui\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gui\panels\SimulationDataPanel.h">
+      <Filter>src\gui\panels</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

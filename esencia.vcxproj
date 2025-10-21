@@ -104,6 +104,9 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\audio\AudioApp.cpp" />
+    <ClCompile Include="src\gui\panels\SimulationDataPanel.cpp" />
+    <ClCompile Include="src\gui\panels\VACPanel.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
     <ClCompile Include="src\audio\AudioApp.cpp" />
@@ -335,11 +338,10 @@
     <ClCompile Include="..\..\..\addons\ofxPDSP\libs\audiofft\AudioFFT.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\audio\AudioOscillator.hpp" />
-    <ClInclude Include="src\audio\AudioSampler.hpp" />
-    <ClInclude Include="src\audio\DataSynth.hpp" />
-    <ClInclude Include="src\audio\PolySynth.hpp" />
-    <ClInclude Include="src\gui\panels\AudioPanel.h" />
+    <ClInclude Include="src\audio\AudioApp.h" />
+    <ClInclude Include="src\gui\panels\SimulationDataPanel.h" />
+    <ClInclude Include="src\gui\panels\VACPanel.h" />
+    <ClInclude Include="src\gui\SystemUsage.h" />
     <ClInclude Include="src\ofApp.h" />
     <ClInclude Include="src\audio\AudioApp.h" />
     <ClInclude Include="src\camera\Camera.h" />
