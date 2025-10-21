@@ -3,14 +3,21 @@
 
 #include "ofMain.h"
 #include "ofxPDSP.h"
-//#include "ofxGui.h"
+//#include "ofxGui.h"F
 
-// datatable based polysynth
+// fm / va  polyphony synth
 
 class DataSynth {
 
 public:
-    // class to rapresent each synth voice ------------
+
+
+
+
+
+
+
+
     class Voice : public pdsp::Patchable {
         friend class DataSynth;
 
@@ -60,22 +67,54 @@ public:
 
 
         pdsp::ADSR          envelope;
-    }; // end voice class -----------------------------
+    };
+
+
+
+
+
+
+
 
 
     pdsp::DataTable  datatable;
 
-    pdsp::Patchable& ch(int index);
-
     vector<Voice>       voices;
     ofParameterGroup    ui;
 
-    void DataSynth::setup(int numVoices) {
+    pdsp::TriggerControl voiceTrigger; // temp for testing
+    pdsp::Parameter     pitchCtrl;    // temp for testing
+
+
+    pdsp::Patchable& DataSynth::ch(int index) {
+        index = index % 2;
+        return gain.ch(index);
+    }
+
+    void DataSynth::setPitch(float pitch) {
+        pitchCtrl.set(pitch);
+    }
+
+    void DataSynth::setLFOfreq(float freq) {
+        lfo_speed_ctrl.set(freq);
+    }
+    void DataSynth::on(float v = 0.1f) {
+        voiceTrigger.trigger(v);
+    }
+    void DataSynth::off() {
+        voiceTrigger.off();
+    }
+
+
+    void DataSynth::setup() {
+        int numVoices = 4;
         // -------------------------- PATCHING ------------------------------------
         voices.resize(numVoices);
 
         for (int i = 0; i < numVoices; ++i) {
             voices[i].setup(*this, i);
+            voiceTrigger >> voices[i].in("trig");
+            pitchCtrl >> voices[i].in("pitch");
         }
 
         // we filter the frequency below 20 hz (not audible) just to remove DC offsets
@@ -96,36 +135,33 @@ public:
 
         lfo_speed_ctrl >> lfo.in_freq();
         lfo_switch >> lfo_filter_amt;
-        // ------------------------------------------------------------------------
 
-        // CONTROLS ---------------------------------------------------------------
-        ui.setName("DATASYNTH");
-
-        ui.add(filter_mode_ctrl.set("filter mode", 0, 0, 5));
-        ui.add(cutoff_ctrl.set("filter cutoff", 120, 10, 120));
-        ui.add(reso_ctrl.set("filter reso", 0.0f, 0.0f, 1.0f));
-
-        cutoff_ctrl.enableSmoothing(200.0f);
-
-        ui.add(env_attack_ctrl.set("env attack", 50, 5, 1200));
-        ui.add(env_decay_ctrl.set("env decay", 400, 5, 1200));
-        ui.add(env_sustain_ctrl.set("env sustain", 1.0f, 0.0f, 1.0f));
-        ui.add(env_release_ctrl.set("env release", 900, 5, 2000));
-        ui.add(env_filter_amt.set("env to filter", 30, 0, 60));
-
-        ui.add(lfo_wave_ctrl.set("lfo wave", 0, 0, 4));
-        ui.add(lfo_speed_ctrl.set("lfo freq", 0.5f, 0.005f, 4.0f));
-        ui.add(lfo_filter_amt.set("lfo to filter", 0, 0, 60));
-        // ------------------------------------------------------------------------
-
-        // Chorus -----------------------------------------------------------------
         chorus_speed_ctrl >> chorus.in_speed();
         chorus_depth_ctrl >> chorus.in_depth();
-        ui.add(chorus_speed_ctrl.set("chorus freq", 0.5f, 0.25f, 1.0f));
-        ui.add(chorus_depth_ctrl.set("chorus depth", 3.5f, 1.0f, 10.0f));
-        ui.add(gain.set("gain", -9, -48, 12));
+
+        // CONTROLS ---------------------------------------------------------------
+        ui.setName("datasynth");
+        // filter
+        ui.add(filter_mode_ctrl.set("filter mode", 1, 0, 5));
+        ui.add(cutoff_ctrl.set("filter cutoff", 54, 10, 120));
+        ui.add(reso_ctrl.set("filter reso", 0.5f, 0.0f, 1.0f));
+        // env
+        ui.add(env_attack_ctrl.set("env attack", 400, 5, 1200));
+        ui.add(env_decay_ctrl.set("env decay", 1200, 5, 1200));
+        ui.add(env_sustain_ctrl.set("env sustain", 0.9f, 0.0f, 1.0f));
+        ui.add(env_release_ctrl.set("env release", 2000, 5, 2000));
+        ui.add(env_filter_amt.set("env to filter", 31, 0, 60));
+        // lfo
+        ui.add(lfo_wave_ctrl.set("lfo wave", 1, 0, 4));
+        ui.add(lfo_speed_ctrl.set("lfo freq", 0.25f, 0.005f, 4.0f));
+        ui.add(lfo_filter_amt.set("lfo to filter", 14, 0, 60));
+        // chorus
+        ui.add(chorus_speed_ctrl.set("chorus freq", 0.25f, 0.0f, 1.0f));
+        ui.add(chorus_depth_ctrl.set("chorus depth", 10.0f, 0.0f, 10.0f));
+        ui.add(gain.set("gain", -10, -48, 12));
+
+        cutoff_ctrl.enableSmoothing(200.0f);
         gain.enableSmoothing(50.f);
-        // ------------------------------------------------------------------------
     }
 
 
@@ -158,7 +194,5 @@ private: // --------------------------------------------------
     ofParameterGroup    ui_chorus;
     pdsp::Parameter     chorus_speed_ctrl;
     pdsp::Parameter     chorus_depth_ctrl;
-
-    std::vector<float> partials_vector;
 };
 

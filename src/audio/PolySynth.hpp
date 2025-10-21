@@ -10,7 +10,15 @@
 class PolySynth {
 
 public:
-    // class to rapresent each synth voice ------------
+
+
+
+
+
+
+
+
+
     class Voice : public pdsp::Patchable {
         friend class PolySynth;
 
@@ -22,18 +30,26 @@ public:
             return envelope.meter_output();
         }
 
-        float PolySynth::Voice::meter_pitch() const {
-            return oscillator.meter_pitch();
-        }
+        //float PolySynth::Voice::meter_pitch() const {
+        //    return oscillator.meter_pitch();
+        //}
 
+        // m brings the instrument context/parameters
         void PolySynth::Voice::setup(PolySynth& m, int v) {
 
             addModuleInput("trig", voiceTrigger);
             addModuleInput("pitch", oscillator.in_pitch());
+            //addModuleInput("fm", oscillator.in_fm());
             addModuleOutput("signal", amp);
 
             // SIGNAL PATH
             oscillator >> filter >> amp >> m.leakDC;
+            //2.0f >> oscillator.in_ratio();
+            //pdsp::CheapPulse sw;
+            //sw  >> oscillator;
+
+            individualTrigger >> voiceTrigger;
+            internalPitchCtrl >> oscillator.in_pitch();
 
             // MODULATIONS AND CONTROL
             voiceTrigger >> envelope >> amp.in_mod();
@@ -47,26 +63,41 @@ public:
             m.env_decay_ctrl >> envelope.in_decay();
             m.env_sustain_ctrl >> envelope.in_sustain();
             m.env_release_ctrl >> envelope.in_release();
+        }
 
+        float PolySynth::Voice::getCurrentPitch() {
+            return oscillator.meter_pitch();
         }
 
         pdsp::PatchNode     voiceTrigger;
+        pdsp::TriggerControl individualTrigger;
+        pdsp::Parameter     internalPitchCtrl;
+
     private:
 
-        pdsp::VAOscillator        oscillator;
+        pdsp::VAOscillator oscillator;
+        //pdsp::FMOperator        oscillator;
         pdsp::VAFilter          filter;
         pdsp::Amp               amp;
 
 
         pdsp::ADSR          envelope;
-    }; // end voice class -----------------------------
+    }; 
+
+
+
+
+
+
+
 
 
     vector<Voice>       voices;
     ofParameterGroup    ui;
+    vector<float> notes;
 
-    pdsp::TriggerControl voiceTrigger; // temp for testing
-    pdsp::Parameter     pitchCtrl;    // temp for testing
+    pdsp::TriggerControl trigger;
+    pdsp::Parameter     pitchCtrl;
     pdsp::ParameterGain gain;
 
 
@@ -75,34 +106,91 @@ public:
         return gain.ch(index);
     }
 
-
     void PolySynth::setPitch(float pitch) {
         pitchCtrl.set(pitch);
     }
+
     void PolySynth::setLFOfreq(float freq) {
-        lfo_speed_ctrl.set(freq);
-    }
-    void PolySynth::on(float v = 0.1f) {
-        voiceTrigger.trigger(v);
-    }
-    void PolySynth::off() {
-        voiceTrigger.off();
+        //lfo_speed_ctrl.set(freq);
+        lfo_filter_amt.set(freq);
     }
 
+    void PolySynth::on(float v = 0.1f) {
+        trigger.trigger(v);
+    }
+    void PolySynth::off() {
+        trigger.off();
+    }
+
+
+
+    void PolySynth::playFor(float pitch, float duration, float velocity = 0.6f) {
+        setPitch(pitch);
+        on(velocity);
+
+        // schedule the off event
+        ofEventListener* listener = new ofEventListener();
+        *listener = ofEvents().update.newListener([this, startTime = ofGetElapsedTimeMillis(), 
+        duration, listener](ofEventArgs&) {
+            uint64_t currentTime = ofGetElapsedTimeMillis();
+            uint64_t durationMs = static_cast<uint64_t>(duration);
+
+            if (currentTime >= startTime + durationMs) {
+                this->off();
+                listener->unsubscribe();
+            }
+        });
+    }
+
+
+    void PolySynth::polyPlayFor(float pitch, float duration){
+
+        ofLog() << ofToString(notes);
+
+        int voiceId = -1;
+        for (int i=0; i<static_cast<int>(voices.size()); i++){
+            if (notes[i] == pitch || notes[i] == 0) {
+                voiceId = i;
+                ofLog() << "Using voice " << voiceId << " for pitch " << pitch << (notes[i] == pitch?" reuse ":"") << (notes[i] == 0 ? " empty " : "");
+                break;
+            }
+        }
+        if (voiceId == -1) return;
+
+
+        notes[voiceId] = pitch;
+        voices[voiceId].internalPitchCtrl.set(pitch);
+        //trigger.trigger(1.0f);
+        voices[voiceId].individualTrigger.trigger(1.0f - ((voiceId+2) / 10));
+
+        ofLog() << ofToString(notes);
+
+
+        ofEventListener* listener = new ofEventListener();
+        *listener = ofEvents().update.newListener([this, voiceId, startTime = ofGetElapsedTimeMillis(), 
+        duration, listener](ofEventArgs&) {
+            uint64_t currentTime = ofGetElapsedTimeMillis();
+            uint64_t durationMs = static_cast<uint64_t>(duration);
+            if (currentTime >= startTime + durationMs) {
+                voices[voiceId].individualTrigger.off();
+                notes[voiceId] = 0;
+                listener->unsubscribe();
+            }
+        });
+    }
 
 
     void PolySynth::setup(int numVoices) {
-        // -------------------------- PATCHING ------------------------------------
         voices.resize(numVoices);
+        notes.resize(numVoices);
 
         for (int i = 0; i < numVoices; ++i) {
             voices[i].setup(*this, i);
-            voiceTrigger >> voices[i].in("trig");
+            trigger >> voices[i].in("trig");
             pitchCtrl >> voices[i].in("pitch");
         }
 
-        // we filter the frequency below 20 hz (not audible) just to remove DC offsets
-        20.0f >> leakDC.in_freq();
+        20.0f >> leakDC.in_freq(); // non audible bellow 20hz
 
         leakDC >> chorus.ch(0) >> gain.ch(0);
         leakDC >> chorus.ch(1) >> gain.ch(1);
@@ -119,42 +207,37 @@ public:
 
         lfo_speed_ctrl >> lfo.in_freq();
         lfo_switch >> lfo_filter_amt;
-        // ------------------------------------------------------------------------
 
-        // CONTROLS ---------------------------------------------------------------
-        ui.setName("POLYSYNTH");
+        chorus_speed_ctrl >> chorus.in_speed();
+        chorus_depth_ctrl >> chorus.in_depth();
 
+        ui.setName("polysynth");
+        // filter
         ui.add(filter_mode_ctrl.set("filter mode", 1, 0, 5));
         ui.add(cutoff_ctrl.set("filter cutoff", 54, 10, 120));
         ui.add(reso_ctrl.set("filter reso", 0.5f, 0.0f, 1.0f));
-
-        cutoff_ctrl.enableSmoothing(200.0f);
-
+        // env
         ui.add(env_attack_ctrl.set("env attack", 400, 5, 1200));
         ui.add(env_decay_ctrl.set("env decay", 1200, 5, 1200));
         ui.add(env_sustain_ctrl.set("env sustain", 0.9f, 0.0f, 1.0f));
         ui.add(env_release_ctrl.set("env release", 2000, 5, 2000));
         ui.add(env_filter_amt.set("env to filter", 31, 0, 60));
-
+        // lfo
         ui.add(lfo_wave_ctrl.set("lfo wave", 1, 0, 4));
-        ui.add(lfo_speed_ctrl.set("lfo freq", 0.25f, 0.005f, 4.0f));
+        ui.add(lfo_speed_ctrl.set("lfo freq", 0.25f, 0.000f, 4.0f));
         ui.add(lfo_filter_amt.set("lfo to filter", 14, 0, 60));
-        // ------------------------------------------------------------------------
-
-        // Chorus -----------------------------------------------------------------
-        chorus_speed_ctrl >> chorus.in_speed();
-        chorus_depth_ctrl >> chorus.in_depth();
-        ui.add(chorus_speed_ctrl.set("chorus freq", 0.25f, 0.25f, 1.0f));
+        // chorus
+        ui.add(chorus_speed_ctrl.set("chorus freq", 0.25f, 0.0f, 1.0f));
         ui.add(chorus_depth_ctrl.set("chorus depth", 10.0f, 1.0f, 10.0f));
         ui.add(gain.set("gain", -10, -48, 12));
+
+        cutoff_ctrl.enableSmoothing(200.0f);
         gain.enableSmoothing(50.f);
-        // ------------------------------------------------------------------------
     }
 
 
 
 private: // --------------------------------------------------
-
 
     pdsp::Parameter     cutoff_ctrl;
     pdsp::Parameter     reso_ctrl;
@@ -180,7 +263,5 @@ private: // --------------------------------------------------
     ofParameterGroup    ui_chorus;
     pdsp::Parameter     chorus_speed_ctrl;
     pdsp::Parameter     chorus_depth_ctrl;
-
-    std::vector<float> partials_vector;
 };
 
