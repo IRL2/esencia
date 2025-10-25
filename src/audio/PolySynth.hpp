@@ -130,8 +130,7 @@ public:
 
         // schedule the off event
         ofEventListener* listener = new ofEventListener();
-        *listener = ofEvents().update.newListener([this, startTime = ofGetElapsedTimeMillis(), 
-        duration, listener](ofEventArgs&) {
+        *listener = ofEvents().update.newListener([this, startTime = ofGetElapsedTimeMillis(), duration, listener](ofEventArgs&) {
             uint64_t currentTime = ofGetElapsedTimeMillis();
             uint64_t durationMs = static_cast<uint64_t>(duration);
 
@@ -167,8 +166,7 @@ public:
 
 
         ofEventListener* listener = new ofEventListener();
-        *listener = ofEvents().update.newListener([this, voiceId, startTime = ofGetElapsedTimeMillis(), 
-        duration, listener](ofEventArgs&) {
+        *listener = ofEvents().update.newListener([this, voiceId, startTime = ofGetElapsedTimeMillis(), duration, listener](ofEventArgs&) {
             uint64_t currentTime = ofGetElapsedTimeMillis();
             uint64_t durationMs = static_cast<uint64_t>(duration);
             if (currentTime >= startTime + durationMs) {

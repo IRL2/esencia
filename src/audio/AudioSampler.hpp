@@ -27,19 +27,22 @@ public:
 
         triggers >> sampler >> lowcut >> reverb >> verbGain >> amp;
 
+
         sampler >> delay >> delayGain >> amp;
         sampler >> amp;
 
         damp >> amp.in_mod();
 
-        amp >> fader; // output
+        amp >> filter >> fader; // output
 
         timeControl >> reverb.in_time();
         densityControl >> reverb.in_density();
         dampingControl >> reverb.in_damping();
-        hiCutControl >> reverb.in_hi_cut();
+        reverbHiCutControl >> reverb.in_hi_cut();
         modFreqControl >> reverb.in_mod_freq();
         modAmountControl >> reverb.in_mod_amount();
+
+        lowCutControl >> lowcut.in_freq();
 
         pitchControl >> sampler.in_pitch();
 
@@ -48,20 +51,45 @@ public:
         delayDampControl >> delay.in_damping();
 
         ui.setName("audio sampler");
+
+        // lhf
+        ui.add(lowCutControl.set("low cut freq filter", 100, 20, 1000));
+
         // reverb
-        ui.add(verbGain.set("reverb gain", 9, -48, 12));
-        ui.add(lowCutControl.set("low cut freq", 100, 20, 1000));
-        ui.add(hiCutControl.set("high cut freq", 5000, 3000, 20000));
-        ui.add(timeControl.set("rt60", 3.33f, 0.05f, 20.0f));
-        ui.add(densityControl.set("density", 0.5f, 0.0f, 1.0f));
-        ui.add(dampingControl.set("damping", 0.5f, 0.0f, 1.0f));
-        ui.add(modFreqControl.set("mod speed (hz)", 0.2f, 0.01f, 1.25f));
-        ui.add(modAmountControl.set("mod depth (ms)", 0.8f, 0.0f, 3.0f));
+        ofParameterGroup* reverbGroup = new ofParameterGroup();
+        reverbGroup->setName("reverb");
+        ui.add(*reverbGroup);
+        reverbGroup->add(verbGain.set("reverb gain", 9, -48, 12));
+        reverbGroup->add(reverbHiCutControl.set("reverb high cut freq", 5000, 3000, 20000));
+        reverbGroup->add(timeControl.set("rt60", 3.33f, 0.05f, 20.0f));
+        reverbGroup->add(densityControl.set("density", 0.5f, 0.0f, 1.0f));
+        reverbGroup->add(dampingControl.set("damping", 0.5f, 0.0f, 1.0f));
+        reverbGroup->add(modFreqControl.set("mod speed (hz)", 0.2f, 0.01f, 1.25f));
+        reverbGroup->add(modAmountControl.set("mod depth (ms)", 0.8f, 0.0f, 3.0f));
+
         // delay
-        ui.add(delayGain.set("delay gain", -3, -48, 12));
-        ui.add(delayTimeControl.set("delay time", 0.3f, 0.0f, 10.0f));
-        ui.add(delayFeedbackControl.set("delay feedback", 0.3f, 0.0f, 0.95f));
-        ui.add(delayDampControl.set("delay damp", 0.5f, 0.0f, 1.0f));
+        ofParameterGroup* delayGroup = new ofParameterGroup();
+        delayGroup->setName("delay");
+        ui.add(*delayGroup);
+        delayGroup->add(delayGain.set("delay gain", -3, -48, 12));
+        delayGroup->add(delayTimeControl.set("delay time", 0.3f, 0.0f, 10.0f));
+        delayGroup->add(delayFeedbackControl.set("delay feedback", 0.3f, 0.0f, 0.95f));
+        delayGroup->add(delayDampControl.set("delay damp", 0.5f, 0.0f, 1.0f));
+        
+
+        //filer
+        ofParameterGroup* filterGroup = new ofParameterGroup();
+        filterGroup->setName("filter");
+        ui.add(*filterGroup);
+        filterGroup->add(filterModeControl.set("mode", 1, 0, 6)); // lowpass, highpass, bandpass, notch, allpass
+        //filterGroup->add(filerCutoffControl.set("cutoff freq", 54, 10, 120));
+        filterGroup->add(filerResoControl.set("resonance", 0.1f, 0.0f, 1.0f));
+        filterGroup->add(filerPitchControl.set("pitch", 0.0f, 0.0f, 120.0f));
+        filterModeControl >> filter.in_mode();
+        filerResoControl >> filter.in_reso();
+        filerCutoffControl >> filter.in_cutoff();
+        filerPitchControl >> filter.in_pitch();
+
 
         damp.set("damp", 0.0);
 
@@ -102,7 +130,7 @@ public:
         densityControl.set(density);
         timeControl.set(time);
         dampingControl.set(damping);
-        hiCutControl.set(hiCut);
+        reverbHiCutControl.set(hiCut);
         modFreqControl.set(modFreq);
         modAmount ? modAmountControl.set(modAmount) : true;
     }
@@ -148,11 +176,15 @@ public:
     pdsp::Parameter     timeControl;
     pdsp::Parameter     densityControl;
     pdsp::Parameter     dampingControl;
-    pdsp::Parameter     hiCutControl;
+    pdsp::Parameter     reverbHiCutControl;
     pdsp::Parameter     modFreqControl;
     pdsp::Parameter     modAmountControl;
     pdsp::Parameter     lowCutControl;
     pdsp::ParameterGain	verbGain;
+    pdsp::Parameter     filterModeControl;
+    pdsp::Parameter     filerResoControl;
+    pdsp::Parameter     filerCutoffControl;
+    pdsp::Parameter     filerPitchControl;
 
     pdsp::Parameter     pitchControl;
 
@@ -164,6 +196,7 @@ public:
     pdsp::AHR           env;
     pdsp::Amp           amp;
     pdsp::LowCut        lowcut;
+    pdsp::VAFilter      filter;
 
     //pdsp::SampleBuffer sample;
     std::vector<pdsp::SampleBuffer*> samples;

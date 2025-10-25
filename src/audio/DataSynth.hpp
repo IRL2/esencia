@@ -87,6 +87,8 @@ public:
 
     pdsp::ParameterGain gain;  // fader
 
+    bool isPlaying = false;
+
 
     pdsp::Patchable& DataSynth::ch(int index) {
         index = index % 2;
@@ -100,11 +102,34 @@ public:
     void DataSynth::setLFOfreq(float freq) {
         lfo_speed_ctrl.set(freq);
     }
+
+    void DataSynth::setCutOff(float freq) {
+        cutoff_ctrl.set(freq);
+    }
+
     void DataSynth::on(float v = 0.1f) {
         voiceTrigger.trigger(v);
+        isPlaying = true;
     }
+
     void DataSynth::off() {
         voiceTrigger.off();
+        isPlaying = false;
+    }
+
+    void DataSynth::onFor(float v, float freq, float duration) {
+        setPitch(freq);
+        on(v);
+
+        ofEventListener* listener = new ofEventListener();
+        *listener = ofEvents().update.newListener([this, startTime = ofGetElapsedTimeMillis(), duration, listener](ofEventArgs&) {
+            uint64_t currentTime = ofGetElapsedTimeMillis();
+            uint64_t durationMs = static_cast<uint64_t>(duration);
+            if (currentTime >= startTime + durationMs) {
+                this->off();
+                listener->unsubscribe();
+            }
+        });
     }
 
 
@@ -144,7 +169,7 @@ public:
         // CONTROLS ---------------------------------------------------------------
         ui.setName("datasynth");
         // filter
-        ui.add(filter_mode_ctrl.set("filter mode", 1, 0, 5));
+        ui.add(filter_mode_ctrl.set("filter mode", 0, 0, 5));
         ui.add(cutoff_ctrl.set("filter cutoff", 54, 10, 120));
         ui.add(reso_ctrl.set("filter reso", 0.5f, 0.0f, 1.0f));
         // env
@@ -154,8 +179,8 @@ public:
         ui.add(env_release_ctrl.set("env release", 2000, 5, 2000));
         ui.add(env_filter_amt.set("env to filter", 31, 0, 60));
         // lfo
-        ui.add(lfo_wave_ctrl.set("lfo wave", 1, 0, 4));
-        ui.add(lfo_speed_ctrl.set("lfo freq", 0.25f, 0.005f, 4.0f));
+        ui.add(lfo_wave_ctrl.set("lfo wave", 0, 0, 4));
+        ui.add(lfo_speed_ctrl.set("lfo freq", 0.005f, 0.0f, 4.0f));
         ui.add(lfo_filter_amt.set("lfo to filter", 14, 0, 60));
         // chorus
         ui.add(chorus_speed_ctrl.set("chorus freq", 0.25f, 0.0f, 1.0f));
