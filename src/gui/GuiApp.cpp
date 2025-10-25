@@ -96,7 +96,7 @@ void GuiApp::windowResized(int _width, int _height) {
 
 void GuiApp::setupVACPanel(Simulator* simulator) {
     if (simulator) {
-        vacPanel.setup(gui, simulationParameters, simulator);
+        vacPanel.setup(gui, simulationParameters, sonificationParameters, simulator);
         ofLogNotice("GuiApp") << "VAC Panel setup completed";
     } else {
         ofLogError("GuiApp") << "simulator is null";

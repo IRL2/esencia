@@ -24,7 +24,8 @@ class AudioApp {
 public:
     void setup(SonificationParameters* params, GuiApp* gui);
     void update();
-    
+    void draw();
+
     // collision processing
     void logCollisionDetails(const CollisionBuffer& collisionData);
     void processCollisionsStatistics(const CollisionBuffer& collisionData);

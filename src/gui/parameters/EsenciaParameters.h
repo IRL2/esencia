@@ -207,11 +207,17 @@ struct SonificationParameters : public ofxPresetsParametersBase {
     ofParameter<float> datasynthVolume;
     ofParameter<float> sampler1playerVolume;
     ofParameter<float> sampler2playerVolume;
+    // eq's (not in use
+    ofParameter<float> eqTrebble;
+    ofParameter<float> eqBass;
 
 
+    // Simulation Analysis
+    // ----------------------------------------------------------------
     ofParameter<int> maxCollisionSampling;
     ofParameter<int> maxClustersSampling;
     ofParameter<int> maxClusterParticlesSampling;
+
 
     ofParameter<float> collisions;
 
@@ -244,12 +250,10 @@ struct SonificationParameters : public ofxPresetsParametersBase {
 
 
     // VAC analysis data
+    // ----------------------------------------------------------------
     ofParameter<int> vacWidth;
     ofParameter<int> vacHeight;
     ofParameter<std::vector<float>> vacValues;
-
-    ofParameter<float> eqTrebble;
-    ofParameter<float> eqBass;
 
 
 

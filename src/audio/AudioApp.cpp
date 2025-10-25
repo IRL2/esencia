@@ -53,8 +53,10 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
     polySynth.on(1.0f);
     polySynth.setPitch(46);
 
-    dataSynth.datatable.setup(250, 140, true);
+    dataSynth.datatable.setup(100, 64, true);
     dataSynth.setup();
+    dataSynth.setLFOfreq(0);
+    dataSynth.setPitch(44);
 
     // connect all modules to a master gain then to the audio engine
     sampler1.fader.ch(0) >> masterAmp.ch(0);
@@ -65,6 +67,8 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
     dataSynth.ch(1) >> masterAmp.ch(1);
     masterAmp.ch(0) >> audioEngine.audio_out(0);
     masterAmp.ch(1) >> audioEngine.audio_out(1);
+
+    masterAmp >> mainScope >> audioEngine.blackhole();
 
     // initial volumes
     parameters->masterVolume.set(0.8);
@@ -122,6 +126,13 @@ void AudioApp::update() {
 
 }
 
+
+void AudioApp::draw() {
+    ofPushStyle();
+    ofSetColor(255, 255, 255, 100);
+    mainScope.draw(-1, -1, ofGetWidth()+2, ofGetHeight()+2);
+    ofPopStyle(); 
+}
 
 
 
@@ -347,14 +358,14 @@ void AudioApp::sonificationControl(const CollisionBuffer& collisionData, const C
     triggerAtInterval(2.0, [&]() {
         samplerIndex = (samplerIndex + 1) % sampler2.getNumSamples();
         sampler2.switchSampleIndex(samplerIndex);
-        ofLog() << "switching to sample #" << samplerIndex;
-    });
+        //ofLog() << "switching to sample #" << samplerIndex;
+        });
 
     // selecting "notes" (pitch) from two scales, alternating every second
     // this actually works well
     int notesA[5] = { -2, 0, 2, 4, 7 };
-    int notesB[5] = {  1, 3, 5, 0, 4 };
-    int notes[] = {0,0,0,0,0};
+    int notesB[5] = { 1, 3, 5, 0, 4 };
+    int notes[] = { 0,0,0,0,0 };
     std::copy(notesA, notesA + 5, notes);
     if (lastTime % 2 == 0) {
         std::copy(notesB, notesB + 5, notes);
@@ -371,8 +382,8 @@ void AudioApp::sonificationControl(const CollisionBuffer& collisionData, const C
     //parameters->samplerplayerVolume.set(vol);
 
 
-    if (checkInterval(0.5)) { 
-        if (ofRandomGaussian(0., 1.) < (parameters->collisionRate * parameters->collisionRate)/2 ) {
+    if (checkInterval(1.0)) {
+        if (ofRandomGaussian(0., 1.) < (parameters->collisionRate * parameters->collisionRate) / 2) {
             sampler2.setReverb(0.5, 0.3, 0.2, 0., 1000, 0., 0.);
             sampler2.setDelay(0.5f, 0.7f);
             sampler2.play(pitch, 0);
@@ -386,14 +397,44 @@ void AudioApp::sonificationControl(const CollisionBuffer& collisionData, const C
     //});
 
 
-    std::vector<float> vacValues = parameters->vacValues.get();
-    dataSynth.datatable.begin();
-    for (int i = 0; i < parameters->vacWidth; ++i) {
-        dataSynth.datatable.data(i, vacValues[i]);
-    }
-    dataSynth.datatable.end();
-}
 
+
+    if (parameters->clusters > 1 && parameters->particlesInClusterRate > 0.5f) {
+        // update the data table
+        std::vector<float> vacValues = parameters->vacValues.get();
+        if (dataSynth.datatable.getTableLength() != vacValues.size()) {
+            dataSynth.datatable.setup(vacValues.size(), 1.0 * 64, true);
+        }
+        //dataSynth.datatable.begin();
+        //for (int i = 0; i < vacValues.size(); ++i) {
+        //    dataSynth.datatable.data(i, vacValues[i] * 64);
+        //}
+        //dataSynth.datatable.end();
+
+        if (dataSynth.isPlaying == false) {
+            dataSynth.setPitch(38);
+            dataSynth.on(0.5f);
+        }
+
+        float cff = ofMap(vacValues[0], 0.0, 1.0, 10, 120);
+        dataSynth.setCutOff(cff);
+
+        ////triggerAtInterval(50, [&]() {
+        ////    //float pitch = ofMap(parameters->avgClusterVelocityMagitude, 0.0, 100.0, 40.0, 60.0);
+        ////    //dataSynth.setPitch(pitch);
+        ////    dataSynth.on(0.6f);
+        ////    dataSynth.setPitch(44);
+        ////    });
+
+        //triggerAtInterval(0.5, [&]() {
+        //    float pitch = ofMap(parameters->avgClusterSize, 1.0, 20.0, 40.0, 60.0);
+        //    dataSynth.setPitch(pitch);
+        //    });
+    }
+    else {
+        dataSynth.off();
+    }
+}
 
 
 /// <summary>

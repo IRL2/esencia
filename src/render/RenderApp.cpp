@@ -20,7 +20,7 @@ ofFbo trailFbo;
 std::vector<glm::vec3> particlePositions;
 std::vector<float> particleSizes;
 
-const bool INVEASTERNEGG = true;
+const bool INVEASTERNEGG = false;
 
 //--------------------------------------------------------------
 void RenderApp::setup()

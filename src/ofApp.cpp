@@ -39,6 +39,7 @@ void ofApp::update(){
 void ofApp::draw(){
     // camera.draw();
     gui.draw();
+    audioApp.draw();
 }
 
 void ofApp::exit() {

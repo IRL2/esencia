@@ -2,8 +2,10 @@
 #include "../../simulation/simulator.h"
 #include <algorithm>
 
-void VACPanel::setup(ofxGui& gui, SimulationParameters& params, Simulator* sim) {
+void VACPanel::setup(ofxGui& gui, SimulationParameters& simParams, SonificationParameters& sonParams, Simulator* sim) {
     simulator = sim;
+    this->simParams = &simParams;
+    this->sonParams = &sonParams;
     
     panel = gui.addPanel("VAC Analysis");
     
@@ -59,6 +61,10 @@ void VACPanel::drawVACPlot(ofEventArgs& args) {
     const VACData& vacData = simulator->vacData;
     
     if (vacData.vacValues.empty() || vacData.currentFrame < 2) return;
+    sonParams->vacValues = vacData.vacValues;
+    sonParams->vacWidth = vacData.vacValues.size();
+    sonParams->vacHeight = vacData.vacValues.size() > 0 ? static_cast<int>(*std::max_element(vacData.vacValues.begin(), vacData.vacValues.end())) : 0;
+    
     
     ofPushStyle();
     

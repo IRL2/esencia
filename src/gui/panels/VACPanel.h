@@ -17,12 +17,14 @@ class VACPanel : public EsenciaPanelBase {
 
     // Reference to simulator for accessing VAC data
     Simulator* simulator = nullptr;
+    SimulationParameters* simParams = nullptr;
+    SonificationParameters* sonParams = nullptr;
 
 public:
     const int PLOT_WIDTH = 250;
     const int PLOT_HEIGHT = 140;
 
-    void setup(ofxGui& gui, SimulationParameters& params, Simulator* sim);
+    void setup(ofxGui& gui, SimulationParameters& simParams, SonificationParameters& sonParams, Simulator* sim);
     void onVACToggleChanged(bool& value);
     void onMaxTimeLagsChanged(int& value);
     void drawVACPlot(ofEventArgs& args);
