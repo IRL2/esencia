@@ -9,7 +9,7 @@ class SimulationPanel : public EsenciaPanelBase {
 	const bool APPLY_THERMOSTAT = true ;
 
 	const float TEMPERATURE_INIT = 25000;
-	const float TEMPERATURE_MIN  = 1000;
+	const float TEMPERATURE_MIN  = 500;
 	const float TEMPERATURE_MAX  = 100000;
 
 	const float THERMOSTAT_INIT = 0.5;
@@ -17,8 +17,8 @@ class SimulationPanel : public EsenciaPanelBase {
 	const float THERMOSTAT_MAX  = 1.0;
 
 	const float DEPTH_INIT = -80000.0;
-	const float DEPTH_MIN = -130000.0;
-	const float DEPTH_MAX = 130000.0;
+	const float DEPTH_MIN = -150000.0;
+	const float DEPTH_MAX = 150000.0;
 
 	const float SLIDERS_WIDTH = 10;
 	const float SLIDERS_HEIGHT = 70;

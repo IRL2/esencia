@@ -44,7 +44,7 @@ void VACPanel::onMaxTimeLagsChanged(int& value) {
         for (uint32_t i = 0; i < simulator->vacData.maxTimeLags; i++) {
             simulator->vacData.timePoints[i] = static_cast<float>(i) * 0.01f;
         }
-        ofLogNotice("VACPanel") << "Max time lags changed to " << simulator->vacData.maxTimeLags;
+        //ofLogNotice("VACPanel") << "Max time lags changed to " << simulator->vacData.maxTimeLags;
     }
 }
 

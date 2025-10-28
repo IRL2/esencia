@@ -280,7 +280,7 @@ void Simulator::onGUIChangeAmmount(float& value) {
     
     // No need to update sampling since we're using ensemble velocity
     if (enableVACCalculation) {
-        ofLogNotice("Simulator") << "VAC ensemble calculation updated for " << particles.active.size() << " particles";
+        //ofLogNotice("Simulator") << "VAC ensemble calculation updated for " << particles.active.size() << " particles";
     }
 }
 
@@ -365,14 +365,12 @@ void Simulator::keyReleased(ofKeyEventArgs& e) {
     int key = e.keycode;
     switch (key) {
     
-    case 'b':
-    case 'B':
+    case 'N':
         // Decrease VAC calculation frequency (increase interval)
         vacCalculationInterval = std::min(60u, vacCalculationInterval + 5);
         ofLogNotice("Simulator") << "VAC calculation interval increased to " << vacCalculationInterval << " frames";
         break;
-    case 'g':
-    case 'G':
+    case 'H':
         // Increase VAC calculation frequency (decrease interval)
         vacCalculationInterval = std::max(5u, vacCalculationInterval - 5);
         ofLogNotice("Simulator") << "VAC calculation interval decreased to " << vacCalculationInterval << " frames";

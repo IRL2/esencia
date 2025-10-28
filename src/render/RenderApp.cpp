@@ -335,13 +335,24 @@ void RenderApp::keyReleased(ofKeyEventArgs& e)
     int key = e.keycode;
     switch (key)
     {
-    case 'F':
-    {
-        ofToggleFullscreen();
-        windowResized(ofGetWidth(), ofGetHeight());
-        break;
-    }
-    default: break;
+        case 'F':
+        {
+            ofToggleFullscreen();
+            windowResized(ofGetWidth(), ofGetHeight());
+            break;
+        }
+
+        case 'S':
+        {
+            ofSaveFrame();
+            break;
+        }
+
+        default:
+        {
+            // todo: send keys to gui
+            break;
+        }
     }
 }
 

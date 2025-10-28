@@ -30,7 +30,7 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
     // load sound files
     //ofFileDialogResult openFileResult1 = ofSystemLoadDialog("select an audio sample for clusters");
     //sampler1.load(openFileResult1.getPath());
-    sampler1.add(ofToDataPath("sounds/omissed-track.wav"));
+    sampler1.add(ofToDataPath("sounds/endless_strings.aif.wav"));
 
     //ofFileDialogResult openFileResult2 = ofSystemLoadDialog("select an audio sample for collisions");
     //sampler2.load(openFileResult2.getPath());
@@ -41,12 +41,13 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
 
     // config sampler player
     sampler1.setReverb(1, 0.5, 0.2, 0.5, 3000, 0.01);
-    sampler1.setDelay(0.0f, 0.0f);
+    sampler1.setDelay(0,0, 0,0);
 
-    sampler2.setReverb(0.5, 0.3, 0.2, 0., 1000, 0., 0.);
-    sampler2.setDelay(0.5f, 0.7f);
+    sampler2.setReverb(0.5, 0.3, 0.2, 0., 0., 0.8);
+    sampler2.setDelay(0,0,0,0);
     sampler2.setAHR(100., 100., 2000.);
-    //sampler2.play(1.0, 1.0);
+    sampler2.setFilter(0, 0, 120);
+    sampler2.play(1.0, 1.0);
 
     // configure synth
     polySynth.setup(8);
@@ -60,7 +61,7 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
 
     // connect all modules to a master gain then to the audio engine
     sampler1.fader.ch(0) >> masterAmp.ch(0);
-    sampler2.fader.ch(0) >> masterAmp.ch(0);
+    sampler2.fader.ch(0) >> masterAmp.ch(1);
     polySynth.ch(0) >> masterAmp.ch(0);
     polySynth.ch(1) >> masterAmp.ch(1);
     dataSynth.ch(0) >> masterAmp.ch(0);
@@ -68,7 +69,7 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
     masterAmp.ch(0) >> audioEngine.audio_out(0);
     masterAmp.ch(1) >> audioEngine.audio_out(1);
 
-    masterAmp >> mainScope >> audioEngine.blackhole();
+    //masterAmp >> mainScope >> audioEngine.blackhole();
 
     // initial volumes
     parameters->masterVolume.set(0.8);
@@ -384,8 +385,8 @@ void AudioApp::sonificationControl(const CollisionBuffer& collisionData, const C
 
     if (checkInterval(1.0)) {
         if (ofRandomGaussian(0., 1.) < (parameters->collisionRate * parameters->collisionRate) / 2) {
-            sampler2.setReverb(0.5, 0.3, 0.2, 0., 1000, 0., 0.);
-            sampler2.setDelay(0.5f, 0.7f);
+            sampler2.setReverb(0.5, 0.3, 0.2, 0., 0., 0.);
+            sampler2.setDelay(-1, 0.5f, 0.7f, -1);
             sampler2.play(pitch, 0);
         }
     }

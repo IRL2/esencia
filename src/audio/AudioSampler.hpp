@@ -19,19 +19,22 @@ public:
         addModuleInput("select", sampler.in_select());
         addModuleOutput("signal", amp);
 
-        env.enableDBTriggering(-24.0f, 0.0f);
-        setAHR(0.0f, 0.0f, 2000.0f); // all the samples used here are shorter than this
+        env.enableDBTriggering(-24.0f, 5.0f);
+        setAHR(300.0f, 0.0f, 300.0f); 
 
         trig >> triggers;
-        triggers >> env >> amp.in_mod();
-
         triggers >> sampler >> lowcut >> reverb >> verbGain >> amp;
 
+        envGate >> env >> amp.in_mod();
+        //envGate >> env2 >> amp.in_mod();
+
+        envSmoothControl >> env.in_attack();
+        envSmoothControl >> env.in_release();
 
         sampler >> delay >> delayGain >> amp;
         sampler >> amp;
 
-        damp >> amp.in_mod();
+        //damp >> amp.in_mod();
 
         amp >> filter >> fader; // output
 
@@ -54,6 +57,7 @@ public:
 
         // lhf
         ui.add(lowCutControl.set("low cut freq filter", 100, 20, 1000));
+        ui.add(envSmoothControl.set("fade ms", 0, 0, 1000));    
 
         // reverb
         ofParameterGroup* reverbGroup = new ofParameterGroup();
@@ -81,10 +85,10 @@ public:
         ofParameterGroup* filterGroup = new ofParameterGroup();
         filterGroup->setName("filter");
         ui.add(*filterGroup);
-        filterGroup->add(filterModeControl.set("mode", 1, 0, 6)); // lowpass, highpass, bandpass, notch, allpass
+        filterGroup->add(filterModeControl.set("mode", 0, 0, 6)); // lowpass, highpass, bandpass, notch, allpass
         //filterGroup->add(filerCutoffControl.set("cutoff freq", 54, 10, 120));
-        filterGroup->add(filerResoControl.set("resonance", 0.1f, 0.0f, 1.0f));
-        filterGroup->add(filerPitchControl.set("pitch", 0.0f, 0.0f, 120.0f));
+        filterGroup->add(filerResoControl.set("resonance", 0.0f, 0.0f, 1.0f));
+        filterGroup->add(filerPitchControl.set("pitch", 120.0f, 0.0f, 120.0f));
         filterModeControl >> filter.in_mode();
         filerResoControl >> filter.in_reso();
         filerCutoffControl >> filter.in_cutoff();
@@ -125,12 +129,18 @@ public:
         env.set(attack, hold, release);
     }
 
-    void setReverb(float gain, float density, float time, float damping, float hiCut, float modFreq, float modAmount = NULL) {
+    void setFilter(float mode = -1, float reso = -1, float pitch = -1) {
+        if (mode > 0) filterModeControl.set(mode);
+        if (reso > 0) filerResoControl.set(reso);
+        if (pitch > 0) filerPitchControl.set(pitch);
+    }
+
+    void setReverb(float gain, float density, float time, float damping, float modFreq, float modAmount = NULL) {
         verbGain.set(gain);
         densityControl.set(density);
         timeControl.set(time);
         dampingControl.set(damping);
-        reverbHiCutControl.set(hiCut);
+        //reverbHiCutControl.set(hiCut);
         modFreqControl.set(modFreq);
         modAmount ? modAmountControl.set(modAmount) : true;
     }
@@ -138,6 +148,13 @@ public:
     void setDelay(float time, float feedback) {
         delayTimeControl.set(time);
         delayFeedbackControl.set(feedback);
+    }
+
+    void setDelay(float gain=-1, float time=-1, float feedback=-1, float damp=-1) {
+        if (gain) delayGain.set(gain);
+        if (time) delayTimeControl.set(time);
+        if (feedback) delayFeedbackControl.set(feedback);
+        if (damp) delayDampControl.set(damp);
     }
 
     void play(float pitch, int sampleIndex = 0, bool restart = true, float velocity = 1.0, float damp = 1.0) {
@@ -157,7 +174,13 @@ public:
         damp >> amp.in_mod();
         this->damp.set (damp);
 
+        envGate.trigger(velocity);
         trig.trigger(velocity);
+    }
+
+    void stop() {
+        //0.0f >> amp.in_mod(); // this works
+        envGate.off();
     }
 
     void switchSampleIndex(int sampleIndex) {
@@ -169,6 +192,7 @@ public:
 
 
     pdsp::TriggerControl trig;
+    pdsp::TriggerControl envGate;
 
     pdsp::ParameterAmp   damp;
 
@@ -187,13 +211,16 @@ public:
     pdsp::Parameter     filerPitchControl;
 
     pdsp::Parameter     pitchControl;
+    pdsp::Parameter     envSmoothControl;
 
     size_t     currentSampleIndex = 0;
 
     pdsp::BasiVerb reverb;
     pdsp::PatchNode     triggers;
     pdsp::Sampler       sampler;
+    pdsp::Amp           preAmp;
     pdsp::AHR           env;
+    pdsp::ADSR          env2;
     pdsp::Amp           amp;
     pdsp::LowCut        lowcut;
     pdsp::VAFilter      filter;
