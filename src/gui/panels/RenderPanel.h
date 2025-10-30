@@ -47,11 +47,11 @@ public:
         
         
         // trails
-        ofxGuiGroup* ofTrialsPanel = panel->addGroup("trails");
+        //ofxGuiGroup* ofTrialsPanel = panel->addGroup("trails");
 
         //ofTrialsPanel->add(params.useFaketrails.set("enable", USE_FAKETRAILS));
 
-        ofTrialsPanel->add(params.fakeTrialsVisibility.set("length", 
+        panel->add(params.fakeTrialsVisibility.set("trails length",
             TRAILS_VISIBILITY_INITIAL, TRAILS_VISIBILITY_MIN, TRAILS_VISIBILITY_MAX),
             ofJson({ {"precision", 3} }));
 

@@ -4154,6 +4154,9 @@
     <ClInclude Include="src\gui\panels\ParticleSizeSlider.h">
       <Filter>src\gui\panels</Filter>
     </ClInclude>
+    <ClInclude Include="src\audio\NoiseSynth.hpp">
+      <Filter>src\audio</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="icon.rc" />
@@ -4161,6 +4164,9 @@
   <ItemGroup>
     <None Include="bin\data\support\gui-styles.json">
       <Filter>src\gui</Filter>
+    </None>
+    <None Include="bin\data\shaders\particlesComputeShader.glsl">
+      <Filter>src\simulation</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -28,20 +28,20 @@ void SimulationDataPanel::setup(ofxGui& gui, SimulationParameters& params, Simul
 void SimulationDataPanel::onCollisionLoggingChanged(bool& value) {
     if (simulator) {
         simulator->setCollisionLoggingEnabled(value);
-        ofLogNotice("SimulationDataPanel") << "Collision logging " << (value ? "enabled" : "disabled") << " via GUI panel";
+        //ofLogNotice("SimulationDataPanel") << "Collision logging " << (value ? "enabled" : "disabled") << " via GUI panel";
     }
 }
 
 void SimulationDataPanel::onClusterAnalysisChanged(bool& value) {
     if (simulator) {
         simulator->setClusterAnalysisEnabled(value);
-        ofLogNotice("SimulationDataPanel") << "Cluster analysis " << (value ? "enabled" : "disabled") << " via GUI panel";
+        //ofLogNotice("SimulationDataPanel") << "Cluster analysis " << (value ? "enabled" : "disabled") << " via GUI panel";
     }
 }
 
 void SimulationDataPanel::onClusterConnectionDistanceChanged(float& value) {
     if (simulator) {
         simulator->setClusterConnectionDistance(value);
-        ofLogNotice("SimulationDataPanel") << "Cluster connection distance changed to " << value << " via GUI panel";
+        //ofLogNotice("SimulationDataPanel") << "Cluster connection distance changed to " << value << " via GUI panel";
     }
 }

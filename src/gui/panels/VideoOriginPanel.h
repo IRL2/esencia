@@ -21,7 +21,7 @@ public:
 
         // SOURCES
         ofxGuiGroup* cameraSourcePanel = panel->addGroup("sources");
-        cameraSourcePanel->add<ofxGuiGraphics>("source", &params.previewSource.getTexture(), 
+        cameraSourcePanel->add<ofxGuiGraphics>("raw", &params.previewSource.getTexture(), 
             ofJson({ {"height", 200} }));
 
         cameraSourcePanel->add(params._sourceOrbbec.set("orbbec camera", SOURCE_ORBBEC));

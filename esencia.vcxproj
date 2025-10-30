@@ -337,6 +337,7 @@
     <ClCompile Include="..\..\..\addons\ofxPDSP\libs\audiofft\AudioFFT.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\audio\NoiseSynth.hpp" />
     <ClInclude Include="src\gui\panels\ParticleSizeSlider.h" />
     <ClInclude Include="src\ofApp.h" />
     <ClInclude Include="src\audio\AudioApp.h" />
@@ -1310,6 +1311,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="bin\data\shaders\particlesComputeShader.glsl" />
     <None Include="bin\data\support\gui-styles.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
