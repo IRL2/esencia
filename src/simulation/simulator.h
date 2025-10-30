@@ -114,6 +114,8 @@ public:
     static const size_t MAX_COLLISIONS_PER_FRAME = 1024;
     static const size_t MAX_CLUSTERS_PER_FRAME = 10;
     static const uint32_t MIN_CLUSTER_SIZE = 10;
+    static const uint32_t MAX_PARTICLES_FOR_CLUSTER_ANALYSIS = 512; // Limit analysis to first 512 particles
+
 
 private:
     void setupComputeShader();

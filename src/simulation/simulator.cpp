@@ -382,8 +382,8 @@ void Simulator::keyReleased(ofKeyEventArgs& e) {
 
 void Simulator::analyzeParticleClusters() {
     // Disjoint Set (Union-Find Data Structure)
-    const uint32_t maxParticlesForAnalysis = 512; // Limit analysis to first 512 particles
-    const uint32_t particleCount = std::min(static_cast<uint32_t>(particles.active.size()), maxParticlesForAnalysis);
+    const uint32_t MAX_PARTICLES_FOR_CLUSTER_ANALYSIS = 512; // Limit analysis to first 512 particles
+    const uint32_t particleCount = std::min(static_cast<uint32_t>(particles.active.size()), MAX_PARTICLES_FOR_CLUSTER_ANALYSIS);
     
     if (particleCount < MIN_CLUSTER_SIZE) {
         clusterData.clusterCount = 0;
@@ -446,11 +446,11 @@ void Simulator::performUnionFind(std::vector<uint32_t>& parent, std::vector<uint
         }
     }
 
-#ifdef _DEBUG
-    if (currentFrameNumber % 60 == 0) {
-        ofLogNotice("Simulator::ClusterDebug") << "Found " << connectionsFound << " particle connections using distance-based clustering only";
-    }
-#endif
+//#ifdef _DEBUG
+//    if (currentFrameNumber % 60 == 0) {
+//        ofLogNotice("Simulator::ClusterDebug") << "Found " << connectionsFound << " particle connections using distance-based clustering only";
+//    }
+//#endif
 }
 
 uint32_t Simulator::findRoot(std::vector<uint32_t>& parent, uint32_t particle) {

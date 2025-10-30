@@ -21,62 +21,41 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
     parameters->maxClusterParticlesSampling = Simulator::MAX_CLUSTERS_PER_FRAME;
 
 
+
+    /// track mixing
+    collisionSampler1 >> collisionTrack;
+    collisionSampler2 >> collisionTrack;
+    clusterSampler1   >> clusterTrack;
+    clusterSampler2   >> clusterTrack;
+    clusterSampler3   >> clusterTrack;
+    // todo: synths need to be patchable (to have moduleOutputs)
+    //clusterSynth1     >> clusterTrack;
+    //clusterDataSynth1 >> clusterTrack;
+    whiteNoise        >> backgroundTrack;
+    ambienceSampler   >> backgroundTrack;
+
+    /// master mixing
+    collisionTrack    >> master;
+    clusterTrack      >> master;
+    backgroundTrack   >> master;
+
+    /// final effects
+    master.ch(0) >> masterCompressor.ch(0) >> audioEngine.audio_out(0);
+    master.ch(1) >> masterCompressor.ch(1) >> audioEngine.audio_out(1);
+    //master >> lowEQ >> midEQ >> highEQ >> masterCompressor >> masterReverb;  // todo
+
+    /// scope
+    masterCompressor >> mainScope       >> audioEngine.blackhole();
+    clusterTrack     >> clustersScope   >> audioEngine.blackhole();
+    collisionTrack   >> collisionScope  >> audioEngine.blackhole();
+    backgroundTrack  >> backgroundScope >> audioEngine.blackhole();
+
     /// sound setup
     audioEngine.listDevices();
     audioEngine.setDeviceID(0); // todo: add control to change this from gui (currently uses the system's default interface)
     audioEngine.setup(44100, 512, 3);
 
-
-    // load sound files
-    //ofFileDialogResult openFileResult1 = ofSystemLoadDialog("select an audio sample for clusters");
-    //sampler1.load(openFileResult1.getPath());
-    sampler1.add(ofToDataPath("sounds/endless_strings.aif.wav"));
-
-    //ofFileDialogResult openFileResult2 = ofSystemLoadDialog("select an audio sample for collisions");
-    //sampler2.load(openFileResult2.getPath());
-    //sampler2.load(ofToDataPath("sounds/obell-c2.wav"), 0);
-    sampler2.add(ofToDataPath("sounds/kalimba-soft2.wav"));
-    //sampler2.load(ofToDataPath("sounds/pianofelt12.wav"), 2);
-
-
-    // config sampler player
-    sampler1.setReverb(1, 0.5, 0.2, 0.5, 3000, 0.01);
-    sampler1.setDelay(0,0, 0,0);
-
-    sampler2.setReverb(0.5, 0.3, 0.2, 0., 0., 0.8);
-    sampler2.setDelay(0,0,0,0);
-    sampler2.setAHR(100., 100., 2000.);
-    sampler2.setFilter(0, 0, 120);
-    sampler2.play(1.0, 1.0);
-
-    // configure synth
-    polySynth.setup(8);
-    polySynth.on(1.0f);
-    polySynth.setPitch(46);
-
-    dataSynth.datatable.setup(100, 64, true);
-    dataSynth.setup();
-    dataSynth.setLFOfreq(0);
-    dataSynth.setPitch(44);
-
-    // connect all modules to a master gain then to the audio engine
-    sampler1.fader.ch(0) >> masterAmp.ch(0);
-    sampler2.fader.ch(0) >> masterAmp.ch(1);
-    polySynth.ch(0) >> masterAmp.ch(0);
-    polySynth.ch(1) >> masterAmp.ch(1);
-    dataSynth.ch(0) >> masterAmp.ch(0);
-    dataSynth.ch(1) >> masterAmp.ch(1);
-    masterAmp.ch(0) >> audioEngine.audio_out(0);
-    masterAmp.ch(1) >> audioEngine.audio_out(1);
-
-    //masterAmp >> mainScope >> audioEngine.blackhole();
-
-    // initial volumes
-    parameters->masterVolume.set(0.8);
-    parameters->polysynthVolume.set(0.6);
-    parameters->sampler1playerVolume.set(0.7);
-    parameters->sampler2playerVolume.set(0.7);
-    parameters->datasynthVolume.set(0.5);
+    setupChaotic();
 }
 
 
@@ -125,13 +104,17 @@ void AudioApp::update() {
         parameters->masterVolume = 0.0f;
     }
 
+    scopeHeight = (ofGetHeight() / 4);
 }
 
 
 void AudioApp::draw() {
     ofPushStyle();
     ofSetColor(255, 255, 255, 100);
-    mainScope.draw(-1, -1, ofGetWidth()+2, ofGetHeight()+2);
+    mainScope.draw(-1, -1, ofGetWidth() + 2, scopeHeight);
+    collisionScope.draw(-1, scopeHeight, ofGetWidth() + 2, scopeHeight);
+    clustersScope.draw(-1, scopeHeight*2, ofGetWidth() + 2, scopeHeight);
+    backgroundScope.draw(-1, scopeHeight*3, ofGetWidth()+2, scopeHeight);
     ofPopStyle(); 
 }
 
@@ -257,7 +240,7 @@ void AudioApp::processClusterStatistics(const ClusterAnalysisData& clusterData) 
     parameters->particlesInClusters.set((float)totalParticlesInClusters);
     parameters->avgClusterSize.set(averageClusterSize);
     parameters->avgClusterVelocity.set(totalVelocityMagnitude / static_cast<float>(clusterData.clusterCount));
-    parameters->particlesInClusterRate.set(totalParticlesInClusters / allParameters->simulationParameters.amount);
+    parameters->particlesInClusterRate.set(totalParticlesInClusters / fminf(allParameters->simulationParameters.amount, Simulator::MAX_PARTICLES_FOR_CLUSTER_ANALYSIS));
     parameters->avgClusterSpatialSpread.set(averageSpatialSpread);
     parameters->avgClusterVelocityMagitude.set(averageVelocityMagnitude);
 }
@@ -315,13 +298,47 @@ void AudioApp::processCollisionsStatistics(const CollisionBuffer& collisionData)
 void AudioApp::sonificationControl(const CollisionBuffer& collisionData, const ClusterAnalysisData& clusterData) {
     if (!audioEnabled) return;
 
+    // update volumes from the gui (via parameters)
+    master.set(parameters->masterVolume);
+    collisionTrack.set(parameters->collisionVolume);
+    clusterTrack.set(parameters->clusterVolume);
+    backgroundTrack.set(parameters->backgroundVolume);
 
-    // update volumes from parameters
-    masterAmp.set(parameters->masterVolume);
-    sampler1.fader.set(ofMap(parameters->sampler1playerVolume, 0.0, 1.0, -48, 12));
-    sampler2.fader.set(ofMap(parameters->sampler2playerVolume, 0.0, 1.0, -48, 12));
-    polySynth.gain.set(ofMap(parameters->polysynthVolume, 0.0, 1.0, -80, -12));
-    dataSynth.gain.set(ofMap(parameters->datasynthVolume, 0.0, 1.0, -48, 12));
+
+    ///// zero particles
+    //if (allParameters->simulationParameters.amount.get() == 0) {
+    //    stopAll();
+    //    playEmpty();
+    //}
+    //else {
+    //    stopEmpty();
+    //}
+
+    ///// few particles
+    //if (allParameters->simulationParameters.amount.get() < 150) {
+    //    playDiscrete();
+    //}
+
+    ///// forming clusters
+    //if (parameters->clusters > 1) {
+    //    playCohesive();
+
+    //    if (parameters->particlesInClusterRate.get() < 0.9) {
+    //        playDiscrete();
+    //    }
+    //    else {
+    //        stopDiscrete();
+    //    }
+    //}
+
+    /// highly chaotic state
+    //if (allParameters->simulationParameters.amount.get() > 500) {
+        playChaotic();
+    //} else {
+        //stopChaotic();
+    //}
+
+
 
 
     // when no data is presented
@@ -338,58 +355,53 @@ void AudioApp::sonificationControl(const CollisionBuffer& collisionData, const C
 
 
 
-    if (sampler1.meter_position() > 0.0f && sampler1.meter_position() < 1.0) {
-        //float resonanceTime = ofMap(parameters->clusters * parameters->collisionRate, 0.0, parameters->clusters, 0, 4);
-        //sampler1.timeControl.set(resonanceTime);
-        sampler1.modAmountControl.set(parameters->particlesInClusterRate * 2.0);
-        //sampler1.pitchControl.set(ofMap(parameters->clusters, 1, 5, 0.3f, 1.5f));
-    }
-    else {
-        //sampler1.play(parameters->particlesInClusterRate + 0.5f, ofClamp(parameters->clusters / 10, 0.7, 1.0));
-        //float pitch = ofMap(parameters->collisionRate * parameters->clusters, 0.0, parameters->clusters, 0.2, 1.0);
-        sampler1.play(1.0, 2.0); // prev
-    }
+    //if (sampler1.meter_position() > 0.0f && sampler1.meter_position() < 1.0) {
+    //    //float resonanceTime = ofMap(parameters->clusters * parameters->collisionRate, 0.0, parameters->clusters, 0, 4);
+    //    //sampler1.timeControl.set(resonanceTime);
+    //    sampler1.modAmountControl.set(parameters->particlesInClusterRate * 2.0);
+    //    //sampler1.pitchControl.set(ofMap(parameters->clusters, 1, 5, 0.3f, 1.5f));
+    //}
+    //else {
+    //    //sampler1.play(parameters->particlesInClusterRate + 0.5f, ofClamp(parameters->clusters / 10, 0.7, 1.0));
+    //    //float pitch = ofMap(parameters->collisionRate * parameters->clusters, 0.0, parameters->clusters, 0.2, 1.0);
+    //    sampler1.play(1.0, 2.0); // prev
+    //}
 
     // silent hill theme
     //sampler1.play(clusterData.clusterCount, cluster.particleCount);
     // melodic silent hill
     //sampler1.play(clusterData.clusterCount / 10, parameters->avgClusterSize);
 
-    size_t samplerIndex = sampler2.currentSampleIndex;
-    triggerAtInterval(2.0, [&]() {
-        samplerIndex = (samplerIndex + 1) % sampler2.getNumSamples();
-        sampler2.switchSampleIndex(samplerIndex);
-        //ofLog() << "switching to sample #" << samplerIndex;
-        });
 
-    // selecting "notes" (pitch) from two scales, alternating every second
-    // this actually works well
-    int notesA[5] = { -2, 0, 2, 4, 7 };
-    int notesB[5] = { 1, 3, 5, 0, 4 };
-    int notes[] = { 0,0,0,0,0 };
-    std::copy(notesA, notesA + 5, notes);
-    if (lastTime % 2 == 0) {
-        std::copy(notesB, notesB + 5, notes);
-    }
-    int pitch = notes[(int)ofMap(parameters->collisionRate, 0, 1.3, 0, 4)];
+    //// THE GOOD ONE tHAt WORKS NICE
+    //-----------------------
+    //size_t samplerIndex = sampler2.currentSampleIndex;
+    //triggerAtInterval(2.0, [&]() {
+    //    samplerIndex = (samplerIndex + 1) % sampler2.getNumSamples();
+    //    sampler2.switchSampleIndex(samplerIndex);
+    //    });
 
+    //// this actually works well
+    //int notesA[5] = { -2, 0, 2, 4, 7 };
+    //int notesB[5] = { 1, 3, 5, 0, 4 };
+    //int notes[] = { 0,0,0,0,0 };
+    //std::copy(notesA, notesA + 5, notes);
+    //if (lastTime % 2 == 0) {
+    //    std::copy(notesB, notesB + 5, notes);
+    //}
+    //int pitch = notes[(int)ofMap(parameters->collisionRate, 0, 1.3, 0, 4)];
 
-    //float pitch = ceilf(ofMap(parameters->collisionRate, 0.0, 1.5, -5.0, 5.0));
-    //float volum = ofMap(parameters->particlesInClusterRate, 0.0, 1.0, 1.0, 0.4);
-    //float vol = ofClamp(parameters->collisionRate * 1.5, -0.3, 1.0); // original
-    //float vol = ofMap(parameters->clusters, 1, 8, 20, -50);
-    float vol = ofMap(parameters->sampler1playerVolume, 0.0, 1.0, -30, 5);
+    //float vol = ofMap(parameters->sampler1playerVolume, 0.0, 1.0, -30, 5);
 
-    //parameters->samplerplayerVolume.set(vol);
+    //if (checkInterval(1.0)) {
+    //    if (ofRandomGaussian(0., 1.) < (parameters->collisionRate * parameters->collisionRate) / 2) {
+    //        sampler2.setReverb(0.5, 0.3, 0.2, 0., 0., 0.);
+    //        sampler2.setDelay(-1, 0.5f, 0.7f, -1);
+    //        sampler2.play(pitch, 0);
+    //    }
+    //}
+    //-----------------------
 
-
-    if (checkInterval(1.0)) {
-        if (ofRandomGaussian(0., 1.) < (parameters->collisionRate * parameters->collisionRate) / 2) {
-            sampler2.setReverb(0.5, 0.3, 0.2, 0., 0., 0.);
-            sampler2.setDelay(-1, 0.5f, 0.7f, -1);
-            sampler2.play(pitch, 0);
-        }
-    }
 
     //triggerAtInterval(1.0, [&]() {
     //    float freq = ofMap(parameters->avgClusterVelocity, 0.0, 100.0, 0.01, 2.0);
@@ -397,45 +409,152 @@ void AudioApp::sonificationControl(const CollisionBuffer& collisionData, const C
     //    polySynth.setPitch(ofMap(parameters->clusters, 2, 20, 44, 58));
     //});
 
+    //if (parameters->clusters > 1 && parameters->particlesInClusterRate > 0.5f) {
+    //    // update the data table
+    //    std::vector<float> vacValues = parameters->vacValues.get();
+    //    if (dataSynth.datatable.getTableLength() != vacValues.size()) {
+    //        dataSynth.datatable.setup(vacValues.size(), 1.0 * 64, true);
+    //    }
+    //    //dataSynth.datatable.begin();
+    //    //for (int i = 0; i < vacValues.size(); ++i) {
+    //    //    dataSynth.datatable.data(i, vacValues[i] * 64);
+    //    //}
+    //    //dataSynth.datatable.end();
 
+    //    if (dataSynth.isPlaying == false) {
+    //        dataSynth.setPitch(38);
+    //        dataSynth.on(0.5f);
+    //    }
 
+    //    float cff = ofMap(vacValues[0], 0.0, 1.0, 10, 120);
+    //    dataSynth.setCutOff(cff);
 
-    if (parameters->clusters > 1 && parameters->particlesInClusterRate > 0.5f) {
-        // update the data table
-        std::vector<float> vacValues = parameters->vacValues.get();
-        if (dataSynth.datatable.getTableLength() != vacValues.size()) {
-            dataSynth.datatable.setup(vacValues.size(), 1.0 * 64, true);
-        }
-        //dataSynth.datatable.begin();
-        //for (int i = 0; i < vacValues.size(); ++i) {
-        //    dataSynth.datatable.data(i, vacValues[i] * 64);
-        //}
-        //dataSynth.datatable.end();
+    //    ////triggerAtInterval(50, [&]() {
+    //    ////    //float pitch = ofMap(parameters->avgClusterVelocityMagitude, 0.0, 100.0, 40.0, 60.0);
+    //    ////    //dataSynth.setPitch(pitch);
+    //    ////    dataSynth.on(0.6f);
+    //    ////    dataSynth.setPitch(44);
+    //    ////    });
 
-        if (dataSynth.isPlaying == false) {
-            dataSynth.setPitch(38);
-            dataSynth.on(0.5f);
-        }
-
-        float cff = ofMap(vacValues[0], 0.0, 1.0, 10, 120);
-        dataSynth.setCutOff(cff);
-
-        ////triggerAtInterval(50, [&]() {
-        ////    //float pitch = ofMap(parameters->avgClusterVelocityMagitude, 0.0, 100.0, 40.0, 60.0);
-        ////    //dataSynth.setPitch(pitch);
-        ////    dataSynth.on(0.6f);
-        ////    dataSynth.setPitch(44);
-        ////    });
-
-        //triggerAtInterval(0.5, [&]() {
-        //    float pitch = ofMap(parameters->avgClusterSize, 1.0, 20.0, 40.0, 60.0);
-        //    dataSynth.setPitch(pitch);
-        //    });
-    }
-    else {
-        dataSynth.off();
-    }
+    //    //triggerAtInterval(0.5, [&]() {
+    //    //    float pitch = ofMap(parameters->avgClusterSize, 1.0, 20.0, 40.0, 60.0);
+    //    //    dataSynth.setPitch(pitch);
+    //    //    });
+    //}
+    //else {
+    //    dataSynth.off();
+    //}
 }
+
+
+/// discretes
+/// ---------------------------------------------------------------------------------------------------
+void AudioApp::playDiscrete() {
+    int notes[10] = { -2, 0, 2, 4, 7, 1, 3, 5, 0, 4 };
+    int noteShift = lastTime % 2 == 0 ? 0 : 5;
+    int pitch = notes[(int)ofMap(parameters->collisionRate, 0, 1.3, noteShift, noteShift + 4)];
+
+    triggerAtInterval(1.0, [&]() {
+        if (ofRandomGaussian(0., 1.) < (parameters->collisionRate * parameters->collisionRate) / 2) {
+            collisionSampler1.setReverb(0.5, 0.3, 0.2, 0., 0., 0.);
+            collisionSampler1.setDelay(-1, 0.5f, 0.7f, -1);
+            collisionSampler1.play(pitch, 0);
+        }
+        });
+
+    triggerAtInterval(6.0, [&]() {
+        if (ofRandomGaussian(0., 1.) < (parameters->collisionRate * parameters->collisionRate) / 2) {
+            collisionSampler2.setReverb(0.5, 0.3, 0.2, 0., 0., 0.);
+            collisionSampler2.setDelay(-1, 0.5f, 0.7f, -1);
+            collisionSampler2.play(pitch - 12, 0);
+        }
+        });
+}
+
+void AudioApp::stopDiscrete() {
+    collisionSampler1.stop();
+    collisionSampler2.stop();
+}
+
+
+/// chaotics
+/// ---------------------------------------------------------------------------------------------------
+/// 
+void AudioApp::setupChaotic() {
+    whiteNoise.setReverb(16, 0.17, 0.8, 0.2, 0.5);
+    whiteNoise.setFilter(4, 60, 0.6);
+    whiteNoise.reverbDryGain.set(0.5f);
+    whiteNoise.amp.set(1.0f);
+}
+void AudioApp::playChaotic() {
+    float pitch = 45;
+    float reso = 0.6f;
+
+    // map the pitch and filter mode to the vac value
+    if (parameters->vacValues.get().size() > 20) {
+        pitch = ofMap(parameters->vacValues.get()[int(parameters->vacValues.get().size() / 2)], 0.0, 1.0, 30, 80);
+        reso  = ofMap(parameters->vacValues.get()[int(parameters->vacValues.get().size() / 4)], 0.0, 1.0, 0.4, 0.8);
+    }
+
+    // when thermostat is on, use bandpass filter; otherwise use highpass
+    int mode = allParameters->simulationParameters.applyThermostat.get() ? 4 : 0;
+
+    float volume = ofMap(parameters->particlesInClusterRate.get(), 0.0, 1.0, 1.0, 0.3, true);
+
+    whiteNoise.play();
+    whiteNoise.setFilter(mode, pitch, 0.6f);
+    whiteNoise.amp.set(volume);
+}
+void AudioApp::stopChaotic() {
+    whiteNoise.stop();
+}
+
+
+/// cohesives
+/// ---------------------------------------------------------------------------------------------------
+void AudioApp::playCohesive() {
+    // repeat for the number of clusters
+    // playback clusterSample on loop
+    // modulate filter frequency and pitch based on cluster size and velocity
+}
+void AudioApp::stopCohesive() {
+    clusterSampler1.stop();
+    clusterSampler2.stop();
+    clusterSampler3.stop();
+}
+
+
+/// empties
+/// ---------------------------------------------------------------------------------------------------
+void AudioApp::playEmpty() {
+    collisionSampler1.stop();
+    collisionSampler2.stop();
+    clusterSampler1.stop();
+    clusterSampler2.stop();
+    clusterSampler3.stop();
+    ambienceSampler.play(0.0, 0.0);
+    triggerAtInterval(4.0f, [&]() {
+        ambienceSampler.setReverb(0.7, 0.5, 0.3, 0., 0., 0.);
+        ambienceSampler.setDelay(-1, 0.5f, 0.7f, -1);
+        ambienceSampler.play(0.0, 1.0);
+        ambienceSampler.fader.set(ofRandom(0.2, 0.8));
+        });
+}
+void AudioApp::stopEmpty() {
+    ambienceSampler.stop();
+}
+
+
+
+/// stop all
+/// ---------------------------------------------------------------------------------------------------
+void AudioApp::stopAll() {
+    stopDiscrete();
+    stopChaotic();
+    stopCohesive();
+}
+
+
 
 
 /// <summary>

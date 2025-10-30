@@ -10,6 +10,7 @@
 #include "AudioOscillator.hpp"
 #include "PolySynth.hpp"
 #include "DataSynth.hpp"
+#include "NoiseSynth.hpp"
 
 #include "EsenciaParameters.h"
 #include "GuiApp.h"
@@ -48,6 +49,18 @@ public:
     bool triggerAtInterval(float intervalInSeconds, std::function<void()> callback);
     bool checkInterval(float intervalInSeconds);
 
+    // scenes
+    void playDiscrete();
+    void playChaotic();
+    void playCohesive();
+    void playEmpty();
+    void stopCohesive();
+    void stopDiscrete();
+    void stopChaotic();
+    void stopEmpty();
+    void stopAll();
+    void setupChaotic();
+
 private:
 
     SonificationParameters* parameters = nullptr;
@@ -64,6 +77,7 @@ private:
     // sound modules and instruments
     pdsp::Engine   audioEngine;
 
+    // not in use
     AudioSampler     sampler1;
     AudioSampler     sampler2;
     AudioOscillator  oscillator1;
@@ -71,9 +85,38 @@ private:
     PolySynth        polySynth;
     DataSynth        dataSynth;
 
-    pdsp::ParameterAmp  masterAmp;
+    AudioSampler    collisionSampler1;
+    AudioSampler    collisionSampler2;
+    AudioSampler    clusterSampler1;
+    AudioSampler    clusterSampler2;
+    AudioSampler    clusterSampler3;
+    PolySynth       clusterSynth1;
+    DataSynth       clusterDataSynth1;
+    NoiseSynth      whiteNoise;
+    AudioSampler    ambienceSampler;
 
-    pdsp::Scope mainScope;
+    // mixer
+    pdsp::ParameterAmp  master;
+    pdsp::ParameterAmp  collisionTrack;
+    pdsp::ParameterAmp  clusterTrack;
+    pdsp::ParameterAmp  backgroundTrack;
+
+    // final effects
+    pdsp::Compressor masterCompressor;
+    pdsp::BasiVerb   masterReverb;
+
+    // final eq
+    pdsp::PeakEQ      midEQ;
+    pdsp::LowShelfEQ  lowEQ;
+    pdsp::HighShelfEQ highEQ;
+
+    // scopes
+    pdsp::Scope mainScope;       // main
+    pdsp::Scope collisionScope;  // collision
+    pdsp::Scope clustersScope;   // clusters
+    pdsp::Scope backgroundScope; // background
+    int scopeHeight;
+
 
     int lastTime;
 };
