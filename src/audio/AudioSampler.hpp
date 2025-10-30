@@ -106,6 +106,7 @@ public:
         samples.push_back(new pdsp::SampleBuffer());
         samples.back()->load(path);
         sampler.addSample(samples.back());
+        // todo: throw error log if loading fails
     }
 
     size_t getNumSamples() const {
@@ -157,8 +158,8 @@ public:
         if (damp) delayDampControl.set(damp);
     }
 
-    void play(float pitch, int sampleIndex = 0, bool restart = true, float velocity = 1.0, float damp = 1.0) {
-        if (restart) {
+    void play(float pitch, int sampleIndex = 0, bool noSteal = true, float velocity = 1.0, float damp = 1.0) {
+        if (noSteal) {
             0.0 >> sampler.in_start(); // reset position if we are at the end of the sample
         }
         else {

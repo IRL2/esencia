@@ -46,8 +46,8 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
 
     /// scope
     masterCompressor >> mainScope       >> audioEngine.blackhole();
-    clusterTrack     >> clustersScope   >> audioEngine.blackhole();
     collisionTrack   >> collisionScope  >> audioEngine.blackhole();
+    clusterTrack     >> clustersScope   >> audioEngine.blackhole();
     backgroundTrack  >> backgroundScope >> audioEngine.blackhole();
 
     /// sound setup
@@ -55,7 +55,8 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
     audioEngine.setDeviceID(0); // todo: add control to change this from gui (currently uses the system's default interface)
     audioEngine.setup(44100, 512, 3);
 
-    setupChaotic();
+    setupBackgroundNoise();
+    setupCollisionSounds(0);
 }
 
 
@@ -110,7 +111,7 @@ void AudioApp::update() {
 
 void AudioApp::draw() {
     ofPushStyle();
-    ofSetColor(255, 255, 255, 100);
+    ofSetColor(255, 255, 255, 70);
     mainScope.draw(-1, -1, ofGetWidth() + 2, scopeHeight);
     collisionScope.draw(-1, scopeHeight, ofGetWidth() + 2, scopeHeight);
     clustersScope.draw(-1, scopeHeight*2, ofGetWidth() + 2, scopeHeight);
@@ -314,28 +315,29 @@ void AudioApp::sonificationControl(const CollisionBuffer& collisionData, const C
     //    stopEmpty();
     //}
 
-    ///// few particles
-    //if (allParameters->simulationParameters.amount.get() < 150) {
-    //    playDiscrete();
-    //}
 
     ///// forming clusters
     //if (parameters->clusters > 1) {
     //    playCohesive();
 
     //    if (parameters->particlesInClusterRate.get() < 0.9) {
-    //        playDiscrete();
+    //        playCollisionSounds();
     //    }
     //    else {
-    //        stopDiscrete();
+    //        stopCollisionSounds();
     //    }
     //}
 
-    /// highly chaotic state
-    //if (allParameters->simulationParameters.amount.get() > 500) {
-        playChaotic();
+    /// background sound, when nothing clear happens
+    playBackgroundNoise();
+
+    /// collision sounds when few particles are there and collides
+    playCollisionSounds(1.0);
+
+    //if (allParameters->simulationParameters.amount.get() > 150) {
+    //    playBackgroundNoise();
     //} else {
-        //stopChaotic();
+    //    //stopChaotic();
     //}
 
 
@@ -449,44 +451,61 @@ void AudioApp::sonificationControl(const CollisionBuffer& collisionData, const C
 
 /// discretes
 /// ---------------------------------------------------------------------------------------------------
-void AudioApp::playDiscrete() {
+void AudioApp::playCollisionSounds(float speedFactor) {
     int notes[10] = { -2, 0, 2, 4, 7, 1, 3, 5, 0, 4 };
     int noteShift = lastTime % 2 == 0 ? 0 : 5;
     int pitch = notes[(int)ofMap(parameters->collisionRate, 0, 1.3, noteShift, noteShift + 4)];
 
-    triggerAtInterval(1.0, [&]() {
-        if (ofRandomGaussian(0., 1.) < (parameters->collisionRate * parameters->collisionRate) / 2) {
-            collisionSampler1.setReverb(0.5, 0.3, 0.2, 0., 0., 0.);
-            collisionSampler1.setDelay(-1, 0.5f, 0.7f, -1);
+    bool gate = ofRandomGaussian(0., 1.) < (parameters->collisionRate * parameters->collisionRate) / 2;
+    speedFactor *= ofMap(allParameters->simulationParameters.amount.get(), 100, 5000.0, 1.0, 10.0, true); //todo: get the max from somewhere sensible like the ParticlesPanel::PARTICLES_MAX
+
+    float intervalA = 1.0 * speedFactor;
+    float intervalB = 6.0 * speedFactor;
+
+    triggerAtInterval(intervalA, [&]() {
+        if (gate) {
             collisionSampler1.play(pitch, 0);
         }
         });
 
-    triggerAtInterval(6.0, [&]() {
-        if (ofRandomGaussian(0., 1.) < (parameters->collisionRate * parameters->collisionRate) / 2) {
-            collisionSampler2.setReverb(0.5, 0.3, 0.2, 0., 0., 0.);
-            collisionSampler2.setDelay(-1, 0.5f, 0.7f, -1);
-            collisionSampler2.play(pitch - 12, 0);
+    triggerAtInterval(intervalB, [&]() {
+        if (gate) {
+            collisionSampler2.play(pitch - 6, 0);
         }
         });
 }
-
-void AudioApp::stopDiscrete() {
+void AudioApp::stopCollisionSounds() {
     collisionSampler1.stop();
     collisionSampler2.stop();
 }
+void AudioApp::setupCollisionSounds(int bank) {
+    switch(bank){
+    default:
+    case 0:
+        collisionSampler1.add(ofToDataPath("sounds/kalimba.wav"));
+        collisionSampler1.setReverb(0.5, 0.3, 1.0, 0., 0., 0.);
+        collisionSampler1.setDelay(4, 0.5f, 0.7f, -1);
+
+        collisionSampler2.add(ofToDataPath("sounds/obell-c.wav"));
+        collisionSampler2.setReverb(0.7, 0.3, 10.0, 0., 0., 0.);
+        collisionSampler2.setDelay(2, 0.15f, 0.6f, 0.5);
+        break;
+    }
+}
 
 
-/// chaotics
+/// background noise that responds to the VAC
+/// useful for chaotic scenes: when many particles moves in crazy ways
+/// or super calm scenes: many particles in screen, fewer moving (no thermostat)
 /// ---------------------------------------------------------------------------------------------------
 /// 
-void AudioApp::setupChaotic() {
+void AudioApp::setupBackgroundNoise() {
     whiteNoise.setReverb(16, 0.17, 0.8, 0.2, 0.5);
     whiteNoise.setFilter(4, 60, 0.6);
     whiteNoise.reverbDryGain.set(0.5f);
     whiteNoise.amp.set(1.0f);
 }
-void AudioApp::playChaotic() {
+void AudioApp::playBackgroundNoise() {
     float pitch = 45;
     float reso = 0.6f;
 
@@ -549,7 +568,7 @@ void AudioApp::stopEmpty() {
 /// stop all
 /// ---------------------------------------------------------------------------------------------------
 void AudioApp::stopAll() {
-    stopDiscrete();
+    stopCollisionSounds();
     stopChaotic();
     stopCohesive();
 }

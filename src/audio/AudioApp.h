@@ -50,16 +50,17 @@ public:
     bool checkInterval(float intervalInSeconds);
 
     // scenes
-    void playDiscrete();
-    void playChaotic();
+    void setupCollisionSounds(int bank=0);
+    void setupBackgroundNoise();
+    void playCollisionSounds(float speedFactor=1.0);
+    void playBackgroundNoise();
     void playCohesive();
     void playEmpty();
     void stopCohesive();
-    void stopDiscrete();
+    void stopCollisionSounds();
     void stopChaotic();
     void stopEmpty();
     void stopAll();
-    void setupChaotic();
 
 private:
 
