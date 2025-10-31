@@ -52,11 +52,12 @@ public:
     // scenes
     void setupCollisionSounds(int bank=0);
     void setupBackgroundNoise();
+    void setupClusterSounds(int bank = 0);
     void playCollisionSounds(float speedFactor=1.0);
     void playBackgroundNoise();
-    void playCohesive();
+    void playClusterSounds();
     void playEmpty();
-    void stopCohesive();
+    void stopClusterSounds();
     void stopCollisionSounds();
     void stopChaotic();
     void stopEmpty();
@@ -105,6 +106,7 @@ private:
     // final effects
     pdsp::Compressor masterCompressor;
     pdsp::BasiVerb   masterReverb;
+    pdsp::Panner     panner;
 
     // final eq
     pdsp::PeakEQ      midEQ;
@@ -118,6 +120,7 @@ private:
     pdsp::Scope backgroundScope; // background
     int scopeHeight;
 
-
     int lastTime;
+
+    void windowResize(ofResizeEventArgs&);
 };

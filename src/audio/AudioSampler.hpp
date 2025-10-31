@@ -17,16 +17,16 @@ public:
         addModuleInput("position", sampler.in_start());
         addModuleInput("pitch", sampler.in_pitch());
         addModuleInput("select", sampler.in_select());
-        addModuleOutput("signal", amp);
+        addModuleOutput("signal", fader);
 
         env.enableDBTriggering(-24.0f, 5.0f);
         setAHR(300.0f, 0.0f, 300.0f); 
 
+        // patching
         trig >> triggers;
         triggers >> sampler >> lowcut >> reverb >> verbGain >> amp;
 
         envGate >> env >> amp.in_mod();
-        //envGate >> env2 >> amp.in_mod();
 
         envSmoothControl >> env.in_attack();
         envSmoothControl >> env.in_release();
@@ -34,10 +34,11 @@ public:
         sampler >> delay >> delayGain >> amp;
         sampler >> amp;
 
-        //damp >> amp.in_mod();
+        amp >> filter >> fader; // <- this is the output!
 
-        amp >> filter >> fader; // output
-
+        // params:
+        pitchControl >> sampler.in_pitch();
+        
         timeControl >> reverb.in_time();
         densityControl >> reverb.in_density();
         dampingControl >> reverb.in_damping();
@@ -47,11 +48,16 @@ public:
 
         lowCutControl >> lowcut.in_freq();
 
-        pitchControl >> sampler.in_pitch();
-
         delayTimeControl * 600.0f >> delay.in_time();
         delayFeedbackControl >> delay.in_feedback();
         delayDampControl >> delay.in_damping();
+
+        filterModeControl >> filter.in_mode();
+        filterResoControl >> filter.in_reso();
+        filterCutoffControl >> filter.in_cutoff();
+        filterPitchControl >> filter.in_pitch();
+
+
 
         ui.setName("audio sampler");
 
@@ -86,18 +92,14 @@ public:
         filterGroup->setName("filter");
         ui.add(*filterGroup);
         filterGroup->add(filterModeControl.set("mode", 0, 0, 6)); // lowpass, highpass, bandpass, notch, allpass
-        //filterGroup->add(filerCutoffControl.set("cutoff freq", 54, 10, 120));
-        filterGroup->add(filerResoControl.set("resonance", 0.0f, 0.0f, 1.0f));
-        filterGroup->add(filerPitchControl.set("pitch", 120.0f, 0.0f, 120.0f));
-        filterModeControl >> filter.in_mode();
-        filerResoControl >> filter.in_reso();
-        filerCutoffControl >> filter.in_cutoff();
-        filerPitchControl >> filter.in_pitch();
+        //filterGroup->add(filterCutoffControl.set("cutoff freq", 54, 10, 120));
+        filterGroup->add(filterResoControl.set("resonance", 0.0f, 0.0f, 1.0f));
+        filterGroup->add(filterPitchControl.set("pitch", 120.0f, 0.0f, 120.0f));
 
 
         damp.set("damp", 0.0);
 
-        fader.set("gain", -12, -48, 12);
+        fader.set("gain", 5, -48, 12);
 
         pitchControl.enableSmoothing(50.0f);
     }
@@ -130,10 +132,10 @@ public:
         env.set(attack, hold, release);
     }
 
-    void setFilter(float mode = -1, float reso = -1, float pitch = -1) {
+    void setFilter(float mode, float reso, float pitch) {
         if (mode > 0) filterModeControl.set(mode);
-        if (reso > 0) filerResoControl.set(reso);
-        if (pitch > 0) filerPitchControl.set(pitch);
+        if (reso > 0) filterResoControl.set(reso);
+        if (pitch > 0) filterPitchControl.set(pitch);
     }
 
     void setReverb(float gain, float density, float time, float damping, float modFreq, float modAmount = NULL) {
@@ -151,7 +153,7 @@ public:
         delayFeedbackControl.set(feedback);
     }
 
-    void setDelay(float gain=-1, float time=-1, float feedback=-1, float damp=-1) {
+    void setDelay(float gain, float time, float feedback, float damp) {
         if (gain) delayGain.set(gain);
         if (time) delayTimeControl.set(time);
         if (feedback) delayFeedbackControl.set(feedback);
@@ -207,9 +209,9 @@ public:
     pdsp::Parameter     lowCutControl;
     pdsp::ParameterGain	verbGain;
     pdsp::Parameter     filterModeControl;
-    pdsp::Parameter     filerResoControl;
-    pdsp::Parameter     filerCutoffControl;
-    pdsp::Parameter     filerPitchControl;
+    pdsp::Parameter     filterResoControl;
+    pdsp::Parameter     filterCutoffControl;
+    pdsp::Parameter     filterPitchControl;
 
     pdsp::Parameter     pitchControl;
     pdsp::Parameter     envSmoothControl;

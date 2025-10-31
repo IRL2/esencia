@@ -42,7 +42,7 @@ void ParticleSizeSlider::localValueChanged(int& val) {
 void ParticleSizeSlider::render() {
 	ofxGuiIntSlider::render();
 	ofSetColor(this->getBorderColor(), 100);
-	ofCircle(2 + this->getWidth() + WIDTH_OFFSET / 2, getHeight() / 2, value);
+	ofDrawCircle(2 + this->getWidth() + WIDTH_OFFSET / 2, getHeight() / 2, value);
 }
 
 

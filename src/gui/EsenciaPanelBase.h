@@ -19,13 +19,15 @@ class EsenciaPanelBase {
 public:
 	ofxGuiPanel* panel;
 
+    const int SIZE_UNIT = 30;
+
     void configVisuals(ofRectangle rect, ofColor color) {
         panel->loadTheme("support/gui-styles.json", true);
         panel->setBackgroundColor(color);
 
-        panel->setPosition(rect.x * 30, rect.y * 30);
-        panel->setWidth(rect.width * 30);
-        //panel->setHeight(rect.height * 30);
+        panel->setPosition(rect.x * SIZE_UNIT, rect.y * SIZE_UNIT);
+        panel->setWidth(rect.width * SIZE_UNIT);
+        //panel->setHeight(rect.height * SIZE_UNIT);
     }
 
     static void drawLineBetween(EsenciaPanelBase& a, EsenciaPanelBase& b, int offsetIn  = 0, int offsetOut = 0)
@@ -86,10 +88,10 @@ public:
         // destination glyph (arrow)
         ofSetColor(ofColor::darkTurquoise, 200);
         ofFill();
-        ofLine(destinationArrowStart.x-1, destinationArrowEnd.y - PANELS_TRIANGLE_SIZE_S, destinationArrowStart.x + PANELS_TRIANGLE_SIZE-1, destinationArrowEnd.y);
-        ofLine(destinationArrowStart.x-1, destinationArrowEnd.y + PANELS_TRIANGLE_SIZE_S, destinationArrowStart.x + PANELS_TRIANGLE_SIZE-1, destinationArrowEnd.y);
-        ofLine(destinationArrowStart.x + PANELS_TRIANGLE_SIZE_S-1, destinationArrowEnd.y - PANELS_TRIANGLE_SIZE, destinationArrowStart.x + PANELS_TRIANGLE_SIZE_S + PANELS_TRIANGLE_SIZE, destinationArrowEnd.y);
-        ofLine(destinationArrowStart.x + PANELS_TRIANGLE_SIZE_S-1, destinationArrowEnd.y + PANELS_TRIANGLE_SIZE, destinationArrowStart.x + PANELS_TRIANGLE_SIZE_S + PANELS_TRIANGLE_SIZE, destinationArrowEnd.y);
+        ofDrawLine(destinationArrowStart.x-1, destinationArrowEnd.y - PANELS_TRIANGLE_SIZE_S, destinationArrowStart.x + PANELS_TRIANGLE_SIZE-1, destinationArrowEnd.y);
+        ofDrawLine(destinationArrowStart.x-1, destinationArrowEnd.y + PANELS_TRIANGLE_SIZE_S, destinationArrowStart.x + PANELS_TRIANGLE_SIZE-1, destinationArrowEnd.y);
+        ofDrawLine(destinationArrowStart.x + PANELS_TRIANGLE_SIZE_S-1, destinationArrowEnd.y - PANELS_TRIANGLE_SIZE, destinationArrowStart.x + PANELS_TRIANGLE_SIZE_S + PANELS_TRIANGLE_SIZE, destinationArrowEnd.y);
+        ofDrawLine(destinationArrowStart.x + PANELS_TRIANGLE_SIZE_S-1, destinationArrowEnd.y + PANELS_TRIANGLE_SIZE, destinationArrowStart.x + PANELS_TRIANGLE_SIZE_S + PANELS_TRIANGLE_SIZE, destinationArrowEnd.y);
         //ofDrawArrow(destinationArrowStart, destinationArrowEnd, PANELS_TRIANGLE_SIZE);  // original circle
 
         // moving dots along the line to simulate flow
