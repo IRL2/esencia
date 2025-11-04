@@ -78,13 +78,12 @@ public:
     }
 
     void play(float velocity = 1.0f) {
-        if (isPlaying) return;
         amp.set(velocity);
         isPlaying = true;
     }
 
     void stop() {
-        if (!isPlaying) return;
+        //if (!isPlaying) return;
         amp.set(0);
         isPlaying = false;
     }

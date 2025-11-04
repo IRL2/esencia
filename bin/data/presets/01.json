@@ -31,12 +31,19 @@
         "videopreviewVisibility": 0.30000001192092896
     },
     "simulation": {
-        "amount": 329.62274169921875,
+        "amount": 71.05389404296875,
         "applyThermostat": true,
         "coupling": 1.0,
         "depthFieldScale": -115869.5625,
         "enableCollisionLogging": true,
-        "radius": 2,
+        "radius": 5,
         "targetTemperature": 4945.65234375
+    },
+    "sonification": {
+        "backgroundVolume": 0.6296296119689941,
+        "clusterVolume": 0.5787037014961243,
+        "collisionVolume": 0.3262711763381958,
+        "masterVolume": 0.800000011920929,
+        "velocityVolume": 0.11574073880910873
     }
 }

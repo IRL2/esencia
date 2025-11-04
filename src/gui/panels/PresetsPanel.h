@@ -8,19 +8,15 @@ class PresetsPanel : public EsenciaPanelBase {
 	const ofRectangle PANEL_RECT = ofRectangle(1, 21, 6, 0);
 	const ofColor& BG_COLOR = ofColor(100, 100, 100, 100);
 
+
 	const float DEFAULT_TRANSITION_DURATION = 0.3f;
 
-	SimulationParameters simulationParams;
-	CameraParameters cameraParams;
-	RenderParameters renderParams;
-	PresetsParameters* presetParams;
-
-	ofxGuiToggle* statesButtons[16];
 	ofxGuiButton* saveButton;
 	ofxGuiButton* clearButton;
 	ofxGuiButton* mutateButton;
 	ofxGuiGroup* presetToggles;
 
+	PresetsParameters* presetParams;
 	ofxPresets* presetManager = nullptr;
 	std::vector<ofxPresetsParametersBase*> allParameters;
 
@@ -33,21 +29,17 @@ class PresetsPanel : public EsenciaPanelBase {
 	float prevTransitionDuration = 0;
 
 public:
+    static const int MAX_PRESETS = 20; 
+	ofxGuiToggle* statesButtons[MAX_PRESETS];
 	ofParameter<string> curPreset;
 	int activePreset = 1;
 	int prevPreset = 1;
 
 
-	// TODO: review if this pointers or references are needed and correct
-	void setup(ofxGui& gui, PresetsParameters* preParams, ofxPresets& presetMan, SimulationParameters& simParams, CameraParameters& camParams, RenderParameters& renParams) {
+	void setup(ofxGui& gui, PresetsParameters* presetParamsReference, ofxPresets& presetsManagerReference) {
 
-		// store references to all parameters to apply the presets data
-		simulationParams = simParams;
-		cameraParams = camParams;
-		renderParams = renParams;
-		presetParams = preParams;
-		presetManager = &presetMan;
-		allParameters = { &simulationParams, &renderParams };
+		presetParams = presetParamsReference;
+		presetManager = &presetsManagerReference;
 
 		// presets panel to group the preset toggles
 		panel = gui.addPanel("presets");
@@ -63,7 +55,7 @@ public:
 			}));
 		presetToggles->setShowHeader(false);
 
-		for (int i = 0; i < 16; i++) {
+		for (int i = 0; i < MAX_PRESETS; i++) {
 			statesButtons[i] = presetToggles->add<ofxGuiToggle>(presetParams->states[i].set(ofToString(i + 1), false),
 				ofJson({ {"width", 30}, {"height", 30}, {"type", "fullsize"}, {"text-align", "center"} }));
 		}
@@ -142,7 +134,7 @@ public:
 	void recolorPresetButtons() {
 		recolorExistentPresetButtons();
 
-		for (int i = 0; i < 16; i++) {
+		for (int i = 0; i < MAX_PRESETS; i++) {
 			if (i + 1 == abs(activePreset)) {
 				recolorActiveButton(i);
 
@@ -157,7 +149,7 @@ public:
 	/// Updates color of the preset buttons according to the existence of the preset
 	/// </summary>
 	void recolorExistentPresetButtons() {
-		for (int i = 0; i < 16; i++) {
+		for (int i = 0; i < MAX_PRESETS; i++) {
 			recolorResetButton(i);
 
 			if (presetManager->presetExist(i + 1)) {  // exist
@@ -199,7 +191,7 @@ public:
 	/// </summary>
 	/// <param name="i">consider 1 as the first preset</param>
 	void applyPreset(int i) {
-		i = clamp(i, 1, 16);
+		i = clamp(i, 1, MAX_PRESETS);
 
 		if (activePreset != i) {
 			prevPreset = activePreset;

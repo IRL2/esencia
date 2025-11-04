@@ -72,10 +72,10 @@ public:
 /// </summary>
 struct PresetsParameters : public ofxPresetsParametersBase {
 
-    // the following ites are only gui holders
-    // 
-    // declare parameters for 16 buttons to select the state
-    ofParameter<bool> states[16];
+    // the following items are only gui holders
+
+    // declare parameters for buttons to select the state (cant use PresetsPanel::MAX_PRESETS bc reasons)
+    ofParameter<bool> states[99];
 
     // declare parameters for action buttons: save, clear, copyTo
 
@@ -202,15 +202,19 @@ struct SimulationParameters : public ofxPresetsParametersBase {
 struct SonificationParameters : public ofxPresetsParametersBase {
 
     // instrument volumes
-    ofParameter<float> polysynthVolume;
-    ofParameter<float> datasynthVolume;
-    ofParameter<float> sampler1playerVolume;
-    ofParameter<float> sampler2playerVolume;
+    //ofParameter<float> polysynthVolume;
+    //ofParameter<float> datasynthVolume;
+    //ofParameter<float> sampler1playerVolume;
+    //ofParameter<float> sampler2playerVolume;
 
     ofParameter<float> masterVolume;
     ofParameter<float> collisionVolume;
     ofParameter<float> clusterVolume;
+    ofParameter<float> velocityVolume;
     ofParameter<float> backgroundVolume;
+
+    ofParameter<int> collisionSoundBank = 0;
+    ofParameter<int> clusterSoundBank = 0;
 
     // eq's (not in use
     ofParameter<float> eqTrebble;
@@ -222,7 +226,6 @@ struct SonificationParameters : public ofxPresetsParametersBase {
     ofParameter<int> maxCollisionSampling;
     ofParameter<int> maxClustersSampling;
     ofParameter<int> maxClusterParticlesSampling;
-
 
     ofParameter<float> collisions;
 
@@ -259,23 +262,23 @@ struct SonificationParameters : public ofxPresetsParametersBase {
     ofParameter<int> vacWidth;
     ofParameter<int> vacHeight;
     ofParameter<std::vector<float>> vacValues;
+    ofParameter<bool> enableVACCalculation;
+    ofParameter<int> maxTimeLags;
 
 
 
-    //ofParameter<string> sampler1File;
-    //ofParameter<string> sampler2File;
-
+    // Parameters to save in presets
+    // ----------------------------------------------------------------
     SonificationParameters() {
         groupName = "sonification";
 
         parameterMap["masterVolume"] = &masterVolume;
-        parameterMap["eqTrebble"] = &eqTrebble;
-        parameterMap["eqBass"] = &eqBass;
-        parameterMap["masterVolume"] = &masterVolume;
-        parameterMap["polysynthVolume"] = &polysynthVolume;
-        parameterMap["datasynthVolume"] = &datasynthVolume;
-        parameterMap["sampler1playerVolume"] = &sampler1playerVolume;
-        parameterMap["sampler2playerVolume"] = &sampler2playerVolume;
+        parameterMap["collisionVolume"] = &collisionVolume;
+        parameterMap["clusterVolume"] = &clusterVolume;
+        parameterMap["velocityVolume"] = &velocityVolume;
+        parameterMap["backgroundVolume"] = &backgroundVolume;
+        parameterMap["enableVACCalculation"] = &enableVACCalculation;
+        parameterMap["maxTimeLags"] = &maxTimeLags;
     }
 };
 

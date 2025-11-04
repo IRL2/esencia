@@ -13,15 +13,15 @@ void VACPanel::setup(ofxGui& gui, SimulationParameters& simParams, SonificationP
     bool initialVACState = simulator ? simulator->isVACEnabled() : true;
     int initialMaxLags = simulator ? static_cast<int>(simulator->vacData.maxTimeLags) : 120;
     
-    panel->add(enableVACCalculation.set("Enable VAC", initialVACState));
-    panel->add(maxTimeLags.set("Max Time Lags", initialMaxLags, 10, 512));
+    panel->add(this->sonParams->enableVACCalculation.set("Enable VAC", initialVACState));
+    panel->add(this->sonParams->maxTimeLags.set("Max Time Lags", initialMaxLags, 10, 512));
     
     // VAC plot area
     ofxGuiContainer* plotContainer = panel->addContainer("VAC Plot", 
         ofJson({ {"width", PLOT_WIDTH}, {"height", PLOT_HEIGHT} }));
     
-    enableVACCalculation.addListener(this, &VACPanel::onVACToggleChanged);
-    maxTimeLags.addListener(this, &VACPanel::onMaxTimeLagsChanged);
+    this->sonParams->enableVACCalculation.addListener(this, &VACPanel::onVACToggleChanged);
+    this->sonParams->maxTimeLags.addListener(this, &VACPanel::onMaxTimeLagsChanged);
     
     // Subscribe to draw events to render the plot
     ofAddListener(ofEvents().draw, this, &VACPanel::drawVACPlot);
@@ -49,7 +49,7 @@ void VACPanel::onMaxTimeLagsChanged(int& value) {
 }
 
 void VACPanel::drawVACPlot(ofEventArgs& args) {
-    if (!simulator || !panel || !enableVACCalculation) return;
+    if (!simulator || !panel || !this->sonParams->enableVACCalculation.get()) return;
     
     ofVec2f panelPos = panel->getPosition();
     float panelWidth = panel->getWidth();
@@ -90,7 +90,7 @@ void VACPanel::drawVACPlot(ofEventArgs& args) {
         ofSetLineWidth(3);
         
         uint32_t maxPoints = std::min(static_cast<uint32_t>(vacData.vacValues.size()), 
-                                     static_cast<uint32_t>(maxTimeLags.get()));
+                                     static_cast<uint32_t>(this->sonParams->maxTimeLags.get()));
         
         // Find min/max VAC values for scaling
         float minVAC = *std::min_element(vacData.vacValues.begin(), 
@@ -132,7 +132,7 @@ void VACPanel::drawVACPlot(ofEventArgs& args) {
         float x = plotArea.x + (i * plotArea.width / 4.0f);
         ofDrawLine(x, plotArea.getBottom() - 3, x, plotArea.getBottom() + 3);
         
-        int timeValue = (maxTimeLags.get() * i / 4);
+        int timeValue = (this->sonParams->maxTimeLags.get() * i / 4);
         ofDrawBitmapString(ofToString(timeValue), x - 10, plotArea.getBottom() + 15);
     }
     

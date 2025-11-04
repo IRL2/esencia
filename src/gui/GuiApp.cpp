@@ -15,7 +15,7 @@ void GuiApp::setup()
     cameraParameters.previewSegment.allocate(1, 1, OF_IMAGE_GRAYSCALE);
     cameraParameters.previewBackground.allocate(1, 1, OF_IMAGE_GRAYSCALE);
 
-    allParameters = { &simulationParameters, &renderParameters, &cameraParameters }; // presets are handled at the presetsPanel
+    allParameters = { &simulationParameters, &renderParameters, &cameraParameters, &sonificationParameters }; // presets are handled at the presetsPanel
 	presetManager.setup(allParameters);
 	presetManager.setFolderPath("data\\presets\\");
 
@@ -27,7 +27,7 @@ void GuiApp::setup()
     videoProcessingPanel.setup(gui, cameraParameters);
     renderPanel.setup(gui, renderParameters);
 	sequencePanel.setup(gui, &presetsParameters, presetManager);
-    presetsPanel.setup(gui, &presetsParameters, presetManager, simulationParameters, cameraParameters, renderParameters);
+    presetsPanel.setup(gui, &presetsParameters, presetManager);
     audioPanel.setup(gui, &sonificationParameters, &simulationParameters);
 
     //parameters->previewRender.grabScreen(0, 0, ofGetWidth(), ofGetHeight());

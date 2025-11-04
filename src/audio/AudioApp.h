@@ -47,19 +47,21 @@ public:
 
     // timming functions for audio triggers
     bool triggerAtInterval(float intervalInSeconds, std::function<void()> callback);
+    //bool triggerAtGate(const std::vector<float>& singleBeatPattern, float beatDurationSeconds, std::function<void()> callback);
+    //bool triggerAtGate(const std::vector<std::vector<float>>& patternBeats, float beatDurationSeconds, std::function<void()> callback);
     bool checkInterval(float intervalInSeconds);
 
     // scenes
     void setupCollisionSounds(int bank=0);
-    void setupBackgroundNoise();
+    void setupVelocityNoise();
     void setupClusterSounds(int bank = 0);
     void playCollisionSounds(float speedFactor=1.0);
-    void playBackgroundNoise();
+    void playVelocityNoise();
     void playClusterSounds();
     void playEmpty();
     void stopClusterSounds();
     void stopCollisionSounds();
-    void stopChaotic();
+    void stopVelocityNoise();
     void stopEmpty();
     void stopAll();
 
@@ -94,13 +96,14 @@ private:
     AudioSampler    clusterSampler3;
     PolySynth       clusterSynth1;
     DataSynth       clusterDataSynth1;
-    NoiseSynth      whiteNoise;
+    NoiseSynth      noiseSynth;
     AudioSampler    ambienceSampler;
 
     // mixer
     pdsp::ParameterAmp  master;
     pdsp::ParameterAmp  collisionTrack;
     pdsp::ParameterAmp  clusterTrack;
+    pdsp::ParameterAmp  velocityTrack;
     pdsp::ParameterAmp  backgroundTrack;
 
     // final effects
@@ -114,10 +117,11 @@ private:
     pdsp::HighShelfEQ highEQ;
 
     // scopes
-    pdsp::Scope mainScope;       // main
-    pdsp::Scope collisionScope;  // collision
-    pdsp::Scope clustersScope;   // clusters
-    pdsp::Scope backgroundScope; // background
+    pdsp::Scope mainScope;       
+    pdsp::Scope collisionScope;  
+    pdsp::Scope clustersScope;   
+    pdsp::Scope backgroundScope; 
+    pdsp::Scope velocityScope;   
     int scopeHeight;
 
     int lastTime;

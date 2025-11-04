@@ -34,9 +34,16 @@
         "amount": 278.6813049316406,
         "applyThermostat": true,
         "coupling": 0.8111607432365417,
-        "depthFieldScale": -103303.5703125,
+        "depthFieldScale": -103303.5625,
         "enableCollisionLogging": true,
         "radius": 24,
         "targetTemperature": 8513.392578125
+    },
+    "sonification": {
+        "backgroundVolume": 0.8220338821411133,
+        "clusterVolume": 0.2330508530139923,
+        "collisionVolume": 0.0052966102957725525,
+        "masterVolume": 0.800000011920929,
+        "velocityVolume": 0.4305555522441864
     }
 }

@@ -12,8 +12,9 @@ class VACPanel : public EsenciaPanelBase {
     const ofColor BG_COLOR = ofColor(80, 80, 120, 100);
 
     // VAC plot parameters
-    ofParameter<bool> enableVACCalculation;
-    ofParameter<int> maxTimeLags;
+    // declared in the SonificationParameters (so they can be stored in presets)
+    //ofParameter<bool> enableVACCalculation;
+    //ofParameter<int> maxTimeLags;
 
     // Reference to simulator for accessing VAC data
     Simulator* simulator = nullptr;
