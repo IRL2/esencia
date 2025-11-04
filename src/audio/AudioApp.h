@@ -54,15 +54,16 @@ public:
     // scenes
     void setupCollisionSounds(int bank=0);
     void setupVelocityNoise();
-    void setupClusterSounds(int bank = 0);
+    void setupClusterSounds(int bank=0);
+    void setupAmbientSounds(int bank=0);
     void playCollisionSounds(float speedFactor=1.0);
     void playVelocityNoise();
     void playClusterSounds();
-    void playEmpty();
+    void playAmbientSounds();
     void stopClusterSounds();
     void stopCollisionSounds();
     void stopVelocityNoise();
-    void stopEmpty();
+    void stopAmbientSounds();
     void stopAll();
 
 private:
@@ -97,7 +98,7 @@ private:
     PolySynth       clusterSynth1;
     DataSynth       clusterDataSynth1;
     NoiseSynth      noiseSynth;
-    AudioSampler    ambienceSampler;
+    AudioSampler    ambientSampler;
 
     // mixer
     pdsp::ParameterAmp  master;

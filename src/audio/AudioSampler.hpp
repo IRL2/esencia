@@ -102,6 +102,7 @@ public:
         fader.set("gain", 5, -48, 12);
 
         pitchControl.enableSmoothing(50.0f);
+        fader.enableSmoothing(500.0f);
     }
 
     void add(string path, bool setHoldTime = false) {
@@ -237,7 +238,7 @@ public:
     pdsp::Parameter     delayFeedbackControl;
     pdsp::Parameter     delayDampControl;
 
-    pdsp::ParameterGain fader;
+    pdsp::ParameterGain fader; // output singal, set volume with dB values!
 
     ofParameterGroup ui; // for debugging purposes
 };

@@ -15,7 +15,8 @@ class SimulationDataPanel : public EsenciaPanelBase {
     
     // Cluster analysis parameters
     ofParameter<bool> enableClusterAnalysis;
-    ofParameter<float> clusterConnectionDistance;
+
+    ofParameter<float> clusterConnectionDistance;  // todo: declare this in the sonification parameters so it can be stored in presets
 
     Simulator* simulator = nullptr;
 

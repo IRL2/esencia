@@ -266,7 +266,6 @@ struct SonificationParameters : public ofxPresetsParametersBase {
     ofParameter<int> maxTimeLags;
 
 
-
     // Parameters to save in presets
     // ----------------------------------------------------------------
     SonificationParameters() {

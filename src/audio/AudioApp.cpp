@@ -30,13 +30,13 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
     //clusterSynth1     >> clusterTrack;
     //clusterDataSynth1 >> clusterTrack;
     noiseSynth        >> velocityTrack;
-    ambienceSampler   >> backgroundTrack;
+    ambientSampler    >> backgroundTrack;
 
     /// master mixing
     collisionTrack    >> master;
     clusterTrack      >> master;
-    backgroundTrack   >> master;
     velocityTrack     >> master;
+    backgroundTrack   >> master;
 
     /// final effects
     master >> panner; // to stereo
@@ -53,11 +53,12 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
     /// sound setup
     audioEngine.listDevices();
     audioEngine.setDeviceID(0); // todo: add control to change this from gui (currently uses the system's default interface)
-    audioEngine.setup(44100, 512, 3);
+    audioEngine.setup(44100, 512, 6);
 
     setupVelocityNoise();
     setupCollisionSounds(0);
     setupClusterSounds(0);
+    setupAmbientSounds(0);
 
     ofAddListener(ofEvents().windowResized, this, &AudioApp::windowResize);
     windowResize(ofResizeEventArgs());
@@ -111,7 +112,7 @@ void AudioApp::update() {
 
 
     if (ofGetKeyPressed() == 'c' || ofGetKeyPressed() == 'C') {
-        clusterSampler1.play(1.0);
+        collisionSampler1.play(0,0,true,1.0);
     };
 }
 
@@ -124,10 +125,10 @@ void AudioApp::windowResize(ofResizeEventArgs&) {
 void AudioApp::draw() {
     ofPushStyle();
     ofSetColor(255, 255, 255, 60);
-    collisionScope.draw(-1, scopeHeight, ofGetWidth() + 2, scopeHeight);
-    clustersScope.draw(-1, scopeHeight*2, ofGetWidth() + 2, scopeHeight);
-    velocityScope.draw(-1, scopeHeight * 3, ofGetWidth() + 2, scopeHeight);
-    backgroundScope.draw(-1, scopeHeight*3, ofGetWidth()+2, scopeHeight);
+    collisionScope.draw(0,  scopeHeight * 0, ofGetWidth(), scopeHeight);
+    clustersScope.draw(0,   scopeHeight * 1, ofGetWidth(), scopeHeight);
+    velocityScope.draw(0,   scopeHeight * 2, ofGetWidth(), scopeHeight);
+    backgroundScope.draw(0, scopeHeight * 3, ofGetWidth(), scopeHeight);
     ofPopStyle(); 
 }
 
@@ -318,8 +319,8 @@ void AudioApp::sonificationControl(const CollisionBuffer& collisionData, const C
     velocityTrack.set(parameters->velocityVolume);
     backgroundTrack.set(parameters->backgroundVolume);
 
-    /// zero particles
-    playEmpty();
+    /// filler ambient
+    playAmbientSounds();
 
     /// forming clusters
     if (parameters->particlesInClusterRate > 0.5) {
@@ -366,15 +367,16 @@ void AudioApp::playCollisionSounds(float frequencyFactor) {
     bool gate       = ofNoise(ofGetElapsedTimef()) < parameters->collisionRate * 2;
     bool bypassGate = ofNoise(ofGetElapsedTimeMillis()) < parameters->collisionRate * 2;
 
-    triggerAtInterval(intervalA, [&]() {
+    //triggerAtInterval(intervalB, [&]() {
+    //    if (gate) {
+    //        collisionSampler2.play(pitch, 0);
+    //    }
+    //    });
+    triggerAtInterval(2.0, [&]() {
         if (gate || bypassGate) {
-            collisionSampler1.play(pitch, 0);
+            collisionSampler1.play(pitch, 0, false);
+            ofLog() << "playing collision sample pitch " << pitch;
         }
-        triggerAtInterval(intervalB, [&]() {
-            if (gate) {
-                collisionSampler2.play(pitch, 0);
-            }
-            });
         });
 
     //triggerAtGate({ {0.1f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, {0.1f, 0.0f} }, 4.0f, [&]() {
@@ -452,7 +454,7 @@ void AudioApp::playClusterSounds() {
     // when thermostat is on, use bandpass filter; otherwise use highpass
     int mode = 4; // allParameters->simulationParameters.applyThermostat.get() ? 4 : 0;
 
-    float volume = ofMap(parameters->avgClusterVelocity.get(), 5, 50, 0.0, 1.0, true);
+    float volume = ofMap(parameters->avgClusterVelocity.get(), 5, 50, -30.0, 0.0, true);
 
     clusterSampler1.filterPitchControl.set(pitch);
     //clusterSampler1.setFilter(mode, 0.3, pitch);
@@ -468,6 +470,7 @@ void AudioApp::setupClusterSounds(int bank) {
     switch (bank) {
     default:
     case 0:
+        clusterSampler1.add(ofToDataPath("sounds/bg-ch1m.wav"));
         clusterSampler1.add(ofToDataPath("sounds/endless_strings.aif.wav"));
         clusterSampler1.envSmoothControl.set(1300);
         clusterSampler1.setReverb(0.5, 0.3, 6.0, 0.8, 0., 0.);
@@ -479,24 +482,37 @@ void AudioApp::setupClusterSounds(int bank) {
 
 
 
-/// empties
+/// ambient sounds that triggers once in a while in the background to fill the space and add variety
 /// ---------------------------------------------------------------------------------------------------
-void AudioApp::playEmpty() {
-    collisionSampler1.stop();
-    collisionSampler2.stop();
-    clusterSampler1.stop();
-    clusterSampler2.stop();
-    clusterSampler3.stop();
-    ambienceSampler.play(0.0, 0.0);
-    triggerAtInterval(4.0f, [&]() {
-        ambienceSampler.setReverb(0.7, 0.5, 0.3, 0., 0., 0.);
-        ambienceSampler.setDelay(2, 0.5f, 0.7f, 0.5);
-        ambienceSampler.play(0.0, 1.0);
-        ambienceSampler.fader.set(ofRandom(0.2, 0.8));
+void AudioApp::setupAmbientSounds(int bank) {
+    switch (bank) {
+    default:
+    case 0:
+        ambientSampler.add(ofToDataPath("sounds/bg-ch1m.wav"));
+        ambientSampler.add(ofToDataPath("sounds/bg-ch2m.wav"));
+        ambientSampler.add(ofToDataPath("sounds/bg-ch3m.wav"));
+        ambientSampler.add(ofToDataPath("sounds/bg-ch4m.wav"));
+        clusterSampler1.setFilter(0,0,120); 
+        break;
+    }
+}
+
+void AudioApp::playAmbientSounds() {
+    if (allParameters->simulationParameters.amount.get() < 30) {
+        ambientSampler.play(0, (int)ofRandom(0, 4));
+        ambientSampler.fader.set(0.4);
+    }
+    triggerAtInterval(80.0f, [&]() {
+        int sample = (int)ofRandom(0, 0);
+        float volume = ofRandom(-10, 1);
+        ambientSampler.play(sample, 0, false);
+        ambientSampler.fader.set(volume);
+        ofLog() << "playing ambient sample " << sample << " with volume " << volume;
+
         });
 }
-void AudioApp::stopEmpty() {
-    ambienceSampler.stop();
+void AudioApp::stopAmbientSounds() {
+    ambientSampler.stop();
 }
 
 
