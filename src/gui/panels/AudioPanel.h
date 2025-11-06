@@ -38,15 +38,15 @@ public:
         simGroup->add<ofxGuiValuePlotter>(params->avgClusterVelocity.set("avg cluster velocity", 0, 0, 10), ofJson({ {"precision", 2} }));
         simGroup->add<ofxGuiValuePlotter>(params->avgClusterSpatialSpread.set("avg cluster spread", 0, 0, 100), ofJson({ {"precision", 2} }));
         //simGroup->add<ofxGuiValuePlotter>(params->avgClusterVelocityMagitude.set("avg cluster vel mag", 0, 0, 10), ofJson({ {"precision", 2} }));
-		simGroup->minimize();
+		//simGroup->minimize();
 
         ofxGuiGroup* volumeGroup = p->addGroup("volumes", 
 			ofJson({ {"direction", "horizontal"} }));
 		volumeGroup->add(params->masterVolume.set("master", 0.8, 0.0, 1.2), ofJson({ {"precision", 1} }));
-		volumeGroup->add(params->collisionVolume.set("collisions", 0.8, 0.0, 1.0), ofJson({ {"precision", 1} }));
-		volumeGroup->add(params->clusterVolume.set("clusters", 0.8, 0.0, 1.0), ofJson({ {"precision", 1} }));
-		volumeGroup->add(params->velocityVolume.set("noise", 0.8, 0.0, 1.0), ofJson({ {"precision", 1} }));
-		volumeGroup->add(params->backgroundVolume.set("ambience", 0.8, 0.0, 1.0), ofJson({ {"precision", 1} }));
+		volumeGroup->add(params->collisionVolume.set("collisions", 0.3, 0.0, 1.0), ofJson({ {"precision", 1} }));
+		volumeGroup->add(params->clusterVolume.set("clusters", 0.4, 0.0, 1.0), ofJson({ {"precision", 1} }));
+		volumeGroup->add(params->velocityVolume.set("wind", 0.3, 0.0, 1.0), ofJson({ {"precision", 1} }));
+		volumeGroup->add(params->backgroundVolume.set("ambience", 0.5, 0.0, 1.0), ofJson({ {"precision", 1} }));
 
   //      p->add(params->masterVolume.set("master volume", 0.8, 0.0, 1.2), ofJson({ {"precision", 1} }));
 		//p->add(params->polysynthVolume.set("cluster volume", 0.8, 0.0, 1.0), ofJson({ {"precision", 1} }));

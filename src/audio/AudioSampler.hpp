@@ -22,7 +22,7 @@ public:
         env.enableDBTriggering(-24.0f, 5.0f);
         setAHR(300.0f, 0.0f, 300.0f); 
 
-        // patching
+        // module patching
         trig >> triggers;
         triggers >> sampler >> lowcut >> reverb >> verbGain >> amp;
 
@@ -34,9 +34,9 @@ public:
         sampler >> delay >> delayGain >> amp;
         sampler >> amp;
 
-        amp >> filter >> fader; // <- this is the output!
+        amp >> filter >> fader;
 
-        // params:
+        // parameter patching
         pitchControl >> sampler.in_pitch();
         
         timeControl >> reverb.in_time();
@@ -57,8 +57,15 @@ public:
         filterCutoffControl >> filter.in_cutoff();
         filterPitchControl >> filter.in_pitch();
 
+        // default values
+        damp.set("damp", 0.0);
+        fader.set("gain", 5, -48, 12);
 
+        // smoothings
+        pitchControl.enableSmoothing(50.0f);
+        fader.enableSmoothing(500.0f);
 
+        // UI
         ui.setName("audio sampler");
 
         // lhf
@@ -71,7 +78,7 @@ public:
         ui.add(*reverbGroup);
         reverbGroup->add(verbGain.set("reverb gain", 9, -48, 12));
         reverbGroup->add(reverbHiCutControl.set("reverb high cut freq", 5000, 3000, 20000));
-        reverbGroup->add(timeControl.set("rt60", 3.33f, 0.05f, 20.0f));
+        reverbGroup->add(timeControl.set("rt60", 0.0f, 0.05f, 20.0f));
         reverbGroup->add(densityControl.set("density", 0.5f, 0.0f, 1.0f));
         reverbGroup->add(dampingControl.set("damping", 0.5f, 0.0f, 1.0f));
         reverbGroup->add(modFreqControl.set("mod speed (hz)", 0.2f, 0.01f, 1.25f));
@@ -95,14 +102,6 @@ public:
         //filterGroup->add(filterCutoffControl.set("cutoff freq", 54, 10, 120));
         filterGroup->add(filterResoControl.set("resonance", 0.0f, 0.0f, 1.0f));
         filterGroup->add(filterPitchControl.set("pitch", 120.0f, 0.0f, 120.0f));
-
-
-        damp.set("damp", 0.0);
-
-        fader.set("gain", 5, -48, 12);
-
-        pitchControl.enableSmoothing(50.0f);
-        fader.enableSmoothing(500.0f);
     }
 
     void add(string path, bool setHoldTime = false) {

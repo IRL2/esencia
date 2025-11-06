@@ -27,6 +27,8 @@ public:
     void update();
     void draw();
 
+    void drawScope(pdsp::Scope s, int x, int y, int w, int h, ofColor c) const;
+
     // collision processing
     void logCollisionDetails(const CollisionBuffer& collisionData);
     void processCollisionsStatistics(const CollisionBuffer& collisionData);
@@ -66,6 +68,8 @@ public:
     void stopAmbientSounds();
     void stopAll();
 
+    static const int CLUSTER_SOUNDS_SIZE = 4;
+
 private:
 
     SonificationParameters* parameters = nullptr;
@@ -92,9 +96,7 @@ private:
 
     AudioSampler    collisionSampler1;
     AudioSampler    collisionSampler2;
-    AudioSampler    clusterSampler1;
-    AudioSampler    clusterSampler2;
-    AudioSampler    clusterSampler3;
+    std::vector<AudioSampler>    clusterSampler;
     PolySynth       clusterSynth1;
     DataSynth       clusterDataSynth1;
     NoiseSynth      noiseSynth;

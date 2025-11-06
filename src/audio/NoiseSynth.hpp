@@ -61,7 +61,7 @@ public:
 
         ui.setName("noiseSynth");
         ui.add(amp.set("gain", 0.6f, 0.0f, 1.0f));
-        ui.add(reverbTimeControl.set("reverb time", 1.5f, 0.0f, 20.0f));
+        ui.add(reverbTimeControl.set("reverb time", 0.0f, 0.0f, 20.0f));
         ui.add(reverbDampingControl.set("reverb damping", 0.5f, 0.0f, 1.0f));
         ui.add(reverbDensityControl.set("reverb density", 0.5f, 0.0f, 1.0f));
         ui.add(reverbFreqControl.set("reverb mod freq Hz", 0.2f, 0.0f, 2.0f));
