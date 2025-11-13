@@ -16,6 +16,7 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
     lastProcessedFrame = 0;
     lastProcessedClusterFrame = 0;
     DEBUG_LOG = false;
+    SCOPE_COLOR = ofColor(255, 255, 255, 60);
 
     parameters->maxCollisionSampling = Simulator::MAX_COLLISIONS_PER_FRAME;
     parameters->maxClusterParticlesSampling = Simulator::MAX_CLUSTERS_PER_FRAME;
@@ -38,10 +39,17 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
     backgroundTrack   >> master;
 
     /// final effects
-    master >> panner; // to stereo
+    //master >> masterReverb >> panner;
+    master >> panner;
     panner >> masterCompressor.ch(0) >> audioEngine.audio_out(0);
     panner >> masterCompressor.ch(1) >> audioEngine.audio_out(1);
     //master >> lowEQ >> midEQ >> highEQ >> masterCompressor >> masterReverb;  // todo
+    -10.0f >> masterCompressor.in_threshold();
+    10.0f >> masterCompressor.in_attack();
+    100.0f >> masterCompressor.in_release();
+    3.0f >> masterReverb.in_time();
+    0.9f >> masterReverb.in_damping();
+    5000.0f >> masterReverb.in_hi_cut();
 
     /// scope
     collisionTrack   >> collisionScope  >> audioEngine.blackhole();
@@ -124,28 +132,26 @@ void AudioApp::windowResize(ofResizeEventArgs&) {
 
 void AudioApp::draw() {
     ofPushStyle();
-    ofSetColor(255, 255, 255, 60);
-    collisionScope.draw(0,  scopeHeight * 0, ofGetWidth(), scopeHeight);
-    clustersScope.draw(0,   scopeHeight * 1, ofGetWidth(), scopeHeight);
-    velocityScope.draw(0,   scopeHeight * 2, ofGetWidth(), scopeHeight);
-    backgroundScope.draw(0, scopeHeight * 3, ofGetWidth(), scopeHeight);
-    //drawScope(collisionScope, 0, scopeHeight * 0, ofGetWidth(), scopeHeight, ofColor::white);
-    //drawScope(clustersScope, 0, scopeHeight * 1, ofGetWidth(), scopeHeight, ofColor::white);
-    //drawScope(velocityScope, 0, scopeHeight * 2, ofGetWidth(), scopeHeight, ofColor::white);
-    //drawScope(backgroundScope, 0, scopeHeight * 3, ofGetWidth(), scopeHeight, ofColor::white);
+    drawScope(collisionScope, 0, scopeHeight * 0, ofGetWidth(), scopeHeight);
+    drawScope(clustersScope, 0, scopeHeight * 1, ofGetWidth(), scopeHeight);
+    drawScope(velocityScope, 0, scopeHeight * 2, ofGetWidth(), scopeHeight);
+    drawScope(backgroundScope, 0, scopeHeight * 3, ofGetWidth(), scopeHeight);
     ofPopStyle(); 
 }
 
 
-void AudioApp::drawScope(pdsp::Scope s, int x, int y, int w, int h, ofColor c) const {
+// from the original pdsp::Scope draw method, without the frame
+void AudioApp::drawScope(pdsp::Scope &s, int x, int y, int w, int h) const {
     ofPushStyle();
     ofPushMatrix();
     ofTranslate(x, y);
     ofNoFill();
     ofSetLineWidth(1);
+    ofSetColor(SCOPE_COLOR);
 
-    float len = (float)s.getBuffer().size();
-    float xMult = len / (float)w;
+    int bufferLen = s.getBuffer().size();
+
+    float xMult = (float)bufferLen / (float)w;
     float yHalf = h / 2;
     float yMult = -yHalf;
 
@@ -153,18 +159,13 @@ void AudioApp::drawScope(pdsp::Scope s, int x, int y, int w, int h, ofColor c) c
     for (int xx = 0; xx < w; xx++) {
         int index = xx * xMult;
         float value = s.getBuffer()[index];
-        if (value == 0) { ofSetColor(0); }
-        else { ofSetColor(c); }
         ofVertex(xx, yHalf + value * yMult);
     }
     ofEndShape(false);
 
     ofPopMatrix();
     ofPopStyle();
-
 }
-
-// todo: draw my own spectroscope (not so different than the pdsp one, but without the frame and )
 
 
 /// <summary>
@@ -335,11 +336,8 @@ void AudioApp::processCollisionsStatistics(const CollisionBuffer& collisionData)
 
 //
 // -----------------------------------------------------------------------------------------
-// sonifications
+// sonification code
 // 
-//
-
-
 
 
 /// <summary>
@@ -381,10 +379,6 @@ void AudioApp::sonificationControl(const CollisionBuffer& collisionData, const C
 /// ---------------------------------------------------------------------------------------------------
 void AudioApp::playCollisionSounds(float frequencyFactor) {
 
-    //if (parameters->collisionRate.get() < 0.02f || parameters->collisions < 2) {
-    //    return;
-    //}
-
     int notes[10] = { -2, 0, 2, 4, 7, 1, 3, 5, 0, 4 };
     int noteShift = lastTime % 2 == 0 ? 0 : 5;
     //int pitch = notes[(int)ofMap(parameters->collisionRate, 0, 1.3, noteShift, noteShift + 4)];
@@ -396,6 +390,7 @@ void AudioApp::playCollisionSounds(float frequencyFactor) {
     static float intervalB = 6.0; // ambient collisions
 
     bool gate = ofNoise(ofGetElapsedTimef()) < parameters->collisionRate;
+    gate = ofRandomuf() + parameters->collisionRate > 0.7;
 
     // switch sample depending on the number of particles
     static int sample = 0;
@@ -405,24 +400,22 @@ void AudioApp::playCollisionSounds(float frequencyFactor) {
     }
     else if (activeParticles > 100 && activeParticles <= 600) {
         sample = 1;
-        intervalA = 2;
+        intervalA = 0.75;
     }
     else {
         sample = 2;
-        intervalA = 4;
-        gate = ofRandom(1.0) < 0.5;
+        intervalA = 2;
+        gate = ofRandomf() < 0.5;
     }
     
     triggerAtInterval(intervalA, [&]() {
         if (gate) {
             // trigger the waterdrops if the collision rate is high enough
             if (parameters->collisionRate.get() > 0.8) {
-                collisionSampler2.play(0, (int)ofRandom(4));
-                ofLog() << "play collision melody sample";
+                collisionSampler2.play(0, (int)ofRandom(collisionSampler2.samples.size()));
             }
             else {
                 collisionSampler1.play(pitch, sample, false);
-                ofLog() << "play collision sample " << sample << " at pitch " << pitch;
             }
         }
         });
@@ -476,12 +469,12 @@ void AudioApp::setupVelocityNoise() {
     noiseSynth.amp.set(1.0f);
 }
 void AudioApp::playVelocityNoise() {
-    float pitch = 45;
+    float freq = 45;
     float reso = 0.6f;
 
     // map the pitch and filter mode to the vac value
     if (parameters->vacValues.get().size() > 20) {
-        pitch = ofMap(parameters->vacValues.get()[int(parameters->vacValues.get().size() / 2)], 0.0, 1.0, 30, 80);
+        freq = ofMap(parameters->vacValues.get()[int(parameters->vacValues.get().size() / 2)], 0.0, 1.0, 30, 80);
         reso  = ofMap(parameters->vacValues.get()[int(parameters->vacValues.get().size() / 4)], 0.0, 1.0, 0.4, 0.8);
     }
 
@@ -490,7 +483,7 @@ void AudioApp::playVelocityNoise() {
 
     float volume = ofMap(parameters->collisionRate.get(), 0.00, 0.20, 0.0, 1.0, true);
 
-    noiseSynth.setFilter(mode, pitch, reso);
+    noiseSynth.setFilter(mode, freq, reso);
     noiseSynth.play(volume);
 }
 void AudioApp::stopVelocityNoise() {
@@ -498,6 +491,9 @@ void AudioApp::stopVelocityNoise() {
 }
 #pragma endregion velocityNoise
 
+
+const float CLUSTER_VOLUME_SLOPE = 0.0333;
+const int   CLUSTER_VOLUME_MEAN = 200;
 
 #pragma region clusters
 /// ---------------------------------------------------------------------------------------------------
@@ -510,25 +506,20 @@ void AudioApp::playClusterSounds() {
         float reso = 0.6f;
         float velMag = glm::length(cd.averageVelocity);
         
-        float pitch = 45;
-        pitch = ofMap(velMag, 0.0, 200.0, 90, 45, true);
+        float filterFreq = 45;
+        filterFreq = ofMap(velMag, 0.0, 200.0, 90, 45, true);
     
         int mode = 4; // allParameters->simulationParameters.applyThermostat.get() ? 4 : 0;
 
-        // volume is based on the number of particles in the cluster, scaled by the total number of particles
-        // i.e. particles in cluster=10, total particles=100, rate=0.5, clusters=5 => volume = 10 * 0.5 * 5 / 100 = 0.25 // various clusters doing stuff
-        // i.e. particles in cluster=30, total particles=100, rate=0.9, clusters=2 => volume = 10 * 0.5 * 5 / 100 = 0.54 // two bodies/clusters
-        //float volume = (float)cd.particleCount * parameters->particlesInClusterRate * parameters->clusters / allParameters->simulationParameters.amount.get();
-        //volume *= clamp(velMag / 200, 0.0f, 1.0f);
-        //volume = clamp(volume, 0.0f, 0.8f);
+        // cluster volume is a logistic curve of the average velocity of the cluster
+        // clusters are constantly moving slowly, people's force fields push the movement avobe 80 (so 200 is a good mean)
+        float volume = 1 / (1 + (exp(CLUSTER_VOLUME_MEAN - velMag) * CLUSTER_VOLUME_SLOPE));
 
-        //if (allParameters->simulationParameters.depthFieldScale > 0) sample
+        // change pitch based on spatial spread of the cluster only when forcefields are repulsive
+        float pitch = (allParameters->simulationParameters.depthFieldScale.get() > 0) ? ofMap(cd.spatialSpread, 0.0, 100.0, 2, 4, true) : 0;
 
-        //float volume = 1 / (1 + (exp(150 - velMag) * 0.05));
-        float volume = 1 / (1 + (exp(200 - velMag) * 0.0333));
-
-        cs.filterPitchControl.set(pitch);
-        cs.play(0, 0, false, volume);
+        cs.filterPitchControl.set(filterFreq);
+        cs.play(pitch, 0, false, volume);
         cs.amp.set(volume);
     }
 }
@@ -558,9 +549,9 @@ void AudioApp::setupAmbientSounds(int bank) {
     default:
     case 0:
         ambientSampler.add(ofToDataPath("sounds/bg-ch1m.wav"));
-        ambientSampler.add(ofToDataPath("sounds/bg-ch2m.wav"));
-        ambientSampler.add(ofToDataPath("sounds/bg-ch3m.wav"));
         ambientSampler.add(ofToDataPath("sounds/bg-ch4m.wav"));
+        ambientSampler.add(ofToDataPath("sounds/bg-ch3m.wav"));
+        ambientSampler.add(ofToDataPath("sounds/bg-ch2m.wav"));
         break;
     }
 }
@@ -595,6 +586,7 @@ void AudioApp::stopAll() {
 
 
 
+#pragma region tools
 
 /// <summary>
 ///  returns true if the specified interval in seconds has passed since the last check
@@ -664,6 +656,7 @@ bool AudioApp::triggerAtInterval(float intervalInSeconds, std::function<void()> 
 }
 
 
+#pragma endregion tools
 
 
 

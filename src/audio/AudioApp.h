@@ -27,7 +27,7 @@ public:
     void update();
     void draw();
 
-    void drawScope(pdsp::Scope s, int x, int y, int w, int h, ofColor c) const;
+    void drawScope(pdsp::Scope &s, int x, int y, int w, int h) const;
 
     // collision processing
     void logCollisionDetails(const CollisionBuffer& collisionData);
@@ -69,6 +69,7 @@ public:
     void stopAll();
 
     static const int CLUSTER_SOUNDS_SIZE = 4;
+    ofColor SCOPE_COLOR;
 
 private:
 
