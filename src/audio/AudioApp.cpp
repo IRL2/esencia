@@ -56,7 +56,8 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
 
     /// sound setup
     availableAudioDevices = audioEngine.listDevices();
-    audioEngine.setDeviceID(0); // todo: add control to change this from gui (currently uses the system's default interface)
+    ofLog() << "current device value " << params->audioDeviceId.get();
+    audioEngine.setDeviceID(params->audioDeviceId.get()); // todo: add control to change this from gui (currently uses the system's default interface)
     audioEngine.setup(44100, 512, 6);
 
     /// instrument setups (load samples, set fx, etc), important step!
@@ -432,7 +433,7 @@ void AudioApp::playCollisionSounds(float frequencyFactor) {
             // trigger the waterdrops if the collision rate is high enough
             if (parameters->collisionRate.get() > 0.8) {
                 collisionSampler2.play(0, (int)ofRandom(4.9), false);
-                ofLog() << "playing ambient collision sound";
+                //ofLog() << "playing ambient collision sound";
             }
             else {
                 collisionSampler1.play(pitch, sample, false, volume);

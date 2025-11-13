@@ -30,7 +30,7 @@ public:
 		ofxGuiGroup* devices = p->addGroup("devices");
 		
         devices->add<ofxGuiLabel>(params->audioDeviceName);
-		devices->add<ofxGuiSlider<int>>(params->audioDeviceId.set("audio device",0),
+		devices->add<ofxGuiSlider<int>>(params->audioDeviceId.set("audio device",0, 0, 5),
             ofJson({ {"precision", 0} }));
 
 		ofxGuiGroup* simGroup = p->addGroup("sonification data");
