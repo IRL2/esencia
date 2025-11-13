@@ -71,6 +71,10 @@ public:
     static const int CLUSTER_SOUNDS_SIZE = 4;
     ofColor SCOPE_COLOR;
 
+    void onChangeAudioDevice(int &deviceId);
+
+    std::vector<ofSoundDevice> availableAudioDevices;
+
 private:
 
     SonificationParameters* parameters = nullptr;

@@ -22,6 +22,7 @@
 
 #include "ofxPresets.h"
 
+//#include "AudioApp.h"
 
 //#define DEBUG_IMAGES true
 //#define RECORD_TESTING_VIDEO true
@@ -58,6 +59,16 @@ public:
     PresetsParameters presetsParameters;
 
     SonificationParameters sonificationParameters;
+
+    // to handle local configuration values
+    // like camera clipping values
+    // this parameters are not / shouldnt be part of presets
+    // defined and managed here
+    ofParameterGroup& localConfigs = ofParameterGroup();
+    ofxGui fakeGui;
+    ofxGuiPanel* localValues;
+
+    void onChangeLocalConfig(int& deviceId);
 
 private:
     ParticlesPanel particlesPanel;

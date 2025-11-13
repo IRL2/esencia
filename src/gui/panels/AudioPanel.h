@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EsenciaPanelBase.h"
+#include "ofxPDSP.h"
 
 class AudioPanel : public EsenciaPanelBase {
 
@@ -26,6 +27,12 @@ public:
 		ofxGuiContainer* p = panel->addContainer("",
 			ofJson({ {"direction", "vertical"} }));
 
+		ofxGuiGroup* devices = p->addGroup("devices");
+		
+        devices->add<ofxGuiLabel>(params->audioDeviceName);
+		devices->add<ofxGuiSlider<int>>(params->audioDeviceId.set("audio device",0),
+            ofJson({ {"precision", 0} }));
+
 		ofxGuiGroup* simGroup = p->addGroup("sonification data");
 		simGroup->add<ofxGuiValuePlotter>(params->collisions.set("collisions", 0, 0, 100), ofJson({ {"precision", 0} }));
         simGroup->add<ofxGuiValuePlotter>(params->collisionRate.set("collision rate", 0, 0, 1), ofJson({ {"precision", 2} }));
@@ -47,15 +54,6 @@ public:
 		volumeGroup->add(params->clusterVolume.set("clusters", 0.4, 0.0, 1.0), ofJson({ {"precision", 1} }));
 		volumeGroup->add(params->velocityVolume.set("wind", 0.3, 0.0, 1.0), ofJson({ {"precision", 1} }));
 		volumeGroup->add(params->backgroundVolume.set("ambience", 0.5, 0.0, 1.0), ofJson({ {"precision", 1} }));
-
-  //      p->add(params->masterVolume.set("master volume", 0.8, 0.0, 1.2), ofJson({ {"precision", 1} }));
-		//p->add(params->polysynthVolume.set("cluster volume", 0.8, 0.0, 1.0), ofJson({ {"precision", 1} }));
-		//p->add(params->sampler1playerVolume.set("sampler1 volume", 0.8, 0.0, 1.0), ofJson({ {"precision", 1} }));
-		//p->add(params->sampler2playerVolume.set("sampler2 volume", 0.8, 0.0, 1.0), ofJson({ {"precision", 1} }));
-  //      p->add(params->datasynthVolume.set("datasynth volume", 0.8, 0.0, 1.0), ofJson({ {"precision", 1} }));
-
-		//p->add(params->eqTrebble.set("eq trebble", 0.5, 0.0, 1.0), ofJson({ {"precision", 2} }));
-        //p->add(params->eqBass.set("eq bass", 0.5, 0.0, 1.0), ofJson({ {"precision", 2} }));
 
 		ofAddListener(ofEvents().update, this, &AudioPanel::update);
 

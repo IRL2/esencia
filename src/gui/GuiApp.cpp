@@ -31,11 +31,29 @@ void GuiApp::setup()
     audioPanel.setup(gui, &sonificationParameters, &simulationParameters);
 
     //parameters->previewRender.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
+
+    // background colors
     bgTargetColor1 = ofColor::white;
     bgTargetColor2 = ofColor::white;
     bgStartColor1 = ofColor::white;
     bgStartColor2 = ofColor::white;
+    
+    localValues = fakeGui.addPanel("local configuration valuesx");
+    localValues->setHidden(true);
+    localConfigs.add(cameraParameters.clipFar.set("clip far", cameraParameters.clipFar.get()));
+    localConfigs.add(cameraParameters.clipNear.set("clip near", cameraParameters.clipNear.get()));
+    localConfigs.add(sonificationParameters.audioDeviceId.set("audio device id", sonificationParameters.audioDeviceId.get()));
+    localValues->add(localConfigs);
+    localValues->loadFromFile("defaults.xml");
+    sonificationParameters.audioDeviceId.addListener(this, &GuiApp::onChangeLocalConfig);
+    cameraParameters.clipFar.addListener(this, &GuiApp::onChangeLocalConfig);
+    cameraParameters.clipNear.addListener(this, & GuiApp::onChangeLocalConfig);
 }
+
+void GuiApp::onChangeLocalConfig(int& deviceId) {
+    localValues->saveToFile("defaults.xml");
+}
+
 
 void GuiApp::update() 
 {
@@ -82,6 +100,10 @@ void GuiApp::draw()
 void GuiApp::keyReleased(ofKeyEventArgs& e) {
     presetsPanel.keyReleased(e);
     sequencePanel.keyReleased(e);
+
+    if (e.keycode == 'S') {
+        //localValues->saveToFile("defaults.xml");
+    }
 }
 
 

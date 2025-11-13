@@ -24,9 +24,6 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
     /// track mixing
     collisionSampler1 >> collisionTrack;
     collisionSampler2 >> collisionTrack;
-    // todo: synths need to be patchable (to have moduleOutputs)
-    //clusterSynth1     >> clusterTrack;
-    //clusterDataSynth1 >> clusterTrack;
     noiseSynth        >> velocityTrack;
     ambientSampler    >> backgroundTrack;
     clusterSampler.resize(CLUSTER_SOUNDS_SIZE);
@@ -43,7 +40,7 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
     master >> panner;
     panner >> masterCompressor.ch(0) >> audioEngine.audio_out(0);
     panner >> masterCompressor.ch(1) >> audioEngine.audio_out(1);
-    //master >> lowEQ >> midEQ >> highEQ >> masterCompressor >> masterReverb;  // todo
+
     -10.0f >> masterCompressor.in_threshold();
     10.0f >> masterCompressor.in_attack();
     100.0f >> masterCompressor.in_release();
@@ -58,7 +55,7 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
     backgroundTrack  >> backgroundScope >> audioEngine.blackhole();
 
     /// sound setup
-    audioEngine.listDevices();
+    availableAudioDevices = audioEngine.listDevices();
     audioEngine.setDeviceID(0); // todo: add control to change this from gui (currently uses the system's default interface)
     audioEngine.setup(44100, 512, 6);
 
@@ -70,9 +67,26 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
 
     ofAddListener(ofEvents().windowResized, this, &AudioApp::windowResize);
     windowResize(ofResizeEventArgs());
+
+
+    params->audioDeviceId.setMax(availableAudioDevices.size() + 0.9);
+    params->audioDeviceId.addListener(this, & AudioApp::onChangeAudioDevice);
+    params->audioDeviceName = availableAudioDevices[params->audioDeviceId.get()].name;
 }
 
 
+void AudioApp::onChangeAudioDevice(int& deviceId)
+{
+    if (deviceId > availableAudioDevices.size() - 1) {
+        ofLogError("AudioApp::onChangeAudioDevice") << "Invalid device ID " << deviceId << ", reverting to 0";
+        deviceId = 0;
+    }
+    ofLogNotice("AudioApp::onChangeAudioDevice") << "Attempting to switch audio device to ID " << deviceId;
+    audioEngine.stop();
+    audioEngine.setDeviceID(deviceId);
+    parameters->audioDeviceName.set(availableAudioDevices[deviceId].name);
+    audioEngine.start();
+}
 
 
 
@@ -133,19 +147,15 @@ void AudioApp::windowResize(ofResizeEventArgs&) {
 void AudioApp::draw() {
     ofPushStyle();
     ofSetColor(255, 255, 255, 60);
-    collisionScope.draw(0,  scopeHeight * 0, ofGetWidth(), scopeHeight);
-    clustersScope.draw(0,   scopeHeight * 1, ofGetWidth(), scopeHeight);
-    velocityScope.draw(0,   scopeHeight * 2, ofGetWidth(), scopeHeight);
-    backgroundScope.draw(0, scopeHeight * 3, ofGetWidth(), scopeHeight);
-    //drawScope(collisionScope, 0, scopeHeight * 0, ofGetWidth(), scopeHeight, ofColor::white);
-    //drawScope(clustersScope, 0, scopeHeight * 1, ofGetWidth(), scopeHeight, ofColor::white);
-    //drawScope(velocityScope, 0, scopeHeight * 2, ofGetWidth(), scopeHeight, ofColor::white);
-    //drawScope(backgroundScope, 0, scopeHeight * 3, ofGetWidth(), scopeHeight, ofColor::white);
+    drawScope(collisionScope, 0, scopeHeight * 0, ofGetWidth(), scopeHeight);
+    drawScope(clustersScope, 0, scopeHeight * 1, ofGetWidth(), scopeHeight);
+    drawScope(velocityScope, 0, scopeHeight * 2, ofGetWidth(), scopeHeight);
+    drawScope(backgroundScope, 0, scopeHeight * 3, ofGetWidth(), scopeHeight);
     ofPopStyle(); 
 }
 
 
-void AudioApp::drawScope(pdsp::Scope s, int x, int y, int w, int h, ofColor c) const {
+void AudioApp::drawScope(pdsp::Scope &s, int x, int y, int w, int h) const {
     ofPushStyle();
     ofPushMatrix();
     ofTranslate(x, y);
@@ -382,19 +392,21 @@ void AudioApp::sonificationControl(const CollisionBuffer& collisionData, const C
 #pragma region collisions
 /// ---------------------------------------------------------------------------------------------------
 void AudioApp::playCollisionSounds(float frequencyFactor) {
+    bool noStealing = false;
 
     int notes[10] = { -2, 0, 2, 4, 7, 1, 3, 5, 0, 4 };
     int noteShift = lastTime % 2 == 0 ? 0 : 5;
     //int pitch = notes[(int)ofMap(parameters->collisionRate, 0, 1.3, noteShift, noteShift + 4)];
     int pitch = notes[(int)ofMap(ofNoise(ofGetElapsedTimeMillis()), 0, 1, noteShift, noteShift + 4)];
 
+    float volume = ofClamp( ofNoise(ofGetElapsedTimef()) + parameters->collisionRate.get() , 0.0, 1.0);
+
     int activeParticles = allParameters->simulationParameters.amount.get();
 
     static float intervalA = 1.0; // individual collisions
     static float intervalB = 6.0; // ambient collisions
 
-    bool gate = ofNoise(ofGetElapsedTimef()) < parameters->collisionRate;
-    gate = ofRandomuf() + parameters->collisionRate > 0.7;
+    bool gate = ofRandomuf() + parameters->collisionRate > 0.7;
 
     // switch sample depending on the number of particles
     static int sample = 0;
@@ -402,26 +414,28 @@ void AudioApp::playCollisionSounds(float frequencyFactor) {
         sample = 0;
         intervalA = 0.25;
     }
-    else if (activeParticles > 100 && activeParticles <= 600) {
+    else if (activeParticles > 100 && activeParticles <= 512) {
         sample = 1;
-        intervalA = 0.5;
+        intervalA = 0.3;
         gate = ofRandom(1.0) < 0.6;
     }
     else {
-        sample = 2;
-        intervalA = 2;
-        gate = ofRandom(1.0) < 0.4;
+        sample = 3;
+        intervalA = 0.1;
+        //float c = parameters->collisions.get() / allParameters->simulationParameters.radius.get() / activeParticles / parameters->collisionRate.get();
+        //gate = ofRandomuf() < c;
+        volume = ofNoise(ofGetElapsedTimeMillis());
     }
     
     triggerAtInterval(intervalA, [&]() {
         if (gate) {
             // trigger the waterdrops if the collision rate is high enough
             if (parameters->collisionRate.get() > 0.8) {
-                collisionSampler2.play(0, (int)ofRandom(4.9));
-                ofLog() << "play collision melody sample";
+                collisionSampler2.play(0, (int)ofRandom(4.9), false);
+                ofLog() << "playing ambient collision sound";
             }
             else {
-                collisionSampler1.play(pitch, sample, false);
+                collisionSampler1.play(pitch, sample, false, volume);
             }
         }
         });
@@ -449,6 +463,7 @@ void AudioApp::setupCollisionSounds(int bank) {
         collisionSampler1.add(ofToDataPath("sounds/collision-drop1.wav"));
         collisionSampler1.add(ofToDataPath("sounds/collision-shft1.wav"));
         collisionSampler1.add(ofToDataPath("sounds/collision-dub2.wav"));
+        collisionSampler1.add(ofToDataPath("sounds/collision-bubble1.wav"));
         collisionSampler1.setReverb(0.5, 0.3, 2.0, 0.3, 0., 0.);
         collisionSampler1.setDelay(1, 0.3f, 0.2f, 0.7);
 
@@ -522,11 +537,6 @@ void AudioApp::playClusterSounds() {
         float volume = 1 / (1 + (exp(CLUSTER_VOLUME_MEAN - velMag) * CLUSTER_VOLUME_SLOPE));
 
         // change pitch based on spatial spread of the cluster only when forcefields are repulsive
-        float pitch = (allParameters->simulationParameters.depthFieldScale.get() > 0) ? ofMap(cd.spatialSpread, 0.0, 100.0, 2, 4, true) : 0;
-
-        //float volume = 1 / (1 + (exp(150 - velMag) * 0.05));
-        float volume = 1 / (1 + (exp(200 - velMag) * 0.0333));
-
         float pitch = (allParameters->simulationParameters.depthFieldScale.get() > 0) ? ofMap(cd.spatialSpread, 0.0, 100, 2, 4, true) : 0;
 
         cs.filterPitchControl.set(filterFreq);
@@ -594,6 +604,8 @@ void AudioApp::stopAll() {
     stopVelocityNoise();
     stopClusterSounds();
 }
+
+
 
 
 
