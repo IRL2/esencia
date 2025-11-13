@@ -31,7 +31,7 @@ public:
 
         panel->add(params.color.set("particle color", 
             PARTICLE_COLOR)
-        )->minimize();
+        )->maximize();
 
         //panel->add(params.useShaders.set("use shaders",  USE_SHADERS));
 
@@ -43,9 +43,9 @@ public:
             VIDEO_VISIBILITY_INITIAL, VIDEO_VISIBILITY_MIN, VIDEO_VISIBILITY_MAX),
             ofJson({ {"precision", 3} }));
         
-        vp->add(params.videoColor.set("color", VIDEO_COLOR))->minimize();
+        vp->add(params.videoColor.set("color", VIDEO_COLOR))->maximize();
         
-        
+
         // trails
         //ofxGuiGroup* ofTrialsPanel = panel->addGroup("trails");
 

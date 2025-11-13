@@ -201,11 +201,8 @@ struct SimulationParameters : public ofxPresetsParametersBase {
 /// </summary>
 struct SonificationParameters : public ofxPresetsParametersBase {
 
-    // instrument volumes
-    //ofParameter<float> polysynthVolume;
-    //ofParameter<float> datasynthVolume;
-    //ofParameter<float> sampler1playerVolume;
-    //ofParameter<float> sampler2playerVolume;
+    ofParameter<int> audioDeviceId;
+    ofParameter<string> audioDeviceName;
 
     ofParameter<float> masterVolume;
     ofParameter<float> collisionVolume;
@@ -215,11 +212,6 @@ struct SonificationParameters : public ofxPresetsParametersBase {
 
     ofParameter<int> collisionSoundBank = 0;
     ofParameter<int> clusterSoundBank = 0;
-
-    // eq's (not in use
-    ofParameter<float> eqTrebble;
-    ofParameter<float> eqBass;
-
 
     // Simulation Analysis
     // ----------------------------------------------------------------

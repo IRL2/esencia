@@ -51,7 +51,7 @@ public:
 			{"flex-direction", "row"},
 			{"padding", 10},
 			{"flex-wrap", "wrap"},
-			{"width", 6 * 29}
+			{"width", 6 * 35}
 			}));
 		presetToggles->setShowHeader(false);
 
