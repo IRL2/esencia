@@ -51,7 +51,7 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
 
     /// sound setup
     audioEngine.listDevices();
-    audioEngine.setDeviceID(0); // todo: add control to change this from gui (currently uses the system's default interface)
+    audioEngine.setDeviceID(2); // todo: add control to change this from gui (currently uses the system's default interface)
     audioEngine.setup(44100, 512, 6);
 
     /// instrument setups (load samples, set fx, etc), important step!
@@ -405,19 +405,20 @@ void AudioApp::playCollisionSounds(float frequencyFactor) {
     }
     else if (activeParticles > 100 && activeParticles <= 600) {
         sample = 1;
-        intervalA = 2;
+        intervalA = 0.5;
+        gate = ofRandom(1.0) < 0.6;
     }
     else {
         sample = 2;
-        intervalA = 4;
-        gate = ofRandom(1.0) < 0.5;
+        intervalA = 2;
+        gate = ofRandom(1.0) < 0.4;
     }
     
     triggerAtInterval(intervalA, [&]() {
         if (gate) {
             // trigger the waterdrops if the collision rate is high enough
             if (parameters->collisionRate.get() > 0.8) {
-                collisionSampler2.play(0, (int)ofRandom(4));
+                collisionSampler2.play(0, (int)ofRandom(4.9));
                 ofLog() << "play collision melody sample";
             }
             else {
@@ -510,8 +511,8 @@ void AudioApp::playClusterSounds() {
         float reso = 0.6f;
         float velMag = glm::length(cd.averageVelocity);
         
-        float pitch = 45;
-        pitch = ofMap(velMag, 0.0, 200.0, 90, 45, true);
+        float filterFreq = 45;
+        filterFreq = ofMap(velMag, 0.0, 200.0, 90, 45, true);
     
         int mode = 4; // allParameters->simulationParameters.applyThermostat.get() ? 4 : 0;
 
@@ -527,8 +528,10 @@ void AudioApp::playClusterSounds() {
         //float volume = 1 / (1 + (exp(150 - velMag) * 0.05));
         float volume = 1 / (1 + (exp(200 - velMag) * 0.0333));
 
-        cs.filterPitchControl.set(pitch);
-        cs.play(0, 0, false, volume);
+        float pitch = (allParameters->simulationParameters.depthFieldScale.get() > 0) ? ofMap(cd.spatialSpread, 0.0, 100, 2, 4, true) : 0;
+
+        cs.filterPitchControl.set(filterFreq);
+        cs.play(pitch, 0, false, volume);
         cs.amp.set(volume);
     }
 }
@@ -559,15 +562,15 @@ void AudioApp::setupAmbientSounds(int bank) {
     case 0:
         ambientSampler.add(ofToDataPath("sounds/bg-ch1m.wav"));
         ambientSampler.add(ofToDataPath("sounds/bg-ch2m.wav"));
-        ambientSampler.add(ofToDataPath("sounds/bg-ch3m.wav"));
         ambientSampler.add(ofToDataPath("sounds/bg-ch4m.wav"));
+        ambientSampler.add(ofToDataPath("sounds/bg-ch3m.wav"));
         break;
     }
 }
 
 void AudioApp::playAmbientSounds() {
     if (allParameters->simulationParameters.amount.get() < 30) {
-        ambientSampler.play(0, (int)ofRandom(0, ambientSampler.getNumSamples()));
+        ambientSampler.play(0, (int)ofRandom(0, ambientSampler.getNumSamples()+0.9));
         ambientSampler.fader.set(0.4);
     }
     triggerAtInterval(80.0f, [&]() {
