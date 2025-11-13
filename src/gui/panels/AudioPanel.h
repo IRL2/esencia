@@ -27,11 +27,10 @@ public:
 		ofxGuiContainer* p = panel->addContainer("",
 			ofJson({ {"direction", "vertical"} }));
 
-		ofxGuiGroup* devices = p->addGroup("devices");
-		
+		ofxGuiGroup* devices = p->addGroup("audio output");		
         devices->add<ofxGuiLabel>(params->audioDeviceName);
-		devices->add<ofxGuiSlider<int>>(params->audioDeviceId.set("audio device",0, 0, 5),
-            ofJson({ {"precision", 0} }));
+		devices->add<ofxGuiSlider<int>>(params->audioDeviceId.set("audio device",0, 0, 5), ofJson({ {"precision", 0} }));
+		devices->minimize();
 
 		ofxGuiGroup* simGroup = p->addGroup("sonification data");
 		simGroup->add<ofxGuiValuePlotter>(params->collisions.set("collisions", 0, 0, 100), ofJson({ {"precision", 0} }));

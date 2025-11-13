@@ -72,6 +72,7 @@ public:
     ofColor SCOPE_COLOR;
 
     void onChangeAudioDevice(int &deviceId);
+    void changeAudioDevice(int deviceId);
 
     std::vector<ofSoundDevice> availableAudioDevices;
 

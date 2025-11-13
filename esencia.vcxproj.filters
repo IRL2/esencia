@@ -4169,4 +4169,9 @@
       <Filter>src\simulation</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Xml Include="bin\data\defaults.xml">
+      <Filter>src</Filter>
+    </Xml>
+  </ItemGroup>
 </Project>
