@@ -18,7 +18,7 @@
         "motionBlurStrength": 0.5,
         "particleGlow": 1.0,
         "showVideoPreview": true,
-        "size": 3,
+        "size": 4,
         "trailDecayRate": 1.0,
         "useColorVariation": true,
         "useEnhancedShaders": true,
@@ -40,10 +40,12 @@
         "targetTemperature": 4945.65234375
     },
     "sonification": {
-        "backgroundVolume": 0.6296296119689941,
-        "clusterVolume": 0.5787037014961243,
-        "collisionVolume": 0.3262711763381958,
-        "masterVolume": 0.800000011920929,
-        "velocityVolume": 0.11574073880910873
+        "backgroundVolume": 0.32203391194343567,
+        "clusterVolume": 0.33898305892944336,
+        "collisionVolume": 0.5508474707603455,
+        "enableVACCalculation": true,
+        "masterVolume": 0.27966102957725525,
+        "maxTimeLags": 74,
+        "velocityVolume": 0.09322033822536469
     }
 }

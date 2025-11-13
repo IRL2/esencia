@@ -40,12 +40,12 @@
         "targetTemperature": 1000.0
     },
     "sonification": {
-        "backgroundVolume": 0.5555555820465088,
-        "clusterVolume": 0.4237288236618042,
-        "collisionVolume": 0.0,
+        "backgroundVolume": 0.16101695597171783,
+        "clusterVolume": 0.0,
+        "collisionVolume": 0.33474576473236084,
         "enableVACCalculation": true,
         "masterVolume": 0.8944445252418518,
         "maxTimeLags": 170,
-        "velocityVolume": 0.3050847351551056
+        "velocityVolume": 0.508474588394165
     }
 }
