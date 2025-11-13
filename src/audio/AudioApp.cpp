@@ -132,16 +132,20 @@ void AudioApp::windowResize(ofResizeEventArgs&) {
 
 void AudioApp::draw() {
     ofPushStyle();
-    drawScope(collisionScope, 0, scopeHeight * 0, ofGetWidth(), scopeHeight);
-    drawScope(clustersScope, 0, scopeHeight * 1, ofGetWidth(), scopeHeight);
-    drawScope(velocityScope, 0, scopeHeight * 2, ofGetWidth(), scopeHeight);
-    drawScope(backgroundScope, 0, scopeHeight * 3, ofGetWidth(), scopeHeight);
+    ofSetColor(255, 255, 255, 60);
+    collisionScope.draw(0,  scopeHeight * 0, ofGetWidth(), scopeHeight);
+    clustersScope.draw(0,   scopeHeight * 1, ofGetWidth(), scopeHeight);
+    velocityScope.draw(0,   scopeHeight * 2, ofGetWidth(), scopeHeight);
+    backgroundScope.draw(0, scopeHeight * 3, ofGetWidth(), scopeHeight);
+    //drawScope(collisionScope, 0, scopeHeight * 0, ofGetWidth(), scopeHeight, ofColor::white);
+    //drawScope(clustersScope, 0, scopeHeight * 1, ofGetWidth(), scopeHeight, ofColor::white);
+    //drawScope(velocityScope, 0, scopeHeight * 2, ofGetWidth(), scopeHeight, ofColor::white);
+    //drawScope(backgroundScope, 0, scopeHeight * 3, ofGetWidth(), scopeHeight, ofColor::white);
     ofPopStyle(); 
 }
 
 
-// from the original pdsp::Scope draw method, without the frame
-void AudioApp::drawScope(pdsp::Scope &s, int x, int y, int w, int h) const {
+void AudioApp::drawScope(pdsp::Scope s, int x, int y, int w, int h, ofColor c) const {
     ofPushStyle();
     ofPushMatrix();
     ofTranslate(x, y);
@@ -149,9 +153,8 @@ void AudioApp::drawScope(pdsp::Scope &s, int x, int y, int w, int h) const {
     ofSetLineWidth(1);
     ofSetColor(SCOPE_COLOR);
 
-    int bufferLen = s.getBuffer().size();
-
-    float xMult = (float)bufferLen / (float)w;
+    float len = (float)s.getBuffer().size();
+    float xMult = len / (float)w;
     float yHalf = h / 2;
     float yMult = -yHalf;
 
@@ -165,6 +168,7 @@ void AudioApp::drawScope(pdsp::Scope &s, int x, int y, int w, int h) const {
 
     ofPopMatrix();
     ofPopStyle();
+
 }
 
 
@@ -336,7 +340,7 @@ void AudioApp::processCollisionsStatistics(const CollisionBuffer& collisionData)
 
 //
 // -----------------------------------------------------------------------------------------
-// sonification code
+// sonifications
 // 
 
 
@@ -400,19 +404,21 @@ void AudioApp::playCollisionSounds(float frequencyFactor) {
     }
     else if (activeParticles > 100 && activeParticles <= 600) {
         sample = 1;
-        intervalA = 0.75;
+        intervalA = 0.5;
+        gate = ofRandom(1.0) < 0.6;
     }
     else {
         sample = 2;
         intervalA = 2;
-        gate = ofRandomf() < 0.5;
+        gate = ofRandom(1.0) < 0.4;
     }
     
     triggerAtInterval(intervalA, [&]() {
         if (gate) {
             // trigger the waterdrops if the collision rate is high enough
             if (parameters->collisionRate.get() > 0.8) {
-                collisionSampler2.play(0, (int)ofRandom(collisionSampler2.samples.size()));
+                collisionSampler2.play(0, (int)ofRandom(4.9));
+                ofLog() << "play collision melody sample";
             }
             else {
                 collisionSampler1.play(pitch, sample, false);
@@ -518,6 +524,11 @@ void AudioApp::playClusterSounds() {
         // change pitch based on spatial spread of the cluster only when forcefields are repulsive
         float pitch = (allParameters->simulationParameters.depthFieldScale.get() > 0) ? ofMap(cd.spatialSpread, 0.0, 100.0, 2, 4, true) : 0;
 
+        //float volume = 1 / (1 + (exp(150 - velMag) * 0.05));
+        float volume = 1 / (1 + (exp(200 - velMag) * 0.0333));
+
+        float pitch = (allParameters->simulationParameters.depthFieldScale.get() > 0) ? ofMap(cd.spatialSpread, 0.0, 100, 2, 4, true) : 0;
+
         cs.filterPitchControl.set(filterFreq);
         cs.play(pitch, 0, false, volume);
         cs.amp.set(volume);
@@ -549,16 +560,16 @@ void AudioApp::setupAmbientSounds(int bank) {
     default:
     case 0:
         ambientSampler.add(ofToDataPath("sounds/bg-ch1m.wav"));
+        ambientSampler.add(ofToDataPath("sounds/bg-ch2m.wav"));
         ambientSampler.add(ofToDataPath("sounds/bg-ch4m.wav"));
         ambientSampler.add(ofToDataPath("sounds/bg-ch3m.wav"));
-        ambientSampler.add(ofToDataPath("sounds/bg-ch2m.wav"));
         break;
     }
 }
 
 void AudioApp::playAmbientSounds() {
     if (allParameters->simulationParameters.amount.get() < 30) {
-        ambientSampler.play(0, (int)ofRandom(0, ambientSampler.getNumSamples()));
+        ambientSampler.play(0, (int)ofRandom(0, ambientSampler.getNumSamples()+0.9));
         ambientSampler.fader.set(0.4);
     }
     triggerAtInterval(80.0f, [&]() {
