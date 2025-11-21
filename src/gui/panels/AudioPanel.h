@@ -7,7 +7,7 @@ class AudioPanel : public EsenciaPanelBase {
 
 	// default initial values
 
-	const ofRectangle PANEL_RECT = ofRectangle(37, 15, 8, 8);
+	const ofRectangle PANEL_RECT = ofRectangle(39, 15, 8, 8);
 	const ofColor BG_COLOR = ofColor(100, 200, 100, 100);
 
 	ofParameter<float> avgClusterSize;
@@ -32,6 +32,7 @@ public:
         devices->add<ofxGuiLabel>(params->audioDeviceName);
 		devices->add<ofxGuiSlider<int>>(params->audioDeviceId.set("audio device",0, 0, 5),
             ofJson({ {"precision", 0} }));
+		devices->minimize();
 
 		ofxGuiGroup* simGroup = p->addGroup("sonification data");
 		simGroup->add<ofxGuiValuePlotter>(params->collisions.set("collisions", 0, 0, 100), ofJson({ {"precision", 0} }));

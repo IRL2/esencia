@@ -10,7 +10,7 @@ class SystemstatsPanel : public EsenciaPanelBase {
 	const int WIDTH = EsenciaPanelBase::SIZE_UNIT * 6;
 	const int HEIGHT = EsenciaPanelBase::SIZE_UNIT;
 
-	const ofRectangle PANEL_RECT = ofRectangle(11, 1, 7, 0);
+	const ofRectangle PANEL_RECT = ofRectangle(13, 1, 7, 0);
 	const ofColor BG_COLOR = ofColor(100, 100, 100, 100);
 
 	SystemUsage systemUsage;

@@ -28,7 +28,7 @@ public:
 
         cameraSourcePanel->add(params._sourceVideofile.set("video file", SOURCE_FILE));
         //cameraSourcePanel->setWidth(w * 30);
-        cameraSourcePanel->minimize();
+        //cameraSourcePanel->minimize();
 
         // DEPTH CLIPPING
         ofxGuiGroup* cameraClippingPanel = panel->addGroup("depth clipping");

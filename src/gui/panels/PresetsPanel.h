@@ -5,7 +5,7 @@
 
 class PresetsPanel : public EsenciaPanelBase {
 
-	const ofRectangle PANEL_RECT = ofRectangle(1, 21, 6, 0);
+	const ofRectangle PANEL_RECT = ofRectangle(10, 21, 6, 0);
 	const ofColor& BG_COLOR = ofColor(100, 100, 100, 100);
 
 

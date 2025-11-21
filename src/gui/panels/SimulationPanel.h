@@ -23,7 +23,7 @@ class SimulationPanel : public EsenciaPanelBase {
 	const float SLIDERS_WIDTH = 10;
 	const float SLIDERS_HEIGHT = 70;
 
-	const ofRectangle PANEL_RECT = ofRectangle(25, 1, 7, 0);
+	const ofRectangle PANEL_RECT = ofRectangle(27, 1, 7, 0);
 	const ofColor &BG_COLOR = ofColor(180, 180, 180, 80);
 
 

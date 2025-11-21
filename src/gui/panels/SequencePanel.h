@@ -5,17 +5,17 @@
 
 class SequencePanel : public EsenciaPanelBase {
 
-	const ofRectangle PANEL_RECT = ofRectangle(10, 25, 8, 0);
+	const ofRectangle PANEL_RECT = ofRectangle(18, 25, 8, 0);
 	const ofColor &BG_COLOR = ofColor(100, 100, 100, 100);
 
-	const float DEFAULT_TRANSITION_DURATION_INIT = 5.0;
-	const float DEFAULT_TRANSITION_DURATION_MAX = 10.0;
-	const float DEFAULT_TRANSITION_DURATION_MIN = 0.5;
-	const float DEFAULT_PRESET_DURATION_INIT = 10.0;
+	const float DEFAULT_TRANSITION_DURATION_INIT = 10.0;
+	const float DEFAULT_TRANSITION_DURATION_MAX = 20.0;
+	const float DEFAULT_TRANSITION_DURATION_MIN = 1;
+	const float DEFAULT_PRESET_DURATION_INIT = 120.0;
 	const float DEFAULT_PRESET_DURATION_MAX = 300.0;
 	const float DEFAULT_PRESET_DURATION_MIN = 10.0;
 
-	const std::string DEFAULT_SEQUENCE = "?";
+	const std::string DEFAULT_SEQUENCE = "1,?"; 
 
 	ofxPresets *presetManager = nullptr;
 	PresetsParameters*presetParams;
@@ -93,12 +93,12 @@ public:
 
 
 	void updatePlaybuttonToPlaying() {
-		playButton->setLabel("playing");
+		playButton->setLabel("playing sequence");
 		playButton->setBackgroundColor(ofColor(ofColor::lightSeaGreen,200));
 		playButton->setNeedsRedraw();
 	}
 	void updatePlaybuttonToStopped() {
-		playButton->setLabel("stopped");
+		playButton->setLabel("not playing");
 		playButton->setBackgroundColor(ofColor(ofColor::orangeRed, 200));
 		playButton->setNeedsRedraw();
 	}

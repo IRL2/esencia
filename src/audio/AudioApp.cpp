@@ -423,9 +423,10 @@ void AudioApp::playCollisionSounds(float frequencyFactor) {
     else {
         sample = 3;
         intervalA = 0.1;
+        gate = parameters->collisionRate > 0.1;
         //float c = parameters->collisions.get() / allParameters->simulationParameters.radius.get() / activeParticles / parameters->collisionRate.get();
         //gate = ofRandomuf() < c;
-        volume = ofNoise(ofGetElapsedTimeMillis());
+        volume = ofNoise(ofGetElapsedTimeMillis()) - 0.2f;
     }
     
     triggerAtInterval(intervalA, [&]() {

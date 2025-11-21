@@ -82,6 +82,10 @@ void RenderApp::setup()
     // allocate memory for particle data
     particlePositions.reserve(10000);
     particleSizes.reserve(10000);
+
+    ofSetFullscreen(true);
+    windowResized(ofGetWidth(), ofGetHeight());
+
 }
 
 //--------------------------------------------------------------
