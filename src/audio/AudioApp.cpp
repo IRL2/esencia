@@ -56,8 +56,7 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
 
     /// sound setup
     availableAudioDevices = audioEngine.listDevices();
-    ofLog() << "current device value " << params->audioDeviceId.get();
-    audioEngine.setDeviceID(params->audioDeviceId.get()); // todo: add control to change this from gui (currently uses the system's default interface)
+    changeAudioDevice(params->audioDeviceId.get());
     audioEngine.setup(44100, 512, 6);
 
     /// instrument setups (load samples, set fx, etc), important step!
@@ -75,19 +74,26 @@ void AudioApp::setup(SonificationParameters *params, GuiApp* allParams) {
     params->audioDeviceName = availableAudioDevices[params->audioDeviceId.get()].name;
 }
 
-
 void AudioApp::onChangeAudioDevice(int& deviceId)
 {
-    if (deviceId > availableAudioDevices.size() - 1) {
-        ofLogError("AudioApp::onChangeAudioDevice") << "Invalid device ID " << deviceId << ", reverting to 0";
-        deviceId = 0;
+    changeAudioDevice(deviceId);
+}
+void AudioApp::changeAudioDevice(int deviceId) {
+    int d = deviceId;
+    if (d > availableAudioDevices.size() - 1) {
+        ofLogError("AudioApp::changeAudioDevice") << "Invalid device ID " << d << ", reverting to 0";
+        d = 0;
+        parameters->audioDeviceId.set(d);
+        return;
     }
-    ofLogNotice("AudioApp::onChangeAudioDevice") << "Attempting to switch audio device to ID " << deviceId;
+    ofLogNotice("AudioApp::changeAudioDevice") << "Attempting to switch audio device to ID " << d << " " << availableAudioDevices[d].name;
     audioEngine.stop();
-    audioEngine.setDeviceID(deviceId);
-    parameters->audioDeviceName.set(availableAudioDevices[deviceId].name);
+    audioEngine.setDeviceID(d);
+    parameters->audioDeviceName.set(availableAudioDevices[d].name);
     audioEngine.start();
 }
+
+
 
 
 

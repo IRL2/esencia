@@ -1314,6 +1314,9 @@
     <None Include="bin\data\shaders\particlesComputeShader.glsl" />
     <None Include="bin\data\support\gui-styles.json" />
   </ItemGroup>
+  <ItemGroup>
+    <Xml Include="bin\data\defaults.xml" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ProjectExtensions>
     <VisualStudio>
