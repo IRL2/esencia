@@ -84,8 +84,7 @@ void GuiApp::draw()
     EsenciaPanelBase::drawLineBetween(videoOriginPanel, videoProcessingPanel);
     EsenciaPanelBase::drawLineBetween(particlesPanel, simulationPanel);
     EsenciaPanelBase::drawLineBetween(videoProcessingPanel, simulationPanel, 1, 0);
-    EsenciaPanelBase::drawLineBetween(simulationPanel, simulationDataPanel, 0, 3);
-    EsenciaPanelBase::drawLineBetween(simulationPanel, vacPanel, 0, 2);
+    EsenciaPanelBase::drawLineBetween(simulationPanel, sonificationAnalysisPanel, 0, 2);
     EsenciaPanelBase::drawLineBetween(simulationPanel, audioPanel, 0, 1);
     EsenciaPanelBase::drawLineBetween(simulationPanel, renderPanel, 0, 0);
     EsenciaPanelBase::drawLineBetween(presetsPanel, sequencePanel);
@@ -116,20 +115,12 @@ void GuiApp::windowResized(int _width, int _height) {
     fbo.allocate(_width, _height);
 }
 
-void GuiApp::setupVACPanel(Simulator* simulator) {
+void GuiApp::setupSonificationAnalysisPanel(Simulator* simulator) {
     if (simulator) {
-        vacPanel.setup(gui, simulationParameters, sonificationParameters, simulator);
+        sonificationAnalysisPanel.setup(gui, simulationParameters, sonificationParameters, simulator);
         ofLogNotice("GuiApp") << "VAC Panel setup completed";
     } else {
         ofLogError("GuiApp") << "simulator is null";
     }
 }
 
-void GuiApp::setupSimulationDataPanel(Simulator* simulator) {
-    if (simulator) {
-        simulationDataPanel.setup(gui, simulationParameters, simulator);
-        ofLogNotice("GuiApp") << "Simulation Data Panel setup completed";
-    } else {
-        ofLogError("GuiApp") << "simulator is null";
-    }
-}

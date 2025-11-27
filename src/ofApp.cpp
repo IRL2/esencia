@@ -17,8 +17,7 @@ void ofApp::setup(){
 
     simulator.setup(&gui.simulationParameters, &gui);
     
-    gui.setupVACPanel(&simulator);
-    gui.setupSimulationDataPanel(&simulator);
+    gui.setupSonificationAnalysisPanel(&simulator);
     
     audioApp.clusterData = &simulator.clusterData;
 }

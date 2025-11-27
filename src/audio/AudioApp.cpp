@@ -139,9 +139,8 @@ void AudioApp::update() {
         parameters->masterVolume = 0.0f;
     }
 
-
     if (ofGetKeyPressed() == 'c' || ofGetKeyPressed() == 'C') {
-        collisionSampler1.play(0,0,true,1.0);
+        collisionSampler2.play(0, (int)ofRandom(4.9), false, 1.0f);
     };
 }
 
@@ -162,6 +161,7 @@ void AudioApp::draw() {
 }
 
 
+// tiny modification from the original pdsp scope draw function
 void AudioApp::drawScope(pdsp::Scope &s, int x, int y, int w, int h) const {
     ofPushStyle();
     ofPushMatrix();
@@ -185,7 +185,6 @@ void AudioApp::drawScope(pdsp::Scope &s, int x, int y, int w, int h) const {
 
     ofPopMatrix();
     ofPopStyle();
-
 }
 
 
@@ -406,7 +405,7 @@ void AudioApp::playCollisionSounds(float frequencyFactor) {
     //int pitch = notes[(int)ofMap(parameters->collisionRate, 0, 1.3, noteShift, noteShift + 4)];
     int pitch = notes[(int)ofMap(ofNoise(ofGetElapsedTimeMillis()), 0, 1, noteShift, noteShift + 4)];
 
-    float volume = ofClamp( ofNoise(ofGetElapsedTimef()) + parameters->collisionRate.get() , 0.0, 1.0);
+    float volume = ofClamp( ofNoise(ofGetElapsedTimef()) + parameters->collisionRate.get() , 0.1, 1.0);
 
     int activeParticles = allParameters->simulationParameters.amount.get();
 
@@ -432,15 +431,14 @@ void AudioApp::playCollisionSounds(float frequencyFactor) {
         gate = parameters->collisionRate > 0.1;
         //float c = parameters->collisions.get() / allParameters->simulationParameters.radius.get() / activeParticles / parameters->collisionRate.get();
         //gate = ofRandomuf() < c;
-        volume = ofNoise(ofGetElapsedTimeMillis()) - 0.2f;
+        volume = ofNoise(ofGetElapsedTimeMillis()) - 0.1f;
     }
     
     triggerAtInterval(intervalA, [&]() {
         if (gate) {
             // trigger the waterdrops if the collision rate is high enough
-            if (parameters->collisionRate.get() > 0.8) {
+            if (parameters->collisionRate.get() > 0.8 && ofRandomuf() < 0.5) {
                 collisionSampler2.play(0, (int)ofRandom(4.9), false);
-                //ofLog() << "playing ambient collision sound";
             }
             else {
                 collisionSampler1.play(pitch, sample, false, volume);

@@ -109,8 +109,7 @@
     <ClCompile Include="src\audio\AudioApp.cpp" />
     <ClCompile Include="src\camera\Camera.cpp" />
     <ClCompile Include="src\gui\GuiApp.cpp" />
-    <ClCompile Include="src\gui\panels\SimulationDataPanel.cpp" />
-    <ClCompile Include="src\gui\panels\VACPanel.cpp" />
+    <ClCompile Include="src\gui\panels\SimulationAnalysisPanel.cpp" />
     <ClCompile Include="src\render\RenderApp.cpp" />
     <ClCompile Include="src\simulation\particles.cpp" />
     <ClCompile Include="src\simulation\simulator.cpp" />
@@ -354,10 +353,9 @@
     <ClInclude Include="src\gui\panels\PresetsPanel.h" />
     <ClInclude Include="src\gui\panels\RenderPanel.h" />
     <ClInclude Include="src\gui\panels\SequencePanel.h" />
-    <ClInclude Include="src\gui\panels\SimulationDataPanel.h" />
     <ClInclude Include="src\gui\panels\SimulationPanel.h" />
     <ClInclude Include="src\gui\panels\SystemstatsPanel.h" />
-    <ClInclude Include="src\gui\panels\VACPanel.h" />
+    <ClInclude Include="src\gui\panels\SimulationAnalysisPanel.h" />
     <ClInclude Include="src\gui\panels\VideoOriginPanel.h" />
     <ClInclude Include="src\gui\panels\VideoProcessingPanel.h" />
     <ClInclude Include="src\gui\parameters\EsenciaParameters.h" />

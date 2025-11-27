@@ -8,8 +8,6 @@
 #include "ofxPDSP.h"
 #include "AudioSampler.hpp"
 #include "AudioOscillator.hpp"
-#include "PolySynth.hpp"
-#include "DataSynth.hpp"
 #include "NoiseSynth.hpp"
 
 #include "EsenciaParameters.h"
@@ -97,14 +95,10 @@ private:
     AudioSampler     sampler2;
     AudioOscillator  oscillator1;
     AudioOscillator  oscillator2;
-    PolySynth        polySynth;
-    DataSynth        dataSynth;
 
     AudioSampler    collisionSampler1;
     AudioSampler    collisionSampler2;
     std::vector<AudioSampler>    clusterSampler;
-    PolySynth       clusterSynth1;
-    DataSynth       clusterDataSynth1;
     NoiseSynth      noiseSynth;
     AudioSampler    ambientSampler;
 

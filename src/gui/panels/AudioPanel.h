@@ -22,7 +22,7 @@ public:
         this->params = params;
         this->simParams = simParams;
 
-		panel = gui.addPanel("sonification analysis");
+		panel = gui.addPanel("sonification");
 
 		ofxGuiContainer* p = panel->addContainer("",
 			ofJson({ {"direction", "vertical"} }));

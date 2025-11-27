@@ -15,14 +15,12 @@
 #include "panels/VideoProcessingPanel.h"
 #include "panels/PresetsPanel.h"
 #include "panels/SequencePanel.h"
-#include "panels/VACPanel.h"
-#include "panels/SimulationDataPanel.h"
+#include "panels/SimulationAnalysisPanel.h"
 #include "panels/AudioPanel.h"
 
 
 #include "ofxPresets.h"
 
-//#include "AudioApp.h"
 
 //#define DEBUG_IMAGES true
 //#define RECORD_TESTING_VIDEO true
@@ -40,7 +38,7 @@ public:
     void windowResized(int w, int h);
     
     // Method to setup VAC panel with simulator reference
-    void setupVACPanel(class Simulator* simulator);
+    void setupSonificationAnalysisPanel(class Simulator* simulator);
     
     // Method to setup Simulation Data panel with simulator reference
     void setupSimulationDataPanel(class Simulator* simulator);
@@ -89,10 +87,7 @@ private:
 
     AudioPanel audioPanel;
 
-    VACPanel vacPanel;
-
-    SimulationDataPanel simulationDataPanel;
-     
+    SonificationPanel sonificationAnalysisPanel;
 
     ofFbo fbo;  // for the extra layers behind the GUI (lines, background, etc)
 

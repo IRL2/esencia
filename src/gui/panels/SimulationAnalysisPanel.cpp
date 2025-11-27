@@ -1,42 +1,84 @@
-#include "VACPanel.h"
-#include "../../simulation/simulator.h"
-#include <algorithm>
+#include "SimulationAnalysisPanel.h"
+#include "simulator.h"
 
-void VACPanel::setup(ofxGui& gui, SimulationParameters& simParams, SonificationParameters& sonParams, Simulator* sim) {
+void SonificationPanel::setup(ofxGui& gui, SimulationParameters& simParams, SonificationParameters& sonParams, Simulator* sim) {
     simulator = sim;
     this->simParams = &simParams;
     this->sonParams = &sonParams;
-    
-    panel = gui.addPanel("VAC Analysis");
-    
+
+    panel = gui.addPanel("sonification analysis");
+
+    // Add collision logging control parameter
+    bool initialCollisionLoggingState = simulator ? simulator->isCollisionLoggingEnabled() : false;
+    enableCollisionLogging.set("Enable Collision Logging", initialCollisionLoggingState);
+
+    // Add cluster analysis control parameters
+    bool initialClusterAnalysisState = simulator ? simulator->isClusterAnalysisEnabled() : true;
+    float initialClusterDistance = simulator ? simulator->getClusterConnectionDistance() : 50.0f;
+
+    enableClusterAnalysis.set("Enable Cluster Analysis", initialClusterAnalysisState);
+    panel->add(clusterConnectionDistance.set("cluster connection distance", initialClusterDistance, 10.0f, 200.0f), ofJson({ {"precision", 0} }));
+
+
+    // Add listeners
+    enableCollisionLogging.addListener(this, &SonificationPanel::onCollisionLoggingChanged);
+    enableClusterAnalysis.addListener(this, &SonificationPanel::onClusterAnalysisChanged);
+    clusterConnectionDistance.addListener(this, &SonificationPanel::onClusterConnectionDistanceChanged);
+
+
+    vacGroup = panel->addGroup("velocity auto-correlation");
+  
     // Add VAC control parameters sync with simulator state
     bool initialVACState = simulator ? simulator->isVACEnabled() : true;
     int initialMaxLags = simulator ? static_cast<int>(simulator->vacData.maxTimeLags) : 120;
     
-    panel->add(this->sonParams->enableVACCalculation.set("Enable VAC", initialVACState));
-    panel->add(this->sonParams->maxTimeLags.set("Max Time Lags", initialMaxLags, 10, 512));
+    vacGroup->add(this->sonParams->enableVACCalculation.set("enable VAC", initialVACState));
+    vacGroup->add(this->sonParams->maxTimeLags.set("max time lags", initialMaxLags, 10, 512));
     
     // VAC plot area
-    ofxGuiContainer* plotContainer = panel->addContainer("VAC Plot", 
-        ofJson({ {"width", PLOT_WIDTH}, {"height", PLOT_HEIGHT} }));
+    ofxGuiContainer* plotContainer = vacGroup->addContainer("VAC Plot",
+        ofJson({ {"width", panelWidth-10}, {"height", panelHeight*2} }));
     
-    this->sonParams->enableVACCalculation.addListener(this, &VACPanel::onVACToggleChanged);
-    this->sonParams->maxTimeLags.addListener(this, &VACPanel::onMaxTimeLagsChanged);
+    this->sonParams->enableVACCalculation.addListener(this, &SonificationPanel::onVACToggleChanged);
+    this->sonParams->maxTimeLags.addListener(this, &SonificationPanel::onMaxTimeLagsChanged);
     
     // Subscribe to draw events to render the plot
-    ofAddListener(ofEvents().draw, this, &VACPanel::drawVACPlot);
+    ofAddListener(ofEvents().draw, this, &SonificationPanel::drawVACPlot);
     
     configVisuals(PANEL_RECT, BG_COLOR);
 }
 
-void VACPanel::onVACToggleChanged(bool& value) {
+
+void SonificationPanel::onCollisionLoggingChanged(bool& value) {
     if (simulator) {
-        simulator->setVACEnabled(value);
-        ofLogNotice("VACPanel") << "VAC calculation " << (value ? "enabled" : "disabled");
+        simulator->setCollisionLoggingEnabled(value);
+        //ofLogNotice("SimulationDataPanel") << "Collision logging " << (value ? "enabled" : "disabled") << " via GUI panel";
     }
 }
 
-void VACPanel::onMaxTimeLagsChanged(int& value) {
+void SonificationPanel::onClusterAnalysisChanged(bool& value) {
+    if (simulator) {
+        simulator->setClusterAnalysisEnabled(value);
+        //ofLogNotice("SimulationDataPanel") << "Cluster analysis " << (value ? "enabled" : "disabled") << " via GUI panel";
+    }
+}
+
+void SonificationPanel::onClusterConnectionDistanceChanged(float& value) {
+    if (simulator) {
+        simulator->setClusterConnectionDistance(value);
+        //ofLogNotice("SimulationDataPanel") << "Cluster connection distance changed to " << value << " via GUI panel";
+    }
+}
+
+
+void SonificationPanel::onVACToggleChanged(bool& value) {
+    if (simulator) {
+        simulator->setVACEnabled(value);
+        ofLogNotice("SonificationPanel") << "VAC calculation " << (value ? "enabled" : "disabled");
+    }
+}
+
+void SonificationPanel::onMaxTimeLagsChanged(int& value) {
     if (simulator) {
         simulator->vacData.maxTimeLags = std::min(static_cast<uint32_t>(value), simulator->getMaxVelocityFrames());
         simulator->vacData.vacValues.resize(simulator->vacData.maxTimeLags, 0.0f);
@@ -44,18 +86,20 @@ void VACPanel::onMaxTimeLagsChanged(int& value) {
         for (uint32_t i = 0; i < simulator->vacData.maxTimeLags; i++) {
             simulator->vacData.timePoints[i] = static_cast<float>(i) * 0.01f;
         }
-        //ofLogNotice("VACPanel") << "Max time lags changed to " << simulator->vacData.maxTimeLags;
+        //ofLogNotice("SonificationPanel") << "Max time lags changed to " << simulator->vacData.maxTimeLags;
     }
 }
 
-void VACPanel::drawVACPlot(ofEventArgs& args) {
+void SonificationPanel::drawVACPlot(ofEventArgs& args) {
     if (!simulator || !panel || !this->sonParams->enableVACCalculation.get()) return;
+    if (vacGroup->getVisible() == false) return;
+    if (vacGroup->getMinimized()) return;
+
+    ofVec2f panelPos = vacGroup->getPosition() + panel->getPosition();
+    panelWidth = vacGroup->getWidth();
+    panelHeight = vacGroup->getHeight();
     
-    ofVec2f panelPos = panel->getPosition();
-    float panelWidth = panel->getWidth();
-    float panelHeight = panel->getHeight();
-    
-    ofRectangle plotArea(panelPos.x + 40, panelPos.y + 140, PLOT_WIDTH - 50, PLOT_HEIGHT/2);
+    ofRectangle plotArea(panelPos.x + 40, panelPos.y + 140, panelWidth - 50, panelHeight/3);
     
     // Get VAC data from simulator
     const VACData& vacData = simulator->vacData;

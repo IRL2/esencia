@@ -9,7 +9,7 @@ class PresetsPanel : public EsenciaPanelBase {
 	const ofColor& BG_COLOR = ofColor(100, 100, 100, 100);
 
 
-	const float DEFAULT_TRANSITION_DURATION = 0.3f;
+	const float DEFAULT_TRANSITION_DURATION = 0.5f;
 
 	ofxGuiButton* saveButton;
 	ofxGuiButton* clearButton;
@@ -51,7 +51,7 @@ public:
 			{"flex-direction", "row"},
 			{"padding", 10},
 			{"flex-wrap", "wrap"},
-			{"width", 6 * 35}
+			{"width", 5 * 35}
 			}));
 		presetToggles->setShowHeader(false);
 
@@ -122,7 +122,7 @@ public:
 		else if (key == 'C' && e.hasModifier(OF_KEY_CONTROL)) {
 			clearPreset();
 		}
-		else if (key == 'M') {
+		else if (key == 'T') {
 			presetManager->mutate();
 		}
 	}

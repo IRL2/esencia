@@ -16,10 +16,7 @@
     <ClCompile Include="src\gui\GuiApp.cpp">
       <Filter>src\gui</Filter>
     </ClCompile>
-    <ClCompile Include="src\gui\panels\SimulationDataPanel.cpp">
-      <Filter>src\gui\panels</Filter>
-    </ClCompile>
-    <ClCompile Include="src\gui\panels\VACPanel.cpp">
+    <ClCompile Include="src\gui\panels\SimulationAnalysisPanel.cpp">
       <Filter>src\gui\panels</Filter>
     </ClCompile>
     <ClCompile Include="src\main.cpp">
@@ -1316,16 +1313,13 @@
     <ClInclude Include="src\gui\panels\SequencePanel.h">
       <Filter>src\gui\panels</Filter>
     </ClInclude>
-    <ClInclude Include="src\gui\panels\SimulationDataPanel.h">
-      <Filter>src\gui\panels</Filter>
-    </ClInclude>
     <ClInclude Include="src\gui\panels\SimulationPanel.h">
       <Filter>src\gui\panels</Filter>
     </ClInclude>
     <ClInclude Include="src\gui\panels\SystemstatsPanel.h">
       <Filter>src\gui\panels</Filter>
     </ClInclude>
-    <ClInclude Include="src\gui\panels\VACPanel.h">
+    <ClInclude Include="src\gui\panels\SimulationAnalysisPanel.h">
       <Filter>src\gui\panels</Filter>
     </ClInclude>
     <ClInclude Include="src\gui\panels\VideoOriginPanel.h">
