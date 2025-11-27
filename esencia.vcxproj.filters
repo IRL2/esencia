@@ -4168,9 +4168,10 @@
     <None Include="bin\data\shaders\particlesComputeShader.glsl">
       <Filter>src\simulation</Filter>
     </None>
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="bin\data\defaults.xml">
+    <Xml Include="bin\data\localSettings.xml">
       <Filter>src</Filter>
     </Xml>
   </ItemGroup>

@@ -22,6 +22,8 @@ std::vector<float> particleSizes;
 
 const bool INVEASTERNEGG = false;
 
+const std::string LOCAL_SETTINGS_FILE = "localSettings.xml";
+
 //--------------------------------------------------------------
 void RenderApp::setup()
 {
@@ -30,9 +32,7 @@ void RenderApp::setup()
     ofDisableArbTex();
     ofEnableAlphaBlending();
 
-    windowResized(ofGetWidth(), ofGetHeight());
-    SetWindowPos(ofGetWin32Window(), HWND_DESKTOP, ofGetViewportWidth() - ofGetWidth(), 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-    ShowWindow(GetConsoleWindow(), SW_MINIMIZE);
+    setupFBOs(ofGetWidth(), ofGetHeight());
 
     // Load the particle texture
     bool textureLoaded;
@@ -76,20 +76,50 @@ void RenderApp::setup()
     else {
         ofLogNotice("RenderApp::setup()") << "Video shaders loaded successfully!";
     }
-
-    setupFBOs();
     
     // allocate memory for particle data
     particlePositions.reserve(10000);
     particleSizes.reserve(10000);
 
-    ofSetFullscreen(true);
-    windowResized(ofGetWidth(), ofGetHeight());
+    localSettings = fakeGui.addPanel("local settings for the render app");
+    localSettings->setHidden(true);
+    localSettingsValues.add(windowPositionX.set("render window position X", 2000));
+    localSettingsValues.add(windowPositionY.set("render window position Y", 50));
+    localSettingsValues.add(startFullscreen.set("start fullscreen", false));
+    localSettingsValues.add(displayCameraWarning.set("display camera warning", true));
+    localSettings->add(localSettingsValues);
+    localSettings->loadFromFile(LOCAL_SETTINGS_FILE);
+    ofLog() << windowPositionX;
 
+    ofAddListener(ofEvents().windowResized, this, &RenderApp::onWindowResized);  // windowResized -> onWindowResized -> setupWindowSize
+    ofSetWindowPosition(windowPositionX, windowPositionY);
+    ofSetFullscreen(startFullscreen);
 }
 
+
+void RenderApp::onWindowResized(ofResizeEventArgs& args) {
+    setupWindowSize(args.width, args.height);
+    windowPositionX = ofGetWindowPositionX() + 50; // this safety offsets are greater than the window title height to avoid open fullscreen on the wrong display
+    windowPositionY = ofGetWindowPositionY() + 50;
+    startFullscreen = ofGetWindowMode() != OF_FULLSCREEN;
+    localSettings->saveToFile(LOCAL_SETTINGS_FILE);
+}
+
+
+void RenderApp::setupWindowSize(int width, int height) {
+    ofLogNotice("RenderApp::windowResized()") << " called with size: " << width << ", " << height << " on " << ofGetWindowPositionX() << " and " << ofGetWindowPositionY();
+    parameters->windowSize.set(glm::vec2(width, height));
+    setupFBOs(width, height);
+}
+
+
 //--------------------------------------------------------------
-void RenderApp::setupFBOs() {
+void RenderApp::setupFBOs(int _width, int _height) {
+    // Update main FBOs
+    fbo.allocate(_width, _height);
+    fboS.allocate(_width, _height);
+
+
     int w = ofGetWidth();
     int h = ofGetHeight();
 
@@ -105,8 +135,6 @@ void RenderApp::setupFBOs() {
     clearFBO(particlesFbo);
     clearFBO(compositeFbo);
     clearFBO(trailFbo);
-
-
 }
 
 //--------------------------------------------------------------
@@ -176,6 +204,11 @@ void RenderApp::draw()
         ofSetColor(255);
         trailFbo.draw(0, 0);
         ofEnableBlendMode(OF_BLENDMODE_ALPHA);
+    }
+
+    if (globalParameters->cameraParameters._sourceOrbbec.get() == false && displayCameraWarning.get() == true) {
+        ofSetColor(100, 80, 80);
+        ofDrawBitmapString("Depth camera not connected", ofGetWindowWidth()-215, ofGetWindowHeight()-12);
     }
 }
 
@@ -342,7 +375,6 @@ void RenderApp::keyReleased(ofKeyEventArgs& e)
         case 'F':
         {
             ofToggleFullscreen();
-            windowResized(ofGetWidth(), ofGetHeight());
             break;
         }
 
@@ -360,24 +392,11 @@ void RenderApp::keyReleased(ofKeyEventArgs& e)
     }
 }
 
-//--------------------------------------------------------------
-void RenderApp::mouseMoved(int x, int y) {
 
-}
 
-//--------------------------------------------------------------
-void RenderApp::windowResized(int _width, int _height) {
-    ofLogNotice("RenderApp::windowResized()") << "window resized to: " << _width << "," << _height;
 
-    // Update main FBOs
-    fbo.allocate(_width, _height);
-    fboS.allocate(_width, _height);
 
-    setupFBOs();
 
-    glm::vec2 newSize = glm::vec2(_width, _height);
-    parameters->windowSize.set(glm::vec2(_width, _height));
-}
 
 //--------------------------------------------------------------
 void RenderApp::setupParticleBuffers() {

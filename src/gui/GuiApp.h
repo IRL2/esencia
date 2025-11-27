@@ -64,9 +64,9 @@ public:
     // like camera clipping values
     // this parameters are not / shouldnt be part of presets
     // defined and managed here
-    ofParameterGroup& localConfigs = ofParameterGroup();
     ofxGui fakeGui;
-    ofxGuiPanel* localValues;
+    ofxGuiPanel* localSettings;
+    ofParameterGroup& localSettingsValues = ofParameterGroup();
 
     void onChangeLocalConfig(int& deviceId);
 

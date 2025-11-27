@@ -1,6 +1,8 @@
 #include "GuiApp.h"
 
 
+const std::string LOCAL_SETTINGS_FILE = "localSettings.xml";
+
 
 void GuiApp::setup()
 {
@@ -38,20 +40,20 @@ void GuiApp::setup()
     bgStartColor1 = ofColor::white;
     bgStartColor2 = ofColor::white;
     
-    localValues = fakeGui.addPanel("local configuration valuesx");
-    localValues->setHidden(true);
-    localConfigs.add(cameraParameters.clipFar.set("clip far", cameraParameters.clipFar.get()));
-    localConfigs.add(cameraParameters.clipNear.set("clip near", cameraParameters.clipNear.get()));
-    localConfigs.add(sonificationParameters.audioDeviceId.set("audio device id", sonificationParameters.audioDeviceId.get()));
-    localValues->add(localConfigs);
-    localValues->loadFromFile("defaults.xml");
+    localSettings = fakeGui.addPanel("local settings for the main app");
+    localSettings->setHidden(true);
+    localSettingsValues.add(cameraParameters.clipFar.set("clip far", cameraParameters.clipFar.get()));
+    localSettingsValues.add(cameraParameters.clipNear.set("clip near", cameraParameters.clipNear.get()));
+    localSettingsValues.add(sonificationParameters.audioDeviceId.set("audio device id", sonificationParameters.audioDeviceId.get()));
+    localSettings->add(localSettingsValues);
+    localSettings->loadFromFile(LOCAL_SETTINGS_FILE);
     sonificationParameters.audioDeviceId.addListener(this, &GuiApp::onChangeLocalConfig);
     cameraParameters.clipFar.addListener(this, &GuiApp::onChangeLocalConfig);
     cameraParameters.clipNear.addListener(this, & GuiApp::onChangeLocalConfig);
 }
 
 void GuiApp::onChangeLocalConfig(int& deviceId) {
-    localValues->saveToFile("defaults.xml");
+    localSettings->saveToFile(LOCAL_SETTINGS_FILE);
 }
 
 
@@ -101,9 +103,7 @@ void GuiApp::keyReleased(ofKeyEventArgs& e) {
     presetsPanel.keyReleased(e);
     sequencePanel.keyReleased(e);
 
-    if (e.keycode == 'S') {
-        //localValues->saveToFile("defaults.xml");
-    }
+    //if (e.keycode == 'S') { localSettings->saveToFile("localSettingsA.xml"); }
 }
 
 

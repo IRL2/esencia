@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<group>
+	<clip_far>170</clip_far>
+	<clip_near>20</clip_near>
+	<audio_device_id>0</audio_device_id>
+	<render_window_position_X>1970</render_window_position_X>
+	<render_window_position_Y>50</render_window_position_Y>
+	<start_fullscreen>1</start_fullscreen>
+	<display_camera_warning>1</display_camera_warning>
+</group>

@@ -35,6 +35,8 @@ void Camera::setup(CameraParameters* params) {
     }
     else {
         changeSource(VideoSources::VIDEOSOURCE_VIDEOFILE);
+        // show an alert if the depth camera is not connected when starting the app, maybe there is an issue with it
+        ofSystemAlertDialog("// esencia //\n\nDepth camera not connected\nUsing video file");
     }
 
     if (!restoreBackgroundReference(backgroundReference)) {

@@ -16,8 +16,7 @@ class RenderApp : public ofBaseApp
 
         // EVENTS
         void keyReleased(ofKeyEventArgs& e);
-        void mouseMoved(int x, int y );
-        void windowResized(int w, int h);
+        void onWindowResized(ofResizeEventArgs &args);
         
         //  rendering methods
         void updateParticleSystem();
@@ -27,7 +26,8 @@ class RenderApp : public ofBaseApp
 		void renderVideoWithShader();
 		void renderVideoStandard();
 
-        void setupFBOs();
+        void setupWindowSize(int width, int height);
+        void setupFBOs(int _width, int _height);
         void clearFBO(ofFbo& fbo);
         void renderVideoPass();
         void renderParticlesPass();
@@ -49,6 +49,15 @@ class RenderApp : public ofBaseApp
         Simulator* simulator; 
     
         ofEvent<glm::vec2> viewportResizeEvent; // an event to send window size updates to the simulation
+
+        // to handle local configuration values, out of the presets
+        ofxGui fakeGui;
+        ofxGuiPanel* localSettings;
+        ofParameterGroup& localSettingsValues = ofParameterGroup();
+        ofParameter<int> windowPositionX;
+        ofParameter<int> windowPositionY;
+        ofParameter<bool> startFullscreen;
+        ofParameter<bool> displayCameraWarning;
 
     private:
 

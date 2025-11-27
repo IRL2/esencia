@@ -12,18 +12,17 @@ int main()
 
     // render window
     settings.setSize(36*WU, 32*WU);
-    settings.setPosition(glm::vec2(-49*WU, 2*WU));
+    settings.setPosition(glm::vec2(2*WU, 2*WU));
     settings.resizable = true;
     settings.setGLVersion(3, 2);
     auto renderWindow = ofCreateWindow(settings);
     shared_ptr<RenderApp> renderApp(new RenderApp);
 
 
-
     // gui window
     settings.setSize(49*WU, 34*WU);
-    settings.setPosition(glm::vec2(WU, 2*WU));
-    settings.resizable = true;
+    settings.setPosition(glm::vec2(WU, WU));
+    settings.windowMode = OF_WINDOW;
     auto mainWindow = ofCreateWindow(settings);
     shared_ptr<ofApp> mainApp(new ofApp);
 
