@@ -30,7 +30,7 @@ class VideoProcessingPanel : public EsenciaPanelBase {
     const float POLYGON_APPROX_MIN = 0.0;
     const float POLYGON_APPROX_MAX = 5.0;
 
-    const ofRectangle PANEL_RECT = ofRectangle(13, 9, 8, 0);
+    const ofRectangle PANEL_RECT = ofRectangle(18, 9, 8, 0);
     const ofColor BG_COLOR = ofColor(30, 30, 200, 100);
 
 

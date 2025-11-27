@@ -37,7 +37,10 @@ void Camera::setup(CameraParameters* params) {
         changeSource(VideoSources::VIDEOSOURCE_VIDEOFILE);
     }
 
-    restoreBackgroundReference(backgroundReference);
+    if (!restoreBackgroundReference(backgroundReference)) {
+        ofLogWarning("Camera::setup()") << "Couldn't load a background reference, attempting to get a new one";
+        startBackgroundReferenceSampling(BG_SAMPLE_FRAMES);
+    }
 }
 
 /// <summary>
@@ -45,6 +48,10 @@ void Camera::setup(CameraParameters* params) {
 /// </summary>
 /// <param name="_"></param>
 void Camera::onGUIChangeSource(bool& _) {
+    // to-do: this is wrong becuase the parameters->sourceX is not already assigned
+    // since there are only 2 sources now, it should be enough to use the boolean 1 as orbbec, and boolean 0 as videofile
+    // but this need to be fixed
+
     ofLogWarning("Camera::onGUIChangeSource()") << "GUI triggered a source change w/" << _;
 
     if (parameters->_sourceOrbbec) {
@@ -98,6 +105,12 @@ void Camera::changeSource(VideoSources newSource) {
     parameters->_sourceOrbbec.enableEvents();
     parameters->_sourceVideofile.enableEvents();
     parameters->_sourceWebcam.enableEvents();
+
+    // TO-DO: fix when switching sources, segmentation does not work/show results
+    if (!restoreBackgroundReference(backgroundReference)) {
+        ofLogWarning("Camera::changeSource()") << "Couldn't load a background reference, attempting to get a new one";
+        startBackgroundReferenceSampling(BG_SAMPLE_FRAMES);
+    }
 }
 
 /// <summary>
@@ -136,7 +149,7 @@ void Camera::setFrameSize(int width, int height) {
     parameters->previewSegment.allocate(IMG_WIDTH, IMG_HEIGHT, OF_IMAGE_GRAYSCALE);
     parameters->previewBackground.allocate(IMG_WIDTH, IMG_HEIGHT, OF_IMAGE_GRAYSCALE);
 
-    // TO-DO: if the prev/current background reference image has different resolution from the new video source: kaput.
+    ofLogNotice("Camera::setFrameSize()") << "Frame size set to " << IMG_WIDTH << "x" << IMG_HEIGHT;
 }
 
 
@@ -620,8 +633,14 @@ bool Camera::restoreBackgroundReference(ofxCvGrayscaleImage & outputImage) {
     ofLogNotice("Camera::restoreBackgroundReference") << "Attempting to load a background reference at data/" + BG_REFERENCE_FILENAME;
     ofPixels pixels;
     bool loaded = ofLoadImage(pixels, BG_REFERENCE_FILENAME);
+    backgroundReferenceTaken = false;
+
     if (loaded) {
         // to-do: validate bg ref and frame have the same size resolution
+        if (pixels.getWidth() != IMG_WIDTH || pixels.getHeight() != IMG_HEIGHT) {
+            ofLogWarning("Camera::restoreBackgroundReference") << "The saved background reference image has different resolution than current frame source. Ignoring it.";
+            return false;
+        }
         outputImage.allocate(pixels.getWidth(), pixels.getHeight());
         outputImage.setFromPixels(pixels);
         backgroundReferenceTaken = true;
@@ -629,8 +648,7 @@ bool Camera::restoreBackgroundReference(ofxCvGrayscaleImage & outputImage) {
         ofLogNotice("Camera::restoreBackgroundReference") << "Load successfull";
     }
     else {
-        backgroundReferenceTaken = false;
-        ofLogNotice("Camera::restoreBackgroundReference") << "Could not load the background reference image";
+        ofLogWarning("Camera::restoreBackgroundReference") << "Could not load the background reference image";
     }
     return loaded;
 }

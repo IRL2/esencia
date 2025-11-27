@@ -10,14 +10,16 @@ void ofApp::setup(){
 
     gui.setup();
     
-    audioApp.setup();
+    audioApp.setup(&gui.sonificationParameters, &gui);
 
     // to-do: pass camera parameters though setup
     camera.setup(&gui.cameraParameters);
 
     simulator.setup(&gui.simulationParameters, &gui);
     
-    // Connect cluster analysis data to AudioApp
+    gui.setupVACPanel(&simulator);
+    gui.setupSimulationDataPanel(&simulator);
+    
     audioApp.clusterData = &simulator.clusterData;
 }
 //--------------------------------------------------------------
@@ -37,6 +39,7 @@ void ofApp::update(){
 void ofApp::draw(){
     // camera.draw();
     gui.draw();
+    audioApp.draw();
 }
 
 void ofApp::exit() {

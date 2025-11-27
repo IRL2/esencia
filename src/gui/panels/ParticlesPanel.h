@@ -1,14 +1,17 @@
 #pragma once
 
 #include "EsenciaPanelBase.h"
-#include "../ParticleSizeSlider.h"
+#include "ParticleSizeSlider.h"
 
 class ParticlesPanel : public EsenciaPanelBase {
 
+public:
+	const float PARTICLES_MAX = 5000.0;
+
+private:
 	// default initial values
 	const float PARTICLES_INITIAL = 100;
 	const float PARTICLES_MIN = 1.0;
-	const float PARTICLES_MAX = 10000.0;
 
 	const int RADIUS_INITIAL = 3;
 	const int RADIUS_MIN = 1;

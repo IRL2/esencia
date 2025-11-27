@@ -70,7 +70,7 @@ void main() {
         // Check for collision (when particles are very close or overlapping)
         // Only check collisions for first 512 particles
         bool isCollision = (dist > 0.0 && dist <= minDist * 1.1); // Allow a small margin for numerical stability
-        bool shouldLogCollision = (index < 512u && i < 512u); // Only log collisions between first 512 particles
+        bool shouldLogCollision = ( i < 512u); // Only log collisions between first 512 particles
 
         // Lennard-Jones potential
         if (dist > 0.0 && dist < ljCutoff) {

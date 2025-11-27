@@ -45,6 +45,24 @@ struct ClusterAnalysisData {
     std::vector<ClusterStats> clusters;
 };
 
+// VAC (Velocity Autocorrelation Function) structures
+struct VACData {
+    std::vector<float> vacValues;           // VAC(t) values for each time lag
+    std::vector<float> timePoints;          // Time points corresponding to each VAC value
+    uint32_t maxTimeLags;                   // Maximum number of time lags to calculate
+    uint32_t currentFrame;                  // Current frame number for data collection
+    bool isEnabled;                         // Whether VAC calculation is enabled
+    uint32_t lastCalculationFrame;          // Track when VAC was last calculated
+    
+    VACData() : maxTimeLags(60), currentFrame(0), isEnabled(true), lastCalculationFrame(0) {
+        vacValues.resize(maxTimeLags, 0.0f);
+        timePoints.resize(maxTimeLags);
+        for (uint32_t i = 0; i < maxTimeLags; i++) {
+            timePoints[i] = static_cast<float>(i) * 0.01f;
+        }
+    }
+};
+
 class Simulator {
 public:
     void setup(SimulationParameters* params, GuiApp* globalParams);
@@ -59,6 +77,23 @@ public:
     
     CollisionBuffer collisionData;
     ClusterAnalysisData clusterData;
+    VACData vacData;
+    
+    // VAC control methods
+    bool isVACEnabled() const { return enableVACCalculation; }
+    void setVACEnabled(bool enabled) { enableVACCalculation = enabled; }
+    uint32_t getMaxVelocityFrames() const { return maxVelocityFrames; }
+    
+    // Collision data access method
+    const CollisionBuffer& getCollisionData() const { return collisionData; }
+    bool isCollisionLoggingEnabled() const { return parameters->enableCollisionLogging; }
+    void setCollisionLoggingEnabled(bool enabled) { parameters->enableCollisionLogging = enabled; }
+    
+    // Cluster analysis control methods
+    bool isClusterAnalysisEnabled() const { return enableClusterAnalysis; }
+    void setClusterAnalysisEnabled(bool enabled) { enableClusterAnalysis = enabled; }
+    float getClusterConnectionDistance() const { return clusterConnectionDistance; }
+    void setClusterConnectionDistance(float distance) { clusterConnectionDistance = distance; }
 
     GLint deltaTimeLocation;
     GLint worldSizeLocation;
@@ -77,8 +112,10 @@ public:
     GLint enableCollisionLoggingLocation;
 
     static const size_t MAX_COLLISIONS_PER_FRAME = 1024;
-    static const size_t MAX_CLUSTERS_PER_FRAME = 50; // Reasonable max clusters
-    static const uint32_t MIN_CLUSTER_SIZE = 5;      // Reduced for testing - was 10
+    static const size_t MAX_CLUSTERS_PER_FRAME = 10;
+    static const uint32_t MIN_CLUSTER_SIZE = 10;
+    static const uint32_t MAX_PARTICLES_FOR_CLUSTER_ANALYSIS = 512; // Limit analysis to first 512 particles
+
 
 private:
     void setupComputeShader();
@@ -94,6 +131,11 @@ private:
     uint32_t findRoot(std::vector<uint32_t>& parent, uint32_t particle);
     void unionSets(std::vector<uint32_t>& parent, std::vector<uint32_t>& rank, uint32_t a, uint32_t b);
     void calculateClusterStatistics(const std::vector<uint32_t>& parent, const std::vector<std::unordered_set<uint32_t>>& clusterMembers);
+
+    // VAC (Velocity Autocorrelation Function) methods
+    void setupVACAnalysis();
+    void calculateVAC();
+    void storeVelocityFrame();
 
     // listeners
     void onRenderwindowResize(glm::vec2& worldSize);
@@ -143,6 +185,12 @@ private:
     // Cluster analysis settings
     bool enableClusterAnalysis = true;
     float clusterConnectionDistance = 50.0f;
+
+    // VAC calculation settings and data storage
+    std::vector<std::vector<glm::vec2>> velocityHistory; 
+    uint32_t maxVelocityFrames = 512;
+    uint32_t vacCalculationInterval = 5;                 
+    bool enableVACCalculation = true;
 
     // Normalization functions
     glm::vec2 normalizePosition(const glm::vec2& position);

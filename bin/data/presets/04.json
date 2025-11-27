@@ -13,6 +13,7 @@
     },
     "render": {
         "color": 11958701,
+        "color_alpha": 255,
         "fakeTrialsVisibility": 0.4843749701976776,
         "motionBlurStrength": 0.5,
         "particleGlow": 1.0,
@@ -26,6 +27,7 @@
         "useMotionBlur": true,
         "useShaders": true,
         "videoColor": 13643638,
+        "videoColor_alpha": 255,
         "videopreviewVisibility": 0.3348214328289032
     },
     "simulation": {
@@ -33,7 +35,17 @@
         "applyThermostat": true,
         "coupling": 0.7709821462631226,
         "depthFieldScale": 85892.859375,
+        "enableCollisionLogging": true,
         "radius": 6,
         "targetTemperature": 16026.78515625
+    },
+    "sonification": {
+        "backgroundVolume": 0.3305084705352783,
+        "clusterVolume": 0.025423727929592133,
+        "collisionVolume": 0.7076271176338196,
+        "enableVACCalculation": true,
+        "masterVolume": 0.800000011920929,
+        "maxTimeLags": 146,
+        "velocityVolume": 0.48728814721107483
     }
 }

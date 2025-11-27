@@ -15,7 +15,7 @@ void GuiApp::setup()
     cameraParameters.previewSegment.allocate(1, 1, OF_IMAGE_GRAYSCALE);
     cameraParameters.previewBackground.allocate(1, 1, OF_IMAGE_GRAYSCALE);
 
-    allParameters = { &simulationParameters, &renderParameters, &cameraParameters }; // presets are handled at the presetsPanel
+    allParameters = { &simulationParameters, &renderParameters, &cameraParameters, &sonificationParameters }; // presets are handled at the presetsPanel
 	presetManager.setup(allParameters);
 	presetManager.setFolderPath("data\\presets\\");
 
@@ -27,12 +27,33 @@ void GuiApp::setup()
     videoProcessingPanel.setup(gui, cameraParameters);
     renderPanel.setup(gui, renderParameters);
 	sequencePanel.setup(gui, &presetsParameters, presetManager);
-    presetsPanel.setup(gui, &presetsParameters, presetManager, simulationParameters, cameraParameters, renderParameters);
-
+    presetsPanel.setup(gui, &presetsParameters, presetManager);
+    audioPanel.setup(gui, &sonificationParameters, &simulationParameters);
 
     //parameters->previewRender.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
 
+    // background colors
+    bgTargetColor1 = ofColor::white;
+    bgTargetColor2 = ofColor::white;
+    bgStartColor1 = ofColor::white;
+    bgStartColor2 = ofColor::white;
+    
+    localValues = fakeGui.addPanel("local configuration valuesx");
+    localValues->setHidden(true);
+    localConfigs.add(cameraParameters.clipFar.set("clip far", cameraParameters.clipFar.get()));
+    localConfigs.add(cameraParameters.clipNear.set("clip near", cameraParameters.clipNear.get()));
+    localConfigs.add(sonificationParameters.audioDeviceId.set("audio device id", sonificationParameters.audioDeviceId.get()));
+    localValues->add(localConfigs);
+    localValues->loadFromFile("defaults.xml");
+    sonificationParameters.audioDeviceId.addListener(this, &GuiApp::onChangeLocalConfig);
+    cameraParameters.clipFar.addListener(this, &GuiApp::onChangeLocalConfig);
+    cameraParameters.clipNear.addListener(this, & GuiApp::onChangeLocalConfig);
 }
+
+void GuiApp::onChangeLocalConfig(int& deviceId) {
+    localValues->saveToFile("defaults.xml");
+}
+
 
 void GuiApp::update() 
 {
@@ -42,18 +63,13 @@ void GuiApp::update()
     if (bgChangeFrequency == bgChangeDuration) bgChangeFrequency = 0;
 
     if (colorProgress == 0) {
-        //bgTargetColor1 = bgColors[ofRandom(bgColors.size())];
-        //bgTargetColor2 = bgColors[ofRandom(bgColors.size())];
-        bgTargetColor1 = renderParameters.color;
-        bgTargetColor2 = renderParameters.videoColor;
+        bgTargetColor1.setHsb(renderParameters.color.get().getHueAngle(), 200, 100);
+        bgTargetColor2.setHsb(renderParameters.videoColor.get().getHueAngle(), 200, 100);
         bgStartColor1 = bgColor1;
         bgStartColor2 = bgColor2;
     }
-    //bgColor1 = bgStartColor1.getLerped(bgTargetColor1, colorProgress);
-    //bgColor2 = bgStartColor2.getLerped(bgTargetColor2, colorProgress);
-
-    bgColor1 = bgStartColor1.getLerped(renderParameters.color, colorProgress);
-    bgColor2 = bgStartColor2.getLerped(renderParameters.videoColor, colorProgress);
+    bgColor1 = bgStartColor1.getLerped(bgTargetColor1, colorProgress);
+    bgColor2 = bgStartColor2.getLerped(bgTargetColor2, colorProgress);
 }
 
 
@@ -64,13 +80,18 @@ void GuiApp::draw()
 
     // draw lines
     EsenciaPanelBase::drawLineBetween(videoOriginPanel, videoProcessingPanel);
-    EsenciaPanelBase::drawLineBetween(videoProcessingPanel, simulationPanel);
     EsenciaPanelBase::drawLineBetween(particlesPanel, simulationPanel);
-    EsenciaPanelBase::drawLineBetween(simulationPanel, renderPanel);
+    EsenciaPanelBase::drawLineBetween(videoProcessingPanel, simulationPanel, 1, 0);
+    EsenciaPanelBase::drawLineBetween(simulationPanel, simulationDataPanel, 0, 3);
+    EsenciaPanelBase::drawLineBetween(simulationPanel, vacPanel, 0, 2);
+    EsenciaPanelBase::drawLineBetween(simulationPanel, audioPanel, 0, 1);
+    EsenciaPanelBase::drawLineBetween(simulationPanel, renderPanel, 0, 0);
     EsenciaPanelBase::drawLineBetween(presetsPanel, sequencePanel);
 
     fbo.end();
     fbo.draw(0,0);
+
+    // panels draw themselves automatically after this draw event; they had a drawingg event listener added during setup
 }
 
 
@@ -79,6 +100,10 @@ void GuiApp::draw()
 void GuiApp::keyReleased(ofKeyEventArgs& e) {
     presetsPanel.keyReleased(e);
     sequencePanel.keyReleased(e);
+
+    if (e.keycode == 'S') {
+        //localValues->saveToFile("defaults.xml");
+    }
 }
 
 
@@ -91,8 +116,20 @@ void GuiApp::windowResized(int _width, int _height) {
     fbo.allocate(_width, _height);
 }
 
+void GuiApp::setupVACPanel(Simulator* simulator) {
+    if (simulator) {
+        vacPanel.setup(gui, simulationParameters, sonificationParameters, simulator);
+        ofLogNotice("GuiApp") << "VAC Panel setup completed";
+    } else {
+        ofLogError("GuiApp") << "simulator is null";
+    }
+}
 
-
-
-
-
+void GuiApp::setupSimulationDataPanel(Simulator* simulator) {
+    if (simulator) {
+        simulationDataPanel.setup(gui, simulationParameters, simulator);
+        ofLogNotice("GuiApp") << "Simulation Data Panel setup completed";
+    } else {
+        ofLogError("GuiApp") << "simulator is null";
+    }
+}

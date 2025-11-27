@@ -72,10 +72,10 @@ public:
 /// </summary>
 struct PresetsParameters : public ofxPresetsParametersBase {
 
-    // the following ites are only gui holders
-    // 
-    // declare parameters for 16 buttons to select the state
-    ofParameter<bool> states[16];
+    // the following items are only gui holders
+
+    // declare parameters for buttons to select the state (cant use PresetsPanel::MAX_PRESETS bc reasons)
+    ofParameter<bool> states[99];
 
     // declare parameters for action buttons: save, clear, copyTo
 
@@ -171,7 +171,7 @@ struct SimulationParameters : public ofxPresetsParametersBase {
     ofParameter<bool> applyThermostat;
     ofParameter<glm::vec2> worldSize;
     ofParameter<bool> lowFps;
-    ofParameter<bool> enableCollisionLogging = false;
+    ofParameter<bool> enableCollisionLogging = true;
 
     SimulationParameters() {
         groupName = "simulation";
@@ -187,3 +187,90 @@ struct SimulationParameters : public ofxPresetsParametersBase {
         //parameterMap["lowFps"] = &lowFps;
     }
 };
+
+
+
+
+
+
+
+
+
+/// <summary>
+/// The SonificationParameters struct contains all the parameters that are used to configure the simulation.
+/// </summary>
+struct SonificationParameters : public ofxPresetsParametersBase {
+
+    ofParameter<int> audioDeviceId;
+    ofParameter<string> audioDeviceName;
+
+    ofParameter<float> masterVolume;
+    ofParameter<float> collisionVolume;
+    ofParameter<float> clusterVolume;
+    ofParameter<float> velocityVolume;
+    ofParameter<float> backgroundVolume;
+
+    ofParameter<int> collisionSoundBank = 0;
+    ofParameter<int> clusterSoundBank = 0;
+
+    // Simulation Analysis
+    // ----------------------------------------------------------------
+    ofParameter<int> maxCollisionSampling;
+    ofParameter<int> maxClustersSampling;
+    ofParameter<int> maxClusterParticlesSampling;
+
+    ofParameter<float> collisions;
+
+    /// <summary>
+    /// the rate of particles that collided from the maximum amount of collisions beign evaluated. value from 0 to 1
+    /// </summary>
+    ofParameter<float> collisionRate;
+    
+    ofParameter<float> clusters;
+
+    /// <summary>
+    /// total amount of particles inside clusteers
+    /// </summary>
+    ofParameter<float> particlesInClusters;
+
+    /// <summary>
+    /// average size (in particle count) of the detected clusters
+    /// </summary>
+    ofParameter<float> avgClusterSize;
+
+    /// <summary>
+    /// the rate of particles that are in clusters from the total amount of particles in the system. value from 0 to 1
+    /// </summary>
+    ofParameter<float> particlesInClusterRate;
+
+    ofParameter<float> avgClusterVelocity;
+
+    ofParameter<float> avgClusterSpatialSpread;
+    ofParameter<float> avgClusterVelocityMagitude;
+
+
+    // VAC analysis data
+    // ----------------------------------------------------------------
+    ofParameter<int> vacWidth;
+    ofParameter<int> vacHeight;
+    ofParameter<std::vector<float>> vacValues;
+    ofParameter<bool> enableVACCalculation;
+    ofParameter<int> maxTimeLags;
+
+
+    // Parameters to save in presets
+    // ----------------------------------------------------------------
+    SonificationParameters() {
+        groupName = "sonification";
+
+        parameterMap["masterVolume"] = &masterVolume;
+        parameterMap["collisionVolume"] = &collisionVolume;
+        parameterMap["clusterVolume"] = &clusterVolume;
+        parameterMap["velocityVolume"] = &velocityVolume;
+        parameterMap["backgroundVolume"] = &backgroundVolume;
+        parameterMap["enableVACCalculation"] = &enableVACCalculation;
+        parameterMap["maxTimeLags"] = &maxTimeLags;
+    }
+};
+
+

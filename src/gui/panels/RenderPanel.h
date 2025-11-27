@@ -17,11 +17,11 @@ class RenderPanel : public EsenciaPanelBase {
 
     const float TRAILS_VISIBILITY_INITIAL = 0.7; // 0.95 // 0.95
     const float TRAILS_VISIBILITY_MIN = 0.0; // 1 // 0.0
-    const float TRAILS_VISIBILITY_MAX = 0.7; // 0.7 // 0.3
+    const float TRAILS_VISIBILITY_MAX = 0.9; // 0.7 // 0.3
 
     const ofColor VIDEO_COLOR = ofColor::white;
 
-    const ofRectangle PANEL_RECT = ofRectangle(25, 12, 8, 0);
+    const ofRectangle PANEL_RECT = ofRectangle(28, 15, 8, 0);
     const ofColor& BG_COLOR = ofColor(100, 20, 100, 100);
 
 
@@ -31,7 +31,7 @@ public:
 
         panel->add(params.color.set("particle color", 
             PARTICLE_COLOR)
-        )->minimize();
+        )->maximize();
 
         //panel->add(params.useShaders.set("use shaders",  USE_SHADERS));
 
@@ -43,15 +43,15 @@ public:
             VIDEO_VISIBILITY_INITIAL, VIDEO_VISIBILITY_MIN, VIDEO_VISIBILITY_MAX),
             ofJson({ {"precision", 3} }));
         
-        vp->add(params.videoColor.set("color", VIDEO_COLOR))->minimize();
+        vp->add(params.videoColor.set("color", VIDEO_COLOR))->maximize();
         
-        
+
         // trails
-        ofxGuiGroup* ofTrialsPanel = panel->addGroup("trails");
+        //ofxGuiGroup* ofTrialsPanel = panel->addGroup("trails");
 
         //ofTrialsPanel->add(params.useFaketrails.set("enable", USE_FAKETRAILS));
 
-        ofTrialsPanel->add(params.fakeTrialsVisibility.set("length", 
+        panel->add(params.fakeTrialsVisibility.set("trails length",
             TRAILS_VISIBILITY_INITIAL, TRAILS_VISIBILITY_MIN, TRAILS_VISIBILITY_MAX),
             ofJson({ {"precision", 3} }));
 

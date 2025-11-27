@@ -15,10 +15,14 @@
 #include "panels/VideoProcessingPanel.h"
 #include "panels/PresetsPanel.h"
 #include "panels/SequencePanel.h"
+#include "panels/VACPanel.h"
+#include "panels/SimulationDataPanel.h"
+#include "panels/AudioPanel.h"
 
 
 #include "ofxPresets.h"
 
+//#include "AudioApp.h"
 
 //#define DEBUG_IMAGES true
 //#define RECORD_TESTING_VIDEO true
@@ -34,6 +38,12 @@ public:
 
     void keyReleased(ofKeyEventArgs& e);
     void windowResized(int w, int h);
+    
+    // Method to setup VAC panel with simulator reference
+    void setupVACPanel(class Simulator* simulator);
+    
+    // Method to setup Simulation Data panel with simulator reference
+    void setupSimulationDataPanel(class Simulator* simulator);
 
     ofxGui gui;
     
@@ -47,6 +57,18 @@ public:
     CameraParameters cameraParameters;
 
     PresetsParameters presetsParameters;
+
+    SonificationParameters sonificationParameters;
+
+    // to handle local configuration values
+    // like camera clipping values
+    // this parameters are not / shouldnt be part of presets
+    // defined and managed here
+    ofParameterGroup& localConfigs = ofParameterGroup();
+    ofxGui fakeGui;
+    ofxGuiPanel* localValues;
+
+    void onChangeLocalConfig(int& deviceId);
 
 private:
     ParticlesPanel particlesPanel;
@@ -64,6 +86,12 @@ private:
     PresetsPanel presetsPanel;
 
 	SequencePanel sequencePanel;
+
+    AudioPanel audioPanel;
+
+    VACPanel vacPanel;
+
+    SimulationDataPanel simulationDataPanel;
      
 
     ofFbo fbo;  // for the extra layers behind the GUI (lines, background, etc)
@@ -83,6 +111,79 @@ private:
     int bgChangeDuration = 1000;
     std::vector<ofColor> bgColors = { ofColor::darkSalmon, ofColor::darkGrey, ofColor::darkSlateGray, ofColor::darkKhaki, ofColor::darkViolet, ofColor::deepSkyBlue };
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
